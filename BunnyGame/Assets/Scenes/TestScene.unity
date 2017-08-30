@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -328,7 +328,7 @@ Transform:
     type: 2}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 435264580}
-  m_LocalRotation: {x: 0, y: 0.13052616, z: 0, w: 0.9914449}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -349,7 +349,7 @@ Transform:
   - {fileID: 691345202}
   m_Father: {fileID: 1686109957}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 15, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &125144878
 GameObject:
   m_ObjectHideFlags: 0
@@ -2805,7 +2805,7 @@ GameObject:
   - component: {fileID: 1198374168}
   m_Layer: 0
   m_Name: bunnyGameWorld
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2817,7 +2817,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1198374166}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 17.5, z: 0}
   m_LocalScale: {x: 114.60196, y: 114.60195, z: 114.60195}
   m_Children:
   - {fileID: 779223962}
@@ -2871,7 +2871,7 @@ Transform:
   - {fileID: 493358015}
   - {fileID: 1941183863}
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1198374168
 MonoBehaviour:
@@ -3533,7 +3533,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!1 &1642365350
 GameObject:
@@ -3764,7 +3764,7 @@ GameObject:
   - component: {fileID: 1686109960}
   m_Layer: 0
   m_Name: BunnyParent
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3776,14 +3776,14 @@ Transform:
     type: 2}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1686109956}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.35, y: -15.871, z: 0}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 0, y: 0.2, z: 0}
   m_LocalScale: {x: 1.7394154, y: 1.7394158, z: 1.7394158}
   m_Children:
   - {fileID: 83189090}
   m_Father: {fileID: 0}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &1686109958
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3796,7 +3796,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98607adf06a4eff43832bc29ed49dfd9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cameraTransform: {fileID: 1723402806}
+  groundPositionY: 0.5
+  jumpForce: 30
+  speed: 10
 --- !u!54 &1686109959
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3978,6 +3980,7 @@ GameObject:
   - component: {fileID: 1723402804}
   - component: {fileID: 1723402803}
   - component: {fileID: 1723402802}
+  - component: {fileID: 1723402807}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -4049,12 +4052,26 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1723402801}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 0, y: 3, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1723402807
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1723402801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38683bd9e871a4148995cd2bb50fcb52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  offsetY: 7
+  player: {fileID: 1686109956}
+  rotationSpeed: 5
 --- !u!1 &1850085532
 GameObject:
   m_ObjectHideFlags: 0

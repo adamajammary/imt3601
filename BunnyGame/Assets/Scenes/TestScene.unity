@@ -120,7 +120,7 @@ GameObject:
   - component: {fileID: 21557108}
   m_Layer: 0
   m_Name: mesh420634658
-  m_TagString: Untagged
+  m_TagString: Bush
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -191,7 +191,7 @@ GameObject:
   - component: {fileID: 40306217}
   m_Layer: 0
   m_Name: mesh1126772397
-  m_TagString: Untagged
+  m_TagString: Hill
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -262,7 +262,7 @@ GameObject:
   - component: {fileID: 62106362}
   m_Layer: 0
   m_Name: mesh135386786
-  m_TagString: Untagged
+  m_TagString: Hill
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -723,7 +723,7 @@ GameObject:
   - component: {fileID: 344263596}
   m_Layer: 0
   m_Name: mesh248648491
-  m_TagString: Untagged
+  m_TagString: Bush
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -881,7 +881,7 @@ GameObject:
   - component: {fileID: 493358016}
   m_Layer: 0
   m_Name: mesh2096428869
-  m_TagString: Untagged
+  m_TagString: Hill
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -952,7 +952,7 @@ GameObject:
   - component: {fileID: 494607403}
   m_Layer: 0
   m_Name: mesh1450566812
-  m_TagString: Untagged
+  m_TagString: Hill
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1380,7 +1380,7 @@ GameObject:
   - component: {fileID: 587863501}
   m_Layer: 0
   m_Name: mesh843370528
-  m_TagString: Untagged
+  m_TagString: Hill
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1522,7 +1522,7 @@ GameObject:
   - component: {fileID: 659542574}
   m_Layer: 0
   m_Name: mesh911141886
-  m_TagString: Untagged
+  m_TagString: Bush
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1950,7 +1950,7 @@ GameObject:
   - component: {fileID: 749017092}
   m_Layer: 0
   m_Name: mesh1943654038
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2305,7 +2305,7 @@ GameObject:
   - component: {fileID: 961555922}
   m_Layer: 0
   m_Name: mesh1037693211
-  m_TagString: Untagged
+  m_TagString: Bush
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2664,7 +2664,7 @@ GameObject:
   - component: {fileID: 1115293289}
   m_Layer: 0
   m_Name: mesh1491119362
-  m_TagString: Untagged
+  m_TagString: Bush
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2805,7 +2805,7 @@ GameObject:
   - component: {fileID: 1198374168}
   m_Layer: 0
   m_Name: bunnyGameWorld
-  m_TagString: Ground
+  m_TagString: Environment
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3796,9 +3796,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98607adf06a4eff43832bc29ed49dfd9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  groundPositionY: 0.5
-  jumpForce: 30
-  speed: 10
+  _jumpForce: 30
+  _speed: 10
 --- !u!54 &1686109959
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3838,7 +3837,7 @@ GameObject:
   - component: {fileID: 1694883854}
   m_Layer: 0
   m_Name: mesh1833906091
-  m_TagString: Untagged
+  m_TagString: Hill
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3909,7 +3908,7 @@ GameObject:
   - component: {fileID: 1699669762}
   m_Layer: 0
   m_Name: mesh1172461684
-  m_TagString: Untagged
+  m_TagString: Hill
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4069,9 +4068,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38683bd9e871a4148995cd2bb50fcb52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  offsetY: 7
-  player: {fileID: 1686109956}
-  rotationSpeed: 5
+  _offsetY: 5
+  _player: {fileID: 1686109956}
+  _rotationSpeed: 10
 --- !u!1 &1850085532
 GameObject:
   m_ObjectHideFlags: 0
@@ -4587,7 +4586,7 @@ GameObject:
   - component: {fileID: 1941183864}
   m_Layer: 0
   m_Name: mesh2125701089
-  m_TagString: Untagged
+  m_TagString: Hill
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4658,7 +4657,7 @@ GameObject:
   - component: {fileID: 1982816203}
   m_Layer: 0
   m_Name: mesh396069313
-  m_TagString: Untagged
+  m_TagString: Bush
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

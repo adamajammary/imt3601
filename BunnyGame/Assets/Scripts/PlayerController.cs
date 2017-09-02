@@ -1,14 +1,14 @@
 ﻿using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
-    public float JumpForce { get { return this._jumpForce; } set { this._jumpForce = value; } }
-    public float Speed     { get { return this._speed; }     set { this._speed = value; } }
+    //public float JumpForce { get { return this._jumpForce; } set { this._jumpForce = value; } }
+    //public float Speed     { get { return this._speed;     } set { this._speed     = value; } }
 
     [SerializeField]
-    private float _jumpForce;
+    private float _jumpForce = 30.0f;
 
     [SerializeField]
-    private float _speed;
+    private float _speed = 10.0f;
 
     private bool      _isJumping;
     private Rigidbody _rb;
@@ -16,10 +16,10 @@ public class PlayerController : MonoBehaviour {
     // Use this for initialization
     void Start() {
         this._isJumping = false;
-        this._rb        = GetComponent<Rigidbody>();
+        this._rb        = this.GetComponent<Rigidbody>();
     }
 
-    void OnCollisionEnter(Collision col) {
+    private void OnCollisionEnter(Collision col) {
         if ((col.gameObject.tag == "Bush") || (col.gameObject.tag == "Ground") || (col.gameObject.tag == "Hill")) {
             this._isJumping = false;
         }
@@ -27,18 +27,18 @@ public class PlayerController : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update() {
-        this.MovePlayer();
+    private void Update() {
+        this.movePlayer();
     }
 
     // Takes keyboard input to move player
-    void MovePlayer() {
+    private void movePlayer() {
         //Vector3 translate = new Vector3(-Input.GetAxis("Horizontal"), 0.0f, -Input.GetAxis("Vertical"));
         Vector3 translate = new Vector3(0.0f, 0.0f, -Input.GetAxis("Vertical"));
-        this.transform.Translate(translate * this.Speed * Time.deltaTime);
+        this.transform.Translate(translate * this._speed * Time.deltaTime);
 
         if (Input.GetKeyDown(KeyCode.Space) && !this._isJumping) {
-            this._rb.AddForce(new Vector3(0.0f, (this.Speed * this.JumpForce), 0.0f));
+            this._rb.AddForce(new Vector3(0.0f, (this._speed * this._jumpForce), 0.0f));
             this._isJumping = true;
         }
     }

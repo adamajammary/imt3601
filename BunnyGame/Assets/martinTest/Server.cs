@@ -11,6 +11,7 @@ public class Server : MonoBehaviour {
     private List<ServerClient> disconnectedList;
     private TcpListener server;
     private bool serverStarted;
+    private bool gameStarted;
 
     public void init() {
         DontDestroyOnLoad(gameObject);
@@ -22,11 +23,13 @@ public class Server : MonoBehaviour {
             this.server.Start();
             startListening();
             this.serverStarted = true;
+            this.gameStarted = false;
         }catch(Exception e) {
             Debug.Log(e);
         }
     }
     public void startGame() {
+        this.gameStarted = true;
         string clientNames = "";
         foreach (ServerClient c in clients)
             clientNames += "|" + c.clientName;
@@ -36,6 +39,9 @@ public class Server : MonoBehaviour {
     private void Update() {
         if (!this.serverStarted)   
             return;
+
+        if (!this.gameStarted)
+            startListening();
 
         foreach(ServerClient c in this.clients) {
             if (!isConnected(c.tcp)) {

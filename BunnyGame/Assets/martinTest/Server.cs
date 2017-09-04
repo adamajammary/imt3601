@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net.Sockets;
 using System;
 using System.IO;
@@ -7,11 +6,9 @@ using System.Net;
 using UnityEngine;
 
 public class Server : MonoBehaviour {
-    public int port = 6321;
-
+    private int port = 6321;
     private List<ServerClient> clients;
     private List<ServerClient> disconnectedList;
-
     private TcpListener server;
     private bool serverStarted;
 
@@ -21,14 +18,21 @@ public class Server : MonoBehaviour {
         disconnectedList = new List<ServerClient>();
 
         try {
-            server = new TcpListener(IPAddress.Any, port);
-            server.Start();
+            this.server = new TcpListener(IPAddress.Any, port);
+            this.server.Start();
             startListening();
-            serverStarted = true;
+            this.serverStarted = true;
         }catch(Exception e) {
             Debug.Log(e);
         }
     }
+    public void startGame() {
+        string clientNames = "";
+        foreach (ServerClient c in clients)
+            clientNames += "|" + c.clientName;
+        broadcast("startgame" + clientNames, clients);
+    }
+   
     private void Update() {
         if (!this.serverStarted)   
             return;
@@ -53,7 +57,6 @@ public class Server : MonoBehaviour {
             this.disconnectedList.RemoveAt(i);
         }
     }
-
     private void startListening() {
         server.BeginAcceptTcpClient(acceptTcpClient, server);
     }
@@ -65,7 +68,6 @@ public class Server : MonoBehaviour {
 
         Debug.Log("Someone connected!");
     }
-
     private bool isConnected(TcpClient c) {
         try {
             if (c != null && c.Client != null && c.Client.Connected) {
@@ -78,7 +80,6 @@ public class Server : MonoBehaviour {
             return false;
         }
     }
-
     private void broadcast(string data, List<ServerClient> cl) {
         foreach(ServerClient sc in cl) {
             try {
@@ -86,12 +87,25 @@ public class Server : MonoBehaviour {
                 writer.WriteLine(data);
                 writer.Flush();
             }catch(Exception e) {
-                Debug.Log(e);
+                Debug.Log(e.Message);
             }
         }
     }
     private void onIncomingData(ServerClient c, string data) {
-        Debug.Log(data);
+        Debug.Log("Raw data recieved by server: " + data);
+        string[] d = data.Split('|');
+
+        switch (d[0]) {
+            case "clientName":
+                c.clientName = d[1];
+                break;
+            case "key":
+                broadcast(data, clients);
+                break;
+            default:
+                Debug.Log("Unkown message tag: " + d[0]);
+                break;
+        }
     }
 }
 

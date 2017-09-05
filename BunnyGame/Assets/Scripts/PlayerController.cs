@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : NetworkBehaviour {
 
     public float walkSpeed = 2;
     public float runSpeed  = 6;
@@ -23,7 +24,7 @@ public class PlayerController : MonoBehaviour {
     Transform cameraTransform;
     CharacterController controller;
 
-    bool lockCursor = true;
+    bool lockCursor = false;
 
     void Start () {
         this.cameraTransform = Camera.main.transform;

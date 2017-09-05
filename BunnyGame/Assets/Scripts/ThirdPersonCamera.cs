@@ -2,36 +2,36 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ThirdPersonCamera : MonoBehaviour {
-    
+public class ThirdPersonCamera : MonoBehaviour { 
 
-    public bool lockCursor;
-    public float mouseSensitivity = 10;
-    private Transform target;
-    public float distanceFromTarget = 2;
-    public Vector2 pitchMinMax = new Vector2(-5, 85);
-    public float rotationSmoothTime = 0.1f;
-    Vector3 rotationSmoothVelocity;
-    Vector3 currentRotation;
+    public bool     lockCursor;
+    public float    mouseSensitivity = 10;    
+    public float    distanceFromTarget = 2;
+    public Vector2  pitchMinMax = new Vector2(-5, 85);
+    public float    rotationSmoothTime = 0.1f;
 
-    float yaw;
-    float pitch;
+    private Transform   _target;
+    Vector3             _rotationSmoothVelocity;
+    Vector3             _currentRotation;
+    float               _yaw;
+    float               _pitch;
 
 	void LateUpdate () {
 
-        this.yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
-        this.pitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
-        this.pitch = Mathf.Clamp(pitch, pitchMinMax.x, pitchMinMax.y);
+        this._yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
+        this._pitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
+        this._pitch = Mathf.Clamp(_pitch, pitchMinMax.x, pitchMinMax.y);
 
-        this.currentRotation = Vector3.SmoothDamp(currentRotation, new Vector3(pitch, yaw), ref rotationSmoothVelocity, rotationSmoothTime);
+        this._currentRotation = Vector3.SmoothDamp(_currentRotation, new Vector3(_pitch, _yaw), 
+                                               ref _rotationSmoothVelocity, rotationSmoothTime);
   
-        this.transform.eulerAngles = currentRotation;
+        this.transform.eulerAngles = _currentRotation;
 
-        this.transform.position = target.position - transform.forward * distanceFromTarget;
+        this.transform.position = _target.position - transform.forward * distanceFromTarget;
     }
 
     public void SetTarget(Transform targetTransform)
     {
-        this.target = targetTransform;
+        this._target = targetTransform;
     }
 }

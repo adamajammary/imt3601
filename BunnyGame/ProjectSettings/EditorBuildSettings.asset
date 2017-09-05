@@ -6,8 +6,5 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/martinTest/networkingMenu.unity
-    guid: 0de0b1c3f1690f84ca8c65a46b508886
-  - enabled: 1
-    path: Assets/martinTest/networking.unity
-    guid: d16682290cd9c6645ad59692630689ac
+    path: Assets/Scenes/TestScene.unity
+    guid: 32d43c26ef64bf744a19ee9d0e40ff67

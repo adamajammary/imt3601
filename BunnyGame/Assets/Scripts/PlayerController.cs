@@ -1,77 +1,105 @@
-﻿/*
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-*/
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
-    public Transform cameraTransform;
 
-    Vector3 camPos, forward;
-    Rigidbody rb;
-    float speed;
-    float distance, angle1, angle2;
-    bool lockCursor = false;
-    // Use this for initialization
-    void Start() {
-        speed = 10.0f;
-        angle1 = 0.0f;
-        angle2 = 0.0f;
-        distance = 5.0f;
-        rb = GetComponent<Rigidbody>();
-    }
+    public float walkSpeed = 2;
+    public float runSpeed  = 6;
+    public float gravity = -12;
+    public float jumpHeight = 1;
 
-    // Update is called once per frame
-    void Update() {
-        setCameraPos();
-        movePlayer();
+    [Range(0,1)]
+    public float airControlPercent;
+
+    public float turnSmoothTime = 0.2f;
+    float turnSmoothVelocity;
+
+    public float speedSmoothTime = 0.2f;
+    float speedSmoothVelocity;
+    float currentSpeed;
+    float velocityY;
+
+    Transform cameraTransform;
+    CharacterController controller;
+
+    bool lockCursor = true;
+
+    void Start () {
+        this.cameraTransform = Camera.main.transform;
+        this.controller = GetComponent<CharacterController>();         
+	}
+	
+	
+	void Update () {
+        Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        Vector2 inputDir = input.normalized;
+        bool running = Input.GetKey(KeyCode.LeftShift);      
+
+        Move(inputDir, running);
+   
+        if (Input.GetKey(KeyCode.Space))
+            Jump();
+
         handleMouse();
     }
 
-    //Takes keyboard input to move player
-    void movePlayer() {
-        Vector3 force = Vector3.zero;
-        if (Input.GetKey(KeyCode.W)) {
-            float angle = angle1 - Mathf.PI;
-            forward.x = Mathf.Cos(angle);
-            forward.z = Mathf.Sin(angle);
-            forward.y = 0;
-            force += forward * speed;
-            transform.eulerAngles = new Vector3(0, -Mathf.Rad2Deg*angle1 + 90, 0);
+    void Move(Vector2 inputDir, bool running)
+    {
+        
+        if (inputDir != Vector2.zero) 
+        {
+            float targetRotation = Mathf.Atan2(inputDir.x, inputDir.y) * Mathf.Rad2Deg + cameraTransform.eulerAngles.y;
+            transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
         }
-        if (Input.GetKeyDown(KeyCode.Space)) {
-            force.y += speed*30;
-        }
-        rb.AddForce(force);
+           
+        float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
+        this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
+
+        this.velocityY += Time.deltaTime * gravity;
+      
+        Vector3 velocity = transform.forward * currentSpeed + Vector3.up * velocityY;
+
+        this.controller.Move(velocity * Time.deltaTime);
+
+        if (controller.isGrounded)
+            velocityY = 0;
     }
 
-    //Sets the position of the camera, the camera is positioned on a sphere centered on the target, 
-    //looking at the target transform. Mouse delta is used to change the position
-    void setCameraPos() {
-        angle1 -= Input.GetAxis("Mouse X") * Time.deltaTime * 2.0f;
-        angle2 += Input.GetAxis("Mouse Y") * Time.deltaTime * 2.0f;
-        distance -= Input.GetAxis("Mouse ScrollWheel") * Time.deltaTime * 100.0f;
 
-        if (angle2 > Mathf.PI - 0.5f) angle2 = Mathf.PI - 0.5f;
-        if (angle2 < 0.1f) angle2 = 0.1f;
-
-        camPos.x = transform.position.x + distance * Mathf.Cos(angle1) * Mathf.Sin(angle2);
-        camPos.z = transform.position.z + distance * Mathf.Sin(angle1) * Mathf.Sin(angle2);
-        camPos.y = transform.position.y + distance * Mathf.Cos(angle2);
-
-        cameraTransform.position = camPos;
-        cameraTransform.LookAt(transform);
+    void Jump()
+    {
+        if(controller.isGrounded)
+        {
+            float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight); // Kinnematik equation
+            this.velocityY = jumpVelocity;
+        }
     }
 
-    //Handles mouse, pressing esc toggles cursor visibility
-    void handleMouse() {
+    //Controll player in air after jump
+    float GetModifiedSmoothTime(float smoothTime)
+    {
+        if (controller.isGrounded)
+            return smoothTime;
+
+        if (smoothTime == 0)
+            return float.MaxValue;
+
+        return smoothTime / airControlPercent;        
+    }
+
+    void handleMouse()
+    {
         if (Input.GetKeyDown(KeyCode.Escape))
             lockCursor = !lockCursor;
 
-        if (lockCursor) {
+        if (lockCursor)
+        {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-        } else {
+        }
+        else
+        {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }

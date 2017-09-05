@@ -1,11 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
 
-public class PlayerNetworkingController : NetworkBehaviour {
-    //public GameObject BulletPrefab  { get { return this._bulletPrefab;  } set { this._bulletPrefab  = value; } }
-    //public float      MovementSpeed { get { return this._movementSpeed; } set { this._movementSpeed = value; } }
-    //public float      RotationSpeed { get { return this._rotationSpeed; } set { this._rotationSpeed = value; } }
+namespace NetworkingTest1 {
 
+public class PlayerNetworkingController : NetworkBehaviour {
     [SerializeField] private GameObject _bulletPrefab;
     [SerializeField] private Transform  _bulletSpawn;
     [SerializeField] private float      _bulletVelocity = 6.0f;
@@ -52,4 +50,6 @@ public class PlayerNetworkingController : NetworkBehaviour {
         this.transform.Rotate(0.0f, horizontal, 0.0f);
         this.transform.Translate(0.0f, 0.0f, vertical);
     }
+}
+
 }

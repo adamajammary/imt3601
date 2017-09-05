@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
 
-namespace NetworkingTest1 {
-
-public class PlayerNetworkingHealth : NetworkBehaviour {
+namespace BunnyGame {
+public class PlayerHealth : NetworkBehaviour {
     [SerializeField] private bool          _destroyOnDeath = false;
     [SerializeField] private RectTransform _healthBar;
 
@@ -52,10 +51,9 @@ public class PlayerNetworkingHealth : NetworkBehaviour {
                 Destroy(this.gameObject);
             } else {
                 this._currentHealth = _maxHealth;
-                RpcRespawn();
+                this.RpcRespawn();
             }
         }
     }
 }
-
 }

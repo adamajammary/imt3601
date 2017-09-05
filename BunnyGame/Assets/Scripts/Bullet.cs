@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 
-namespace NetworkingTest1 {
-
-public class BulletNetworking : MonoBehaviour {
+namespace BunnyGame {
+public class Bullet : MonoBehaviour {
     [SerializeField] private int _attackPower = 10;
 
     // Use this for initialization
@@ -11,7 +10,7 @@ public class BulletNetworking : MonoBehaviour {
 
     // Destroy the bullet on collision
     private void OnCollisionEnter(Collision collision) {
-        PlayerNetworkingHealth healthScript = collision.gameObject.GetComponent<PlayerNetworkingHealth>();
+        PlayerHealth healthScript = collision.gameObject.GetComponent<PlayerHealth>();
 
         if (healthScript != null) {
             healthScript.TakeDamage(this._attackPower);
@@ -24,5 +23,4 @@ public class BulletNetworking : MonoBehaviour {
     private void Update() {
     }
 }
-
 }

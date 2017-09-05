@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
 
+namespace NetworkingTest1 {
+
 public class EnemyNetworkingSpawn : NetworkBehaviour
 {
     [SerializeField] private GameObject _enemyPrefab;
@@ -28,4 +30,6 @@ public class EnemyNetworkingSpawn : NetworkBehaviour
     // Update is called once per frame
     private void Update() {
     }
+}
+
 }

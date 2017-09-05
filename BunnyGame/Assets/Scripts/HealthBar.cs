@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 
-namespace NetworkingTest1 {
-
-public class Billboard : MonoBehaviour {
+namespace BunnyGame {
+public class HealthBar : MonoBehaviour {
     // Use this for initialization
     private void Start() {
     }
@@ -12,5 +11,4 @@ public class Billboard : MonoBehaviour {
         transform.LookAt(Camera.main.transform);
     }
 }
-
 }

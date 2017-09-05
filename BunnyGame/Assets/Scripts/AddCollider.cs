@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+namespace BunnyGame {
 public class AddCollider : MonoBehaviour {
     // Use this for initialization
     private void Start() {
@@ -7,4 +8,5 @@ public class AddCollider : MonoBehaviour {
             childTransform.gameObject.AddComponent<MeshCollider>();
         }
     }
+}
 }

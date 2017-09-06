@@ -56,7 +56,7 @@ public class PlayerController : NetworkBehaviour {
     private void shoot() {
         this._timer += Time.deltaTime;
         if (this._timer > this._fireRate) {
-            this._bunnyCommands.Cmdshootpoop(this._cameraTransform.forward);
+            this._bunnyCommands.Cmdshootpoop(this._cameraTransform.forward, this._controller.velocity);
             this._timer = 0;
         }
     }
@@ -115,14 +115,15 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void spawn() {
-        transform.position = new Vector3(Random.RandomRange(-50, 50),
+        transform.position = new Vector3(Random.RandomRange(-40, 40),
                                          10,
-                                         Random.RandomRange(-50, 50));
+                                         Random.RandomRange(-40, 40));
     }
 
     private void OnCollisionEnter(Collision other) {
-        Debug.Log(other.gameObject.tag);
-        if (other.gameObject.tag == "projectile")
+        if (other.gameObject.tag == "projectile") {
             this.spawn();
+            Destroy(other.gameObject);
+        }
     }
 }

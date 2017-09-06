@@ -32,8 +32,11 @@ public class PlayerController : NetworkBehaviour {
     void Start () {
         this._cameraTransform = Camera.main.transform;
         this._controller = this.GetComponent<CharacterController>();
-        this._bunnyCommands = this.GetComponent<BunnyCommands>();     
-	}
+        this._bunnyCommands = this.GetComponent<BunnyCommands>();
+        transform.position = new Vector3(Random.RandomRange(-50, 50),
+                                         10,
+                                         Random.RandomRange(-50, 50));
+    }
 	
 	
 	void Update () {
@@ -115,8 +118,10 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
-    private void OnCollisionEnter(Collider other) {
-        if (other.tag == "projectile")
-            transform.position = Vector3.zero;
+    private void OnCollisionEnter(Collision other) {
+        if (other.gameObject.tag == "projectile")
+            transform.position = new Vector3(Random.RandomRange(-50, 50),
+                                             10,
+                                             Random.RandomRange(-50, 50));
     }
 }

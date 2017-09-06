@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class ThirdPersonCamera : MonoBehaviour { 
 
-    public bool     lockCursor;
-    public float    mouseSensitivity = 10;    
-    public float    distanceFromTarget = 2;
-    public Vector2  pitchMinMax = new Vector2(-5, 85);
-    public float    rotationSmoothTime = 0.1f;
+    private bool     lockCursor = true;
+    private float    mouseSensitivity = 10;    
+    private float    distanceFromTarget = 4;
+    private Vector2  pitchMinMax = new Vector2(-5, 85);
+    private float    rotationSmoothTime = 0.1f;
 
     private Transform   _target;
     Vector3             _rotationSmoothVelocity;

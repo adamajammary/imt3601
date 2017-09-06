@@ -7,13 +7,17 @@ public class BunnyCommands : NetworkBehaviour {
     public GameObject bunnyPoop;
 
     [Command]
-    public void Cmdshootpoop() {
+    public void Cmdshootpoop(Vector3 dir) {
         GameObject poop = Instantiate(bunnyPoop);
-        Vector3 pos = transform.position;
-        Vector3 dir = transform.forward;
+        if (!this.isLocalPlayer) 
+            poop.layer = 9;
 
-        dir.y += 0.2f;
-        pos += transform.forward * 2.0f;
+        Debug.Log("Bullet and player mask: ");
+        Debug.Log(poop.layer);
+        Debug.Log(gameObject.layer);
+
+        Vector3 pos = transform.position;
+        dir.y += 0.6f;
         poop.GetComponent<BunnyPoop>().shoot(dir, pos);
 
         NetworkServer.Spawn(poop);

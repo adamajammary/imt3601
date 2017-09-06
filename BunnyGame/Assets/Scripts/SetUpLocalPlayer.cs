@@ -11,6 +11,8 @@ public class SetUpLocalPlayer : NetworkBehaviour {
             this.gameObject.AddComponent<PlayerController>();
             ThirdPersonCamera camera = FindObjectOfType<ThirdPersonCamera>();
             camera.SetTarget(this.transform);
+        } else {
+            this.gameObject.layer = 11; //enemy layer
         }
 	}
 	

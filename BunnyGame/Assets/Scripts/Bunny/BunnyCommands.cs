@@ -9,15 +9,10 @@ public class BunnyCommands : NetworkBehaviour {
     [Command]
     public void Cmdshootpoop(Vector3 dir) {
         GameObject poop = Instantiate(bunnyPoop);
-        if (!this.isLocalPlayer) 
-            poop.layer = 9;
-
-        Debug.Log("Bullet and player mask: ");
-        Debug.Log(poop.layer);
-        Debug.Log(gameObject.layer);
 
         Vector3 pos = transform.position;
         dir.y += 0.6f;
+        pos += dir * 2.0f;
         poop.GetComponent<BunnyPoop>().shoot(dir, pos);
 
         NetworkServer.Spawn(poop);

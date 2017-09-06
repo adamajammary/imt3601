@@ -121,6 +121,7 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void OnCollisionEnter(Collision other) {
+        Debug.Log(other.gameObject.tag);
         if (other.gameObject.tag == "projectile")
             this.spawn();
     }

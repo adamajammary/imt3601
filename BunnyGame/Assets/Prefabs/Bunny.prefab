@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 4056581021287634}
   - component: {fileID: 33410868619718254}
   - component: {fileID: 23154909192004694}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh67389966
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -36,7 +36,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4945121004580130}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: bunny
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -53,7 +53,7 @@ GameObject:
   - component: {fileID: 4625566151039118}
   - component: {fileID: 33383475293480574}
   - component: {fileID: 23652921147785672}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh1791400730
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -70,7 +70,7 @@ GameObject:
   - component: {fileID: 4696830483849772}
   - component: {fileID: 33221968085507558}
   - component: {fileID: 23365810114327546}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh613621127
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -87,7 +87,7 @@ GameObject:
   - component: {fileID: 4795204458568114}
   - component: {fileID: 33858064008764450}
   - component: {fileID: 23090728674861838}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh112997
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -104,7 +104,7 @@ GameObject:
   - component: {fileID: 4866386617870822}
   - component: {fileID: 33798820610336968}
   - component: {fileID: 23874870625888662}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh1327107160
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -121,7 +121,7 @@ GameObject:
   - component: {fileID: 4801145588462852}
   - component: {fileID: 33982517814206470}
   - component: {fileID: 23792601638403158}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh14301973
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -138,7 +138,7 @@ GameObject:
   - component: {fileID: 4708495397301626}
   - component: {fileID: 33012111795043936}
   - component: {fileID: 23834514172382472}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh1086627621
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -155,7 +155,7 @@ GameObject:
   - component: {fileID: 4652164472651600}
   - component: {fileID: 33169617986345480}
   - component: {fileID: 23110914344397026}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh1301029976
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -172,7 +172,7 @@ GameObject:
   - component: {fileID: 4750696926528996}
   - component: {fileID: 33326690915871910}
   - component: {fileID: 23911712654637066}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh1316484242
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -189,7 +189,7 @@ GameObject:
   - component: {fileID: 4337386004552208}
   - component: {fileID: 33000953863519256}
   - component: {fileID: 23586561191414922}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh1253018799
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -206,7 +206,7 @@ GameObject:
   - component: {fileID: 4386057220462690}
   - component: {fileID: 33600789750820334}
   - component: {fileID: 23298479646355854}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh598105662
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -223,7 +223,7 @@ GameObject:
   - component: {fileID: 4797455576060364}
   - component: {fileID: 33827514049001984}
   - component: {fileID: 23767367709931396}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh869314016
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -243,7 +243,7 @@ GameObject:
   - component: {fileID: 114275356057814166}
   - component: {fileID: 114081719623944798}
   - component: {fileID: 114671398116392738}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: Bunny
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -260,7 +260,7 @@ GameObject:
   - component: {fileID: 4764679081391942}
   - component: {fileID: 33116151262546782}
   - component: {fileID: 23214139592427568}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh1860862207
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -277,7 +277,7 @@ GameObject:
   - component: {fileID: 4343433454380530}
   - component: {fileID: 33856654857972810}
   - component: {fileID: 23197190970964848}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh303060535
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -294,7 +294,7 @@ GameObject:
   - component: {fileID: 4425393175172772}
   - component: {fileID: 33862083454231104}
   - component: {fileID: 23357241759251554}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: mesh381965360
   m_TagString: Untagged
   m_Icon: {fileID: 0}

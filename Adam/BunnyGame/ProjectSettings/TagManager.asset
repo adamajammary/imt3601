@@ -4,10 +4,15 @@
 TagManager:
   serializedVersion: 2
   tags:
+<<<<<<< HEAD:Adam/BunnyGame/ProjectSettings/TagManager.asset
   - Ground
   - Hill
   - Bush
   - Environment
+=======
+  - projectile
+  - enemy projectile
+>>>>>>> remotes/origin/master:BunnyGame/ProjectSettings/TagManager.asset
   layers:
   - Default
   - TransparentFX
@@ -17,10 +22,10 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
-  - 
-  - 
+  - player
+  - enemyProjectile
+  - playerProjectile
+  - enemy
   - 
   - 
   - 

@@ -10,7 +10,11 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
+<<<<<<< HEAD:Adam/BunnyGame/ProjectSettings/ProjectSettings.asset
   companyName: EDU-NTNU-IMT3601
+=======
+  companyName: Martin 3441089
+>>>>>>> remotes/origin/master:BunnyGame/ProjectSettings/ProjectSettings.asset
   productName: BunnyGame
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
@@ -64,7 +68,7 @@ PlayerSettings:
   useOSAutorotation: 1
   use32BitDisplayBuffer: 1
   disableDepthAndStencilBuffers: 0
-  defaultIsFullScreen: 1
+  defaultIsFullScreen: 0
   defaultIsNativeResolution: 1
   runInBackground: 0
   captureSingleScreen: 0
@@ -594,9 +598,15 @@ PlayerSettings:
     UNet: 1
   facebookSdkVersion: 7.9.4
   apiCompatibilityLevel: 2
+<<<<<<< HEAD:Adam/BunnyGame/ProjectSettings/ProjectSettings.asset
   cloudProjectId: 980cbf96-aa9d-4fca-ae4a-cd5d0f300b0e
   projectName: BunnyGame
   organizationId: adam-a-jammary
+=======
+  cloudProjectId: ae5a60a1-cb21-44b8-880e-c653ec44e30e
+  projectName: BunnyGame
+  organizationId: martin-3441089
+>>>>>>> remotes/origin/master:BunnyGame/ProjectSettings/ProjectSettings.asset
   cloudEnabled: 0
   enableNativePlatformBackendsForNewInputSystem: 0
   disableOldInputManagerSupport: 0

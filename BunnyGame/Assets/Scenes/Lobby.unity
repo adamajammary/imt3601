@@ -384,7 +384,7 @@ MonoBehaviour:
   m_GamePlayerPrefab: {fileID: 1799194126884752, guid: f6c73873894925f49ba1da7e525bb531,
     type: 2}
   m_LobbyScene: Lobby
-  m_PlayScene: TestScene
+  m_PlayScene: Island
   lobbySlots: []
 --- !u!4 &1293235770
 Transform:

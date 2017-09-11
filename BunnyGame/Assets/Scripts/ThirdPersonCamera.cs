@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ThirdPersonCamera : MonoBehaviour { 
 
-    private bool     lockCursor = true;
+    //private bool     lockCursor = true;
     private float    mouseSensitivity = 10;    
     private float    distanceFromTarget = 4;
     private Vector2  pitchMinMax = new Vector2(-5, 85);

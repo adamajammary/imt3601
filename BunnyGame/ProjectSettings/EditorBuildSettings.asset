@@ -9,5 +9,5 @@ EditorBuildSettings:
     path: Assets/Scenes/Lobby.unity
     guid: 5e6a05310a118e842b538024b8fc1571
   - enabled: 1
-    path: Assets/Scenes/TestScene.unity
-    guid: 32d43c26ef64bf744a19ee9d0e40ff67
+    path: Assets/Scenes/Island.unity
+    guid: 6ed7c93f8fb4d17489e9745bb8ce429d

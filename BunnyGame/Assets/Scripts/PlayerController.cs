@@ -5,16 +5,16 @@ using UnityEngine.Networking;
 
 public class PlayerController : NetworkBehaviour {
 
-    public float _walkSpeed = 4;
-    public float _runSpeed = 8;
-    public float _gravity = -12;
-    public float _jumpHeight = 1;
+    public float walkSpeed = 4;
+    public float runSpeed = 8;
+    public float gravity = -12;
+    public float jumpHeight = 1;
 
     [Range(0, 1)]
-    public float _airControlPercent;
+    public float airControlPercent;
 
-    public float _turnSmoothTime = 0.2f;
-    public float _speedSmoothTime = 0.2f;
+    public float turnSmoothTime = 0.2f;
+    public float speedSmoothTime = 0.2f;
 
     private float _turnSmoothVelocity;
     private float _speedSmoothVelocity;
@@ -66,13 +66,13 @@ public class PlayerController : NetworkBehaviour {
         if (inputDir != Vector2.zero) {
             float targetRotation = Mathf.Atan2(inputDir.x, inputDir.y) * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
             transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation,
-                                                ref _turnSmoothVelocity, GetModifiedSmoothTime(_turnSmoothTime));
+                                                ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
         }
 
-        float targetSpeed = ((running) ? _runSpeed : _walkSpeed) * inputDir.magnitude;
-        this._currentSpeed = Mathf.SmoothDamp(_currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(_speedSmoothTime));
+        float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
+        this._currentSpeed = Mathf.SmoothDamp(_currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
 
-        this._velocityY += Time.deltaTime * _gravity;
+        this._velocityY += Time.deltaTime * gravity;
 
         Vector3 velocity = transform.forward * _currentSpeed + Vector3.up * _velocityY;
 
@@ -85,7 +85,7 @@ public class PlayerController : NetworkBehaviour {
 
     void jump() {
         if (_controller.isGrounded) {
-            float jumpVelocity = Mathf.Sqrt(-2 * _gravity * _jumpHeight); // Kinnematik equation
+            float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight); // Kinnematik equation
             this._velocityY = jumpVelocity;
         }
     }
@@ -98,7 +98,7 @@ public class PlayerController : NetworkBehaviour {
         if (smoothTime == 0)
             return float.MaxValue;
 
-        return smoothTime / _airControlPercent;
+        return smoothTime / airControlPercent;
     }
 
     void handleMouse() {

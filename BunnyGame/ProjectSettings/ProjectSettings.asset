@@ -594,9 +594,9 @@ PlayerSettings:
     UNet: 1
   facebookSdkVersion: 7.9.4
   apiCompatibilityLevel: 2
-  cloudProjectId: ae5a60a1-cb21-44b8-880e-c653ec44e30e
+  cloudProjectId: 0fc3898d-83f6-4d52-ac0b-ba6c6a56d680
   projectName: BunnyGame
-  organizationId: martin-3441089
+  organizationId: bunnybois
   cloudEnabled: 0
   enableNativePlatformBackendsForNewInputSystem: 0
   disableOldInputManagerSupport: 0

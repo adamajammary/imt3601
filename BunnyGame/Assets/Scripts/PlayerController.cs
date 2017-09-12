@@ -115,9 +115,9 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void spawn() {
-        transform.position = new Vector3(Random.RandomRange(-40, 40),
+        transform.position = new Vector3(Random.Range(-40, 40),
                                          10,
-                                         Random.RandomRange(-40, 40));
+                                         Random.Range(-40, 40));
     }
 
     private void OnCollisionEnter(Collision other) {

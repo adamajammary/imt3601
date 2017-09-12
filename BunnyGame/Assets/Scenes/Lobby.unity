@@ -320,6 +320,8 @@ MonoBehaviour:
   m_OnlineScene: 
   m_SpawnPrefabs:
   - {fileID: 1886373553233600, guid: 6fc40ffe9048ee54083904a2266d3a48, type: 2}
+  - {fileID: 1558930413747694, guid: 5001e6259c0eb1a4484ea4cc766a827b, type: 2}
+  - {fileID: 1068185768542474, guid: a4ee1f824e2c39e42b2c294ba20480df, type: 2}
   m_CustomConfig: 0
   m_MaxConnections: 4
   m_ConnectionConfig:
@@ -381,7 +383,7 @@ MonoBehaviour:
   m_MinPlayers: 1
   m_LobbyPlayerPrefab: {fileID: 114654690879382970, guid: 61ed66254448e5142a6e5fe3f12cc2af,
     type: 2}
-  m_GamePlayerPrefab: {fileID: 1355530226961482, guid: a541c9f30bbc4694db96c0926e60a615,
+  m_GamePlayerPrefab: {fileID: 1776252291301512, guid: a541c9f30bbc4694db96c0926e60a615,
     type: 2}
   m_LobbyScene: Lobby
   m_PlayScene: Island

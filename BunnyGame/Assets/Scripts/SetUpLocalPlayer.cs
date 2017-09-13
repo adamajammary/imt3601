@@ -25,9 +25,7 @@ public class SetUpLocalPlayer : NetworkBehaviour {
         // Temporarily choosing class at random
         // NB! This random choice isn't synced across clients
 
-        int animal = Random.Range(0,2);
-
-        switch (animal) {
+        switch (Random.Range(0, 2)) {
             case 0:
                 setupFox();
                 break;
@@ -51,28 +49,16 @@ public class SetUpLocalPlayer : NetworkBehaviour {
     private void setupFox() {
         loadAnimalModel("FoxModel");
 
-        if (!this.isLocalPlayer)
-            return;
-
-        // Setup fox-specific attributes, abilities, etc...
-        PlayerController pc = GetComponent<PlayerController>();
-        pc.runSpeed = 15;
-
-
+        if (this.isLocalPlayer)
+            gameObject.AddComponent<FoxController>();
     }
 
     // Setup the player as a bunny
     private void setupBunny() {
         loadAnimalModel("BunnyModel");
 
-        if (!this.isLocalPlayer)
-            return;
-
-        // Set up bunny-specific attributes, abilities, etc...
-        BunnyCommands commands = gameObject.AddComponent<BunnyCommands>();
-        commands.bunnyPoop = Resources.Load<GameObject>("Prefabs/poop");
-        PlayerController pc = GetComponent<PlayerController>();
-        pc.jumpHeight = 3;
+        if (this.isLocalPlayer)
+            gameObject.AddComponent<BunnyController>();
     }
 
 }

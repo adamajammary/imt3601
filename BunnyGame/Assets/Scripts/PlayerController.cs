@@ -20,19 +20,15 @@ public class PlayerController : NetworkBehaviour {
     private float _speedSmoothVelocity;
     private float _currentSpeed;
     private float _velocityY;
-    private float _fireRate = 0.2f;
-    private float _timer = 0;
 
     private Transform _cameraTransform;
     private CharacterController _controller;
-    private BunnyCommands _bunnyCommands;
 
     bool lockCursor = false;
 
     void Start() {
         this._cameraTransform = Camera.main.transform;
         this._controller = this.GetComponent<CharacterController>();
-        this._bunnyCommands = this.GetComponent<BunnyCommands>();
         this.spawn();
     }
 
@@ -47,18 +43,7 @@ public class PlayerController : NetworkBehaviour {
         if (Input.GetAxisRaw("Jump") > 0)
             this.jump();
 
-        if (Input.GetAxisRaw("Fire1") > 0)
-            this.shoot();
-
         handleMouse();
-    }
-
-    private void shoot() {
-        this._timer += Time.deltaTime;
-        if (this._timer > this._fireRate) {
-            this._bunnyCommands.Cmdshootpoop(this._cameraTransform.forward, this._controller.velocity);
-            this._timer = 0;
-        }
     }
 
     void Move(Vector2 inputDir, bool running) {

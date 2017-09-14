@@ -26,14 +26,18 @@ public class PlayerController : NetworkBehaviour {
 
     bool lockCursor = false;
 
-    void Start() {
+    public void onWaterStay(float waterForce) {
+        this._velocityY += waterForce * Time.deltaTime;
+    }
+
+    private void Start() {
         this._cameraTransform = Camera.main.transform;
         this._controller = this.GetComponent<CharacterController>();
         this.spawn();
     }
 
 
-    void Update() {
+    private void Update() {
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         Vector2 inputDir = input.normalized;
         bool running = Input.GetKey(KeyCode.LeftShift);
@@ -46,7 +50,7 @@ public class PlayerController : NetworkBehaviour {
         handleMouse();
     }
 
-    void Move(Vector2 inputDir, bool running) {
+    private void Move(Vector2 inputDir, bool running) {
 
         if (inputDir != Vector2.zero) {
             float targetRotation = Mathf.Atan2(inputDir.x, inputDir.y) * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
@@ -68,7 +72,7 @@ public class PlayerController : NetworkBehaviour {
     }
 
 
-    void jump() {
+    private void jump() {
         if (_controller.isGrounded) {
             float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight); // Kinnematik equation
             this._velocityY = jumpVelocity;
@@ -76,7 +80,7 @@ public class PlayerController : NetworkBehaviour {
     }
 
     //Controll player in air after jump
-    float GetModifiedSmoothTime(float smoothTime) {
+    private float GetModifiedSmoothTime(float smoothTime) {
         if (_controller.isGrounded)
             return smoothTime;
 
@@ -86,7 +90,7 @@ public class PlayerController : NetworkBehaviour {
         return smoothTime / airControlPercent;
     }
 
-    void handleMouse() {
+    private void handleMouse() {
         if (Input.GetKeyDown(KeyCode.Escape))
             lockCursor = !lockCursor;
 

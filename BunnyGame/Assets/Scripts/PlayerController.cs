@@ -11,7 +11,7 @@ public class PlayerController : NetworkBehaviour {
     public float jumpHeight = 1;
 
     [Range(0, 1)]
-    public float airControlPercent;
+    public float airControlPercent = 0.5f;
 
     public float turnSmoothTime = 0.2f;
     public float speedSmoothTime = 0.2f;

@@ -6,13 +6,18 @@ using UnityEngine.UI;
 public class Water : MonoBehaviour {
 
     public Image waterScreenEffect;
-    private float _waterForce = 10.0f;
+    private float _waterForceStrength = 12.0f;
+    private float _waterSurfaceHeight;
+
+    private void Start() {
+        this._waterSurfaceHeight = transform.position.y + transform.localScale.y / 2;
+    }
 
     void OnTriggerStay(Collider other) { 
-        Debug.Log("Something in water!!");
         if (other.tag == "Player" || other.tag == "Enemy") {
-            Debug.Log("Bunny in water!");
-            other.GetComponent<CharacterController>().Move(Vector3.up * this._waterForce * Time.deltaTime);
+            float waterForce = (this._waterSurfaceHeight - other.transform.position.y + 0.5f) * this._waterForceStrength;
+            Debug.Log(waterForce);
+            other.GetComponent<PlayerController>().onWaterStay(waterForce);
         }
 
         if (other.tag == "Player")

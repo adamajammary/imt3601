@@ -14,6 +14,7 @@ public class SetUpLocalPlayer : NetworkBehaviour {
             ThirdPersonCamera camera = FindObjectOfType<ThirdPersonCamera>();
             camera.SetTarget(this.transform);
             this.tag = "Player";
+            transform.GetChild(0).gameObject.SetActive(true);
         } else
             this.tag = "Enemy";
 

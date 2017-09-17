@@ -11,8 +11,8 @@ public class BunnyCommands : NetworkBehaviour {
         GameObject poop = Instantiate(bunnyPoop);
 
         Vector3 pos = transform.position;
-        dir.y += 0.6f;
-        pos += dir * 6.0f;
+        //dir.y += 0.6f;                      
+        pos += dir * 4.0f; 
         poop.GetComponent<BunnyPoop>().shoot(dir, pos, startVel);
 
         NetworkServer.Spawn(poop);

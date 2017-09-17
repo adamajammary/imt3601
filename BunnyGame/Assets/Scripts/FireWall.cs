@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class FireWall : MonoBehaviour {
     private Texture2D _ft;
@@ -6,11 +7,22 @@ public class FireWall : MonoBehaviour {
     private float _noiseSeed = 0;
     private float _noiseSpeed = 1.25f;
 
+    Mesh wall;
+    float t = 0;
+
+    Circle start;
+    Circle target;
+
 	// Use this for initialization
 	void Start () {
         this._fs = GetComponent<Renderer>().material;
         this._ft = new Texture2D(128, 128, TextureFormat.ARGB32, false);
         this._fs.mainTexture = this._ft;
+
+        start = new Circle(250, Vector3.zero);
+        target = new Circle(100, new Vector3(50, 0, 50));
+   
+        wall = GetComponent<Mesh>();
     }
 	
 	// Update is called once per frame
@@ -25,7 +37,19 @@ public class FireWall : MonoBehaviour {
         // Apply all pixel changes to the texture
         this._ft.Apply();        
         // This will change where noise is sampled from the noise plane
-        this._noiseSeed += this._noiseSpeed * Time.deltaTime;   
+        this._noiseSeed += this._noiseSpeed * Time.deltaTime;
+
+        interpolateWall();  
+    }
+
+    void interpolateWall() {
+        if (t >= 1)
+            return;
+
+        transform.position = Vector3.Lerp(start.getWall().transform.position, target.getWall().transform.position, t);
+        transform.localScale = Vector3.Lerp(start.getWall().transform.localScale, target.getWall().transform.localScale, t);
+
+        t += 0.1f * Time.deltaTime;
     }
 
     // Generates values from 0.4-1.0 based on perlin noise
@@ -40,3 +64,23 @@ public class FireWall : MonoBehaviour {
         return n;
     }
 }
+
+class Circle {
+    private float _radius;
+    private Vector3 _pos;
+    private GameObject _wall;
+
+    public Circle(float radius, Vector3 pos) {
+        this._radius = radius;
+        this._pos = pos;
+
+        this._wall = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        this._wall.transform.position = pos;
+        this._wall.transform.localScale = new Vector3(this._radius * 2, 500, this._radius * 2);
+    }
+
+    public GameObject getWall() {
+        return this._wall;
+    }
+}
+

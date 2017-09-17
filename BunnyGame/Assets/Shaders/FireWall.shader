@@ -34,12 +34,10 @@ Shader "Unlit/FireWall" {
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
 			
-			// I want the shader to fit the wall to a circle/eclipse defined by FireWall.cs (not yet implemented)
 			v2f vert (appdata v) {
 				v2f o;
-				o.vertex = mul(unity_ObjectToWorld, v.vertex);
-				o.vertex.xz = normalize(o.vertex).xz * 250;
-				o.vertex = mul(UNITY_MATRIX_VP, o.vertex);
+				float4 norm;
+				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 				return o;
 			}

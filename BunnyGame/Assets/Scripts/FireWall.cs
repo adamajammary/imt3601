@@ -1,55 +1,65 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class FireWall : MonoBehaviour {
-    private Texture2D _ft;
-    private Material _fs;
-    private float _noiseSeed = 0;
-    private float _noiseSpeed = 1.25f;
-    private float _wallShrinkTime = 10.0f; //Time in seconds between _wall shrinking
-    private float _wallShrinkTimer = 0.0f; //Timer for when to shrink _wall
+    public RectTransform wallTransitionUI;       //The little onscreen bar indicating when the wall will shrink
+    public Image         outsideWallEffect;      //A red transparent UI panel indicating that the player is outside the wall
 
-    private Mesh _wall;
-    private Circle _current;
-    private Circle _target;
-    private float _targetRadius = 250;
+    private const float _noiseSpeed = 1.25f;     //The rate at which the seed changes for perlin   
+    private const float _wallShrinkTime = 15.0f; //Time in seconds between _wall shrinking
+    private const float _wallShrinkRate = 0.15f; //The rate at which the wall shrinks
 
-	// Use this for initialization
-	void Start () {
+    private Texture2D   _ft;                //ft = fire texture
+    private Material    _fs;                //fs = fireshader
+    private Circle      _current;           //The current circle
+    private Circle      _target;            //The target circle
+    private float       _noiseSeed;         //seed for perlin
+    private float       _wallShrinkTimer;   //Timer for when to shrink _wall   
+    private bool        _wallIsShrinking;   //Keeps track of wheter or not the wall is shrinking
+
+    // Use this for initialization
+    void Start () {
         this._fs = GetComponent<Renderer>().material;
         this._ft = new Texture2D(128, 128, TextureFormat.ARGB32, false);
         this._fs.mainTexture = this._ft;
 
         this._current = new Circle(250, Vector3.zero);
         this._target = new Circle(250, Vector3.zero);
-   
-        this._wall = GetComponent<Mesh>();
-
-        
+        this._wallIsShrinking = false;
+        this._noiseSeed = 0;
+        this._wallShrinkTimer = 0;   
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    // Update is called once per frame
+    void Update() {
         this.generateWallTexture();
 
-        if (this._wallShrinkTimer > this._wallShrinkTime) {
+        if (this._wallShrinkTimer > _wallShrinkTime) {
             this.recalculateWalls();
             StartCoroutine(interpolateWall());
             this._wallShrinkTimer = 0;
         }
-        this._wallShrinkTimer += Time.deltaTime;
-
-        Debug.Log(string.Format("Wall will shrink in : {0}", this._wallShrinkTime - this._wallShrinkTimer));
+        if (!this._wallIsShrinking) {
+            this._wallShrinkTimer += Time.deltaTime;
+            this.UpdateWallUI();
+        }
     }
 
+    private void UpdateWallUI() {
+        wallTransitionUI.sizeDelta = new Vector2(150 * this._wallShrinkTimer / _wallShrinkTime, 10);
+    }
+
+    // Calculates a new target wall, sets current wall to last target
     private void recalculateWalls() {
         this._current = this._target;
-        this._targetRadius /= 2.0f;
 
+        float targetRadius = this._current._radius / 2.0f;
         float angle = Random.Range(0, 1) * Mathf.PI * 2;
-        float currentWallOffset = Random.Range(0, this._current._radius - this._targetRadius);
+        float currentWallOffset = Random.Range(0, this._current._radius - targetRadius);
         Vector3 targetPos = this._current._pos + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * currentWallOffset;
-        this._target = new Circle(this._targetRadius, targetPos);
+
+        this._target = new Circle(targetRadius, targetPos);
     }
 
     private void generateWallTexture() {
@@ -63,19 +73,22 @@ public class FireWall : MonoBehaviour {
         // Apply all pixel changes to the texture
         this._ft.Apply();
         // This will change where noise is sampled from the noise plane
-        this._noiseSeed += this._noiseSpeed * Time.deltaTime;
+        this._noiseSeed += _noiseSpeed * Time.deltaTime;
     }
 
+    // Transitions the wall from current state to target state
     private IEnumerator<bool> interpolateWall() {
         float t = 0;
+        this._wallIsShrinking = true;
 
         while (t <= 1) {
             transform.position = Vector3.Lerp(_current._wall.transform.position, _target._wall.transform.position, t);
             transform.localScale = Vector3.Lerp(_current._wall.transform.localScale, _target._wall.transform.localScale, t);
 
-            t += 0.3f * Time.deltaTime;
+            t += _wallShrinkRate * Time.deltaTime;
             yield return false;
         }
+        this._wallIsShrinking = false;
     }
 
     // Generates values from 0.4-1.0 based on perlin noise
@@ -88,6 +101,18 @@ public class FireWall : MonoBehaviour {
         if (n < 0.4f)
             n = 0.4f;
         return n;
+    }
+
+    void OnTriggerExit(Collider other) {
+        if (other.tag == "Player") {
+            outsideWallEffect.enabled = true;
+        }
+    }
+
+    void OnTriggerEnter(Collider other) {
+        if (other.tag == "Player") {
+            outsideWallEffect.enabled = false;
+        }
     }
 }
 

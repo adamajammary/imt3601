@@ -26,7 +26,7 @@ GameObject:
   - component: {fileID: 114903896193526056}
   - component: {fileID: 114757635911098514}
   - component: {fileID: 114067591856142440}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: poop
   m_TagString: projectile
   m_Icon: {fileID: 0}

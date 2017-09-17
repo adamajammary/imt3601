@@ -15697,9 +15697,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1597752932}
   - component: {fileID: 1597752931}
-  - component: {fileID: 1597752930}
-  - component: {fileID: 1597752929}
-  - component: {fileID: 1597752928}
   - component: {fileID: 1597752927}
   m_Layer: 0
   m_Name: MiniMapCamera
@@ -15719,28 +15716,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d2b68dac2ded4d4baccc558ecd2934b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mode: 1
---- !u!81 &1597752928
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1597752926}
-  m_Enabled: 1
---- !u!92 &1597752929
-Behaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1597752926}
-  m_Enabled: 1
---- !u!124 &1597752930
-Behaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1597752926}
-  m_Enabled: 1
 --- !u!20 &1597752931
 Camera:
   m_ObjectHideFlags: 0

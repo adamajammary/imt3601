@@ -21,8 +21,12 @@ public class MiniMap : MonoBehaviour {
 	
 
 	void Update () {
-        if(_mode == MinimapMode.FOLLOW_PLAYER)
-            transform.position = new Vector3(_player.transform.position.x, _cameraHeight, _player.transform.position.z);
+        if (_mode == MinimapMode.FOLLOW_PLAYER) {
+            if (_player == null)
+                setCameraMode(MinimapMode.VIEW_ALL);
+            else
+                transform.position = new Vector3(_player.transform.position.x, _cameraHeight, _player.transform.position.z);
+        }
 
         if (Input.GetKeyDown(KeyCode.M)) {
             if (_mode == MinimapMode.FOLLOW_PLAYER)

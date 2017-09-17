@@ -6,8 +6,8 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: No Name
-  m_Shader: {fileID: 4800000, guid: 14081ee43f9da8b49be781905d224d6a, type: 3}
+  m_Name: shit
+  m_Shader: {fileID: 4800000, guid: 098c9b3de227f0647a01db87e51765ff, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -22,5 +22,8 @@ Material:
         m_Texture: {fileID: 2800000, guid: 74999318c55a16c4ab4e24a0a74f18ea, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    m_Floats: []
-    m_Colors: []
+    m_Floats:
+    - _Glossiness: 0.5
+    - _Metallic: 0
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}

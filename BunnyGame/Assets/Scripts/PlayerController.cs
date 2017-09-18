@@ -34,7 +34,6 @@ public class PlayerController : NetworkBehaviour {
         this._cameraTransform = Camera.main.transform;
         this._controller = this.GetComponent<CharacterController>();
 
-        this._bunnyCommands = this.GetComponent<BunnyCommands>();
         this.airControlPercent = 1;
 
 

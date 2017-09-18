@@ -131,6 +131,12 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
+    private void OnDestroy()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
     private void spawn() {
         transform.position = new Vector3(Random.Range(-40, 40),
                                          10,

@@ -37,7 +37,6 @@ public class PlayerController : NetworkBehaviour {
         this.airControlPercent = 1;
 
 
-        this.spawn();
     }
 
 

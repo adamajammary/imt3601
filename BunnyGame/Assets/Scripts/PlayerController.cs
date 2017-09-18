@@ -61,14 +61,14 @@ public class PlayerController : NetworkBehaviour {
     private void HandleAiming(){
         if (Input.GetKeyDown(KeyCode.Mouse1))
         {
-            foreach (Transform t in this.gameObject.transform.GetChild(0))
+            foreach (Transform t in this.gameObject.transform.GetChild(1))
             {
                 t.gameObject.GetComponent<MeshRenderer>().enabled = false;
             }
         }
-        else if (Input.GetKeyUp(KeyCode.Mouse1))
+        else if(Input.GetKeyUp(KeyCode.Mouse1))
         {
-            foreach (Transform t in this.gameObject.transform.GetChild(0))
+            foreach (Transform t in this.gameObject.transform.GetChild(1))
             {
                 t.gameObject.GetComponent<MeshRenderer>().enabled = true;
             }

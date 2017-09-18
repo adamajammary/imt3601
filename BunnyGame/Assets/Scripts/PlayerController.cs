@@ -5,10 +5,10 @@ using UnityEngine.Networking;
 
 public class PlayerController : NetworkBehaviour {
 
-    public float walkSpeed = 4;
-    public float runSpeed = 8;
+    public float walkSpeed = 5;
+    public float runSpeed = 12;
     public float gravity = -12;
-    public float jumpHeight = 1;
+    public float jumpHeight = 3;
 
     [Range(0, 1)]
     public float airControlPercent = 0.5f;
@@ -33,6 +33,10 @@ public class PlayerController : NetworkBehaviour {
     private void Start() {
         this._cameraTransform = Camera.main.transform;
         this._controller = this.GetComponent<CharacterController>();
+
+        this.airControlPercent = 1;
+
+
         this.spawn();
     }
 
@@ -47,10 +51,33 @@ public class PlayerController : NetworkBehaviour {
         if (Input.GetAxisRaw("Jump") > 0)
             this.jump();
 
+        
+        HandleAiming();
+
         handleMouse();
     }
 
-    private void Move(Vector2 inputDir, bool running) {
+    // Turn off and on MeshRenderer so FPS camera works
+    private void HandleAiming(){
+        if (Input.GetKeyDown(KeyCode.Mouse1))
+        {
+            foreach (Transform t in this.gameObject.transform.GetChild(1))
+            {
+                t.gameObject.GetComponent<MeshRenderer>().enabled = false;
+            }
+        }
+        else if(Input.GetKeyUp(KeyCode.Mouse1))
+        {
+            foreach (Transform t in this.gameObject.transform.GetChild(1))
+            {
+                t.gameObject.GetComponent<MeshRenderer>().enabled = true;
+            }
+        }
+    }
+
+
+
+    void Move(Vector2 inputDir, bool running) {
 
         if (inputDir != Vector2.zero) {
             float targetRotation = Mathf.Atan2(inputDir.x, inputDir.y) * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
@@ -71,10 +98,11 @@ public class PlayerController : NetworkBehaviour {
             _velocityY = 0;
     }
 
+    
 
     private void jump() {
         if (_controller.isGrounded) {
-            float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight); // Kinnematik equation
+            float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight); 
             this._velocityY = jumpVelocity;
         }
     }
@@ -120,5 +148,6 @@ public class PlayerController : NetworkBehaviour {
             this.spawn();
             Destroy(other.gameObject);
         }
+
     }
 }

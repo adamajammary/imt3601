@@ -11,7 +11,7 @@ public class PlayerController : NetworkBehaviour {
     public float jumpHeight = 3;
 
     [Range(0, 1)]
-    public float airControlPercent;
+    public float airControlPercent = 0.5f;
 
     public float turnSmoothTime = 0.2f;
     public float speedSmoothTime = 0.2f;
@@ -20,25 +20,29 @@ public class PlayerController : NetworkBehaviour {
     private float _speedSmoothVelocity;
     private float _currentSpeed;
     private float _velocityY;
-    private float _fireRate = 0.2f;
-    private float _timer = 0;
 
     private Transform _cameraTransform;
     private CharacterController _controller;
-    private BunnyCommands _bunnyCommands;
 
     bool lockCursor = false;
 
-    void Start() {
+    public void onWaterStay(float waterForce) {
+        this._velocityY += waterForce * Time.deltaTime;
+    }
+
+    private void Start() {
         this._cameraTransform = Camera.main.transform;
         this._controller = this.GetComponent<CharacterController>();
+
         this._bunnyCommands = this.GetComponent<BunnyCommands>();
         this.airControlPercent = 1;
+
+
         this.spawn();
     }
 
 
-    void Update() {
+    private void Update() {
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         Vector2 inputDir = input.normalized;
         bool running = Input.GetKey(KeyCode.LeftShift);
@@ -48,8 +52,6 @@ public class PlayerController : NetworkBehaviour {
         if (Input.GetAxisRaw("Jump") > 0)
             this.jump();
 
-        if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1))
-            this.shoot();
         
         HandleAiming();
 
@@ -74,29 +76,6 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
-    private void shoot() {
-
-        this._timer += Time.deltaTime;
-        if (this._timer > this._fireRate) {  
-
-            Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, 100))
-            {
-                Vector3 direction = hit.point - this.transform.position;
-                Vector3 dirNorm = direction.normalized;
-                this._bunnyCommands.Cmdshootpoop(dirNorm, this._controller.velocity);
-            }                       
-            else
-            {    
-                Vector3 direction = ray.GetPoint(50.0f) - this.transform.position;
-                Vector3 dirNorm = direction.normalized;
-                this._bunnyCommands.Cmdshootpoop(dirNorm, this._controller.velocity);
-            }
-            this._timer = 0;
-        }
-    }
 
 
     void Move(Vector2 inputDir, bool running) {
@@ -122,7 +101,7 @@ public class PlayerController : NetworkBehaviour {
 
     
 
-    void jump() {
+    private void jump() {
         if (_controller.isGrounded) {
             float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight); 
             this._velocityY = jumpVelocity;
@@ -130,7 +109,7 @@ public class PlayerController : NetworkBehaviour {
     }
 
     //Controll player in air after jump
-    float GetModifiedSmoothTime(float smoothTime) {
+    private float GetModifiedSmoothTime(float smoothTime) {
         if (_controller.isGrounded)
             return smoothTime;
 
@@ -140,7 +119,7 @@ public class PlayerController : NetworkBehaviour {
         return smoothTime / airControlPercent;
     }
 
-    void handleMouse() {
+    private void handleMouse() {
         if (Input.GetKeyDown(KeyCode.Escape))
             lockCursor = !lockCursor;
 
@@ -154,9 +133,9 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void spawn() {
-        transform.position = new Vector3(Random.RandomRange(-40, 40),
+        transform.position = new Vector3(Random.Range(-40, 40),
                                          10,
-                                         Random.RandomRange(-40, 40));
+                                         Random.Range(-40, 40));
     }
 
     private void OnCollisionEnter(Collision other) {

@@ -6,6 +6,10 @@ using UnityEngine.Networking;
 public class BunnyCommands : NetworkBehaviour {
     public GameObject bunnyPoop;
 
+    void Start() {
+        bunnyPoop = Resources.Load<GameObject>("Prefabs/poop");
+    }
+
     [Command]
     public void Cmdshootpoop(Vector3 dir, Vector3 startVel) {
         GameObject poop = Instantiate(bunnyPoop);

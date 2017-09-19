@@ -16,7 +16,7 @@ public class Water : MonoBehaviour {
     void OnTriggerStay(Collider other) { 
         if (other.tag == "Player" || other.tag == "Enemy") {
             float waterForce = (this._waterSurfaceHeight - other.transform.position.y + 0.5f) * this._waterForceStrength;
-            Debug.Log(waterForce);
+            //Debug.Log(waterForce);
             other.GetComponent<PlayerController>().onWaterStay(waterForce);
         }
 

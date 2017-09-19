@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class FoxController : NetworkBehaviour
-{
+public class FoxController : NetworkBehaviour {
     GameObject biteArea;
 
     // Use this for initialization
     void Start()
     {
+        if (!this.isLocalPlayer)
+            return; 
+
         PlayerController playerController = GetComponent<PlayerController>();
         playerController.runSpeed = 15;
 
@@ -26,6 +28,9 @@ public class FoxController : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!this.isLocalPlayer)
+            return;
+
         if (Input.GetKeyDown(KeyCode.Mouse0)) {
             StartCoroutine(this.bite());
         }

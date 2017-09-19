@@ -11,7 +11,7 @@ public class PlayerController : NetworkBehaviour {
     public float jumpHeight = 3;
 
     [Range(0, 1)]
-    public float airControlPercent = 0.5f;
+    public float airControlPercent;
 
     public float turnSmoothTime = 0.2f;
     public float speedSmoothTime = 0.2f;
@@ -30,18 +30,22 @@ public class PlayerController : NetworkBehaviour {
         this._velocityY += waterForce * Time.deltaTime;
     }
 
-    private void Start() {
+    void Start() {
+        if (!this.isLocalPlayer) { return; }
+
         this._cameraTransform = Camera.main.transform;
         this._controller = this.GetComponent<CharacterController>();
 
         this.airControlPercent = 1;
 
 
-        this.spawn();
+        //this.spawn();
     }
 
 
-    private void Update() {
+    void Update() {
+        if (!this.isLocalPlayer) { return; }
+
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         Vector2 inputDir = input.normalized;
         bool running = Input.GetKey(KeyCode.LeftShift);
@@ -100,7 +104,7 @@ public class PlayerController : NetworkBehaviour {
 
     
 
-    private void jump() {
+    void jump() {
         if (_controller.isGrounded) {
             float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight); 
             this._velocityY = jumpVelocity;
@@ -108,7 +112,7 @@ public class PlayerController : NetworkBehaviour {
     }
 
     //Controll player in air after jump
-    private float GetModifiedSmoothTime(float smoothTime) {
+    float GetModifiedSmoothTime(float smoothTime) {
         if (_controller.isGrounded)
             return smoothTime;
 
@@ -118,7 +122,7 @@ public class PlayerController : NetworkBehaviour {
         return smoothTime / airControlPercent;
     }
 
-    private void handleMouse() {
+    void handleMouse() {
         if (Input.GetKeyDown(KeyCode.Escape))
             lockCursor = !lockCursor;
 
@@ -137,15 +141,16 @@ public class PlayerController : NetworkBehaviour {
         Cursor.visible = true;
     }
 
-    private void spawn() {
-        transform.position = new Vector3(Random.Range(-40, 40),
-                                         10,
-                                         Random.Range(-40, 40));
-    }
+    //private void spawn() {
+    //    transform.position = new Vector3(Random.Range(-40, 40),
+    //                                     10,
+    //                                     Random.Range(-40, 40));
+    //}
 
     private void OnCollisionEnter(Collision other) {
         if (other.gameObject.tag == "projectile") {
-            this.spawn();
+            this.GetComponent<PlayerHealth>().TakeDamage(other.gameObject.GetComponent<BunnyPoop>().GetDamage());
+            //this.spawn();
             Destroy(other.gameObject);
         }
 

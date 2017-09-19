@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 4963244853579064}
   - component: {fileID: 33301099593803164}
   - component: {fileID: 23390596331854406}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh1974353843
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -37,7 +37,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4549291217957652}
   - component: {fileID: 114808857098553148}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: FoxModel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -54,7 +54,7 @@ GameObject:
   - component: {fileID: 4260451034184132}
   - component: {fileID: 33909190392520516}
   - component: {fileID: 23156078436634016}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh452152710
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,7 +71,7 @@ GameObject:
   - component: {fileID: 4469343038741628}
   - component: {fileID: 33021759606269170}
   - component: {fileID: 23039468154105360}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh1656915489
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -88,7 +88,7 @@ GameObject:
   - component: {fileID: 4754080311306960}
   - component: {fileID: 33322935839709638}
   - component: {fileID: 23351189774826086}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh1474384435
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -105,7 +105,7 @@ GameObject:
   - component: {fileID: 4454115140329750}
   - component: {fileID: 33740288555836156}
   - component: {fileID: 23303098854042682}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh1506003642
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -122,7 +122,7 @@ GameObject:
   - component: {fileID: 4726216164738504}
   - component: {fileID: 33630544829876028}
   - component: {fileID: 23273071073072334}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh1642396742
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -139,7 +139,7 @@ GameObject:
   - component: {fileID: 4919510991173162}
   - component: {fileID: 33685519447450694}
   - component: {fileID: 23437969829470606}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh165152134
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -156,7 +156,7 @@ GameObject:
   - component: {fileID: 4884010773017648}
   - component: {fileID: 33768438107627852}
   - component: {fileID: 23354802783440870}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh774798448
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -173,7 +173,7 @@ GameObject:
   - component: {fileID: 4284910517435356}
   - component: {fileID: 33875158473578224}
   - component: {fileID: 23630020735159636}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh1040486015
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -190,7 +190,7 @@ GameObject:
   - component: {fileID: 4222854080941136}
   - component: {fileID: 33438334973032496}
   - component: {fileID: 23145398488262622}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh2009026820
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -207,7 +207,7 @@ GameObject:
   - component: {fileID: 4240875610646548}
   - component: {fileID: 33325117171705244}
   - component: {fileID: 23377307609067890}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh1288572335
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -224,7 +224,7 @@ GameObject:
   - component: {fileID: 4923065329766850}
   - component: {fileID: 33099160925994242}
   - component: {fileID: 23046350909699776}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh1777623974
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -241,7 +241,7 @@ GameObject:
   - component: {fileID: 4763297314980914}
   - component: {fileID: 33987917487932360}
   - component: {fileID: 23488769804063504}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh1083761884
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -258,7 +258,7 @@ GameObject:
   - component: {fileID: 4158912022259014}
   - component: {fileID: 33212643625060584}
   - component: {fileID: 23432027365473568}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh258185564
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -275,7 +275,7 @@ GameObject:
   - component: {fileID: 4569045343349756}
   - component: {fileID: 33043493871866498}
   - component: {fileID: 23387792199343854}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh1349211754
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -292,7 +292,7 @@ GameObject:
   - component: {fileID: 4517209486694440}
   - component: {fileID: 33110670731290810}
   - component: {fileID: 23305696968478276}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh213029584
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -309,7 +309,7 @@ GameObject:
   - component: {fileID: 4383083802608906}
   - component: {fileID: 33509212819147240}
   - component: {fileID: 23486054185944578}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh898064678
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -326,7 +326,7 @@ GameObject:
   - component: {fileID: 4206502992762488}
   - component: {fileID: 33764699120900376}
   - component: {fileID: 23799329474614854}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: mesh1498993450
   m_TagString: Untagged
   m_Icon: {fileID: 0}

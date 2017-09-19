@@ -38,14 +38,14 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         GameObject playerPrefab   = Resources.Load<GameObject>("Prefabs/" + this._models[selectedModel]);
         GameObject playerInstance = Instantiate(playerPrefab, new Vector3(Random.Range(-40, 40), 10, Random.Range(-40, 40)), playerPrefab.transform.rotation);
 
-        foreach (Transform model in playerInstance.transform) {
-            model.gameObject.tag     = playerInstance.tag;
-            model.transform.rotation = playerInstance.transform.rotation;
+        //foreach (Transform model in playerInstance.transform) {
+        //    model.gameObject.tag     = playerInstance.tag;
+        //    model.transform.rotation = playerInstance.transform.rotation;
 
-            foreach (Transform mesh in model.transform) {
-                mesh.gameObject.tag = model.gameObject.tag;
-            }
-        }
+        //    foreach (Transform mesh in model.transform) {
+        //        mesh.gameObject.tag = model.gameObject.tag;
+        //    }
+        //}
 
         return playerInstance;
     }

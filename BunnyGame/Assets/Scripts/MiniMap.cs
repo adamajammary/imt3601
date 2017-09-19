@@ -42,12 +42,14 @@ public class MiniMap : MonoBehaviour {
             case MinimapMode.FOLLOW_PLAYER:
                 _player = GameObject.FindGameObjectWithTag("Player");
                 GetComponent<Camera>().orthographicSize = 65;
-                _player.transform.GetChild(0).localScale = new Vector3(3, 1, 3);
+                if (_player != null)
+                    _player.transform.GetChild(0).localScale = new Vector3(3, 1, 3);
                 break;
             case MinimapMode.VIEW_ALL:
                 transform.position = new Vector3(10, _cameraHeight, 5);
                 GetComponent<Camera>().orthographicSize = 200;
-                _player.transform.GetChild(0).localScale = new Vector3(7, 1, 7);
+                if (_player != null)
+                    _player.transform.GetChild(0).localScale = new Vector3(7, 1, 7);
                 break;
         }
     }

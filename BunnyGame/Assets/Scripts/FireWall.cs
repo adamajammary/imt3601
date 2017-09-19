@@ -52,14 +52,14 @@ public class FireWall : MonoBehaviour {
 
     // Calculates a new target wall, sets current wall to last target
     private void recalculateWalls() {
+        Circle temp = this._current;
         this._current = this._target;
+        this._target = temp;
 
-        float targetRadius = this._current.radius / 2.0f;
+        this._target.radius = this._current.radius / 2.0f;
         float angle = Random.Range(0, 1) * Mathf.PI * 2;
-        float currentWallOffset = Random.Range(0, this._current.radius - targetRadius);
-        Vector3 targetPos = this._current.pos + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * currentWallOffset;
-
-        this._target = new Circle(targetRadius, targetPos);
+        float currentWallOffset = Random.Range(0, this._current.radius - this._target.radius);
+        this._target.pos = this._current.pos + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * currentWallOffset;
     }
 
     private void generateWallTexture() {
@@ -126,13 +126,13 @@ public class FireWall : MonoBehaviour {
 }
 
 class Circle {
-    public float radius;
-    public Vector3 pos;
+    public Vector3 _pos;
+    private float _radius;   
     public GameObject wall;
 
     public Circle(float radius, Vector3 pos) {
-        this.radius = radius;
-        this.pos = pos;
+        this._radius = radius;
+        this._pos = pos;
 
         this.wall = Resources.Load<GameObject>("Prefabs/WallShell");
         this.wall = MonoBehaviour.Instantiate(this.wall);
@@ -140,8 +140,24 @@ class Circle {
         this.wall.transform.localScale = new Vector3(this.radius * 2, 500, this.radius * 2);
     }
 
-    ~Circle() {
-        MonoBehaviour.Destroy(wall);
+    public Vector3 pos {
+        get {
+            return _pos;
+        }
+        set {
+            _pos = value;
+            wall.transform.position = value;
+        }
+    }
+
+    public float radius {
+        get {
+            return _radius;
+        }
+        set {
+            _radius = value;
+            wall.transform.localScale = new Vector3(value * 2, 500, value * 2);
+        }
     }
 }
 

@@ -174,7 +174,7 @@ GameObject:
   - component: {fileID: 33498741321972164}
   - component: {fileID: 136848167040308270}
   - component: {fileID: 23179438465577458}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: minimap icon
   m_TagString: Untagged
   m_Icon: {fileID: 0}

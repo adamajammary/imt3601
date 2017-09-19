@@ -153,6 +153,12 @@ public class PlayerController : NetworkBehaviour {
             //this.spawn();
             Destroy(other.gameObject);
         }
+    }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "foxbite" && other.transform.parent != transform) {
+            this.GetComponent<PlayerHealth>().TakeDamage(other.GetComponentInParent<FoxController>().getDamage());
+        }
     }
 }

@@ -10,10 +10,11 @@ public class BunnyPoop : MonoBehaviour {
     private float       _speed = 20.0f;
     private float       _antiGravity = 1.0f;
     private Rigidbody   _rb;
-    private bool        _init;
+    //private bool        _init;
+    private int         _damage = 10;
 
     private void Awake() {
-        this._init = false;
+        //this._init = false;
         this._rb = this.GetComponent<Rigidbody>();
     }
 	
@@ -35,5 +36,9 @@ public class BunnyPoop : MonoBehaviour {
     private void OnCollisionEnter(Collision other) {
         if (other.gameObject.tag != "Player")
             Destroy(this.gameObject);
+    }
+
+    public int GetDamage() {
+        return this._damage;
     }
 }

@@ -9,14 +9,17 @@ public class BunnyController : NetworkBehaviour {
     private float _fireRate;
 
     private BunnyCommands _bunnyCommands;
-    private Transform _cameraTransform;
+    //private Transform _cameraTransform;
     private CharacterController _controller;
 
 
     void Start () {
+        if (!this.isLocalPlayer) { return; }
+
         _controller = GetComponent<CharacterController>();
-        _cameraTransform = Camera.main.transform;
-        _bunnyCommands = gameObject.AddComponent<BunnyCommands>();
+        //_cameraTransform = Camera.main.transform;
+        //_bunnyCommands = gameObject.AddComponent<BunnyCommands>();
+        _bunnyCommands = gameObject.GetComponent<BunnyCommands>();
         _timer = 0;
         _fireRate = 0.2f;
 
@@ -25,6 +28,8 @@ public class BunnyController : NetworkBehaviour {
     }
 	
 	void Update () {
+        if (!this.isLocalPlayer) { return; }
+
         if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1))
             this.shoot();
     }

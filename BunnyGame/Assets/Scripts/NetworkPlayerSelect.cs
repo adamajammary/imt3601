@@ -7,8 +7,8 @@ public class MetworkMessageType {
 };
 
 public class PlayerSelectMessage : MessageBase {
-    public int connectionId;
-    public int selectedModel;
+    public uint clientID;
+    public int  selectedModel;
 }
 
 //
@@ -16,8 +16,13 @@ public class PlayerSelectMessage : MessageBase {
 //
 public class NetworkPlayerSelect : NetworkLobbyManager {
 
-    private string[]             _models     = { "PlayerCharacterBunny", "PlayerCharacterFox" };
-    private Dictionary<int, int> _selections = new Dictionary<int, int>();
+    private string[]              _models     = { "PlayerCharacterBunny", "PlayerCharacterFox" };
+    private Dictionary<uint, int> _selections = new Dictionary<uint, int>();
+
+    // Returns the unique identifier for the lobby player object instance.
+    private uint getClientID(NetworkConnection conn) {
+        return (conn.playerControllers[0] != null ? conn.playerControllers[0].unetView.netId.Value : 0);
+    }
 
     // Register listening for player select messages from clients.
     public override void OnStartServer() {
@@ -34,7 +39,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     // NB! Prefabs for this has to be stored in "Assets/Resources/Prefabs/".
     //
     public override GameObject OnLobbyServerCreateGamePlayer(NetworkConnection conn, short playerControllerId) {
-        int        selectedModel  = this.GetSelectedModel(conn.connectionId);
+        int        selectedModel  = this.GetSelectedModel(this.getClientID(conn));
         GameObject playerPrefab   = Resources.Load<GameObject>("Prefabs/" + this._models[selectedModel]);
         GameObject playerInstance = Instantiate(playerPrefab, new Vector3(Random.Range(-40, 40), 10, Random.Range(-40, 40)), playerPrefab.transform.rotation);
 
@@ -64,24 +69,24 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
     // Parse the player select message, and select the player model.
     private void RecievePlayerSelectMessage(PlayerSelectMessage message) {
-        this.SelectModel(message.connectionId, message.selectedModel);
+        this.SelectModel(message.clientID, message.selectedModel);
     }
 
     // Save the model selection made by the user.
-    public void SelectModel(int id, int model) {
-        if (!this._selections.ContainsKey(id))
-            this._selections.Add(id, model);
+    public void SelectModel(uint clientID, int model) {
+        if (!this._selections.ContainsKey(clientID))
+            this._selections.Add(clientID, model);
         else
-            this._selections[id] = model;
+            this._selections[clientID] = model;
     }
 
     // Return the model selection made by the user.
-    public int GetSelectedModel(int id) {
-        if (!this._selections.ContainsKey(id)) {
-            Debug.Log("ERROR! Unknown model type selected: " + id);
-            return -1;
+    public int GetSelectedModel(uint clientID) {
+        if (!this._selections.ContainsKey(clientID)) {
+            Debug.Log("ERROR! Unknown client ID: " + clientID);
+            return 0;
         }
 
-        return this._selections[id];
+        return this._selections[clientID];
     }
 }

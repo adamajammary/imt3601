@@ -31,6 +31,10 @@ public class PlayerHealth : NetworkBehaviour {
             this.RpcSpawn();
         }
     }
+    public void TakeDamage(float amount) {
+        TakeDamage((int)amount);
+    }
+
 
     // Respawn the player in a new random position.
     [ClientRpc]

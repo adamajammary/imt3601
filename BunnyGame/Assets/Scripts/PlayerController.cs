@@ -26,6 +26,11 @@ public class PlayerController : NetworkBehaviour {
     private float _currentSpeed;
     private float _velocityY;
 
+    private float _maxFallSpeed = 20; // How fast you can fall before starting to take fall damage
+    private int _fallDamage = 40;
+    private bool _dealFallDamageOnCollision = false;
+    private bool _fallDamageImmune = false;
+
     private Transform _cameraTransform;
     private CharacterController _controller;
 
@@ -62,10 +67,10 @@ public class PlayerController : NetworkBehaviour {
         if (Input.GetAxisRaw("Jump") > 0)
             this.jump();
 
-        
+        handleFallDamage();
         HandleAiming();
 
-        handleMouse();       
+        handleMouse();
     }
 
     // Turn off and on MeshRenderer so FPS camera works
@@ -109,12 +114,22 @@ public class PlayerController : NetworkBehaviour {
             _velocityY = 0;
     }
 
-    
+
 
     void jump() {
         if (_controller.isGrounded) {
             float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight); 
             this._velocityY = jumpVelocity;
+        }
+    }
+
+    private void handleFallDamage()
+    {
+        if (-this._velocityY > _maxFallSpeed && !_dealFallDamageOnCollision && !_fallDamageImmune)
+            _dealFallDamageOnCollision = true;
+        else if (-this._velocityY < 1 && _dealFallDamageOnCollision) {
+            this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage);
+            _dealFallDamageOnCollision = false;
         }
     }
 
@@ -167,6 +182,18 @@ public class PlayerController : NetworkBehaviour {
     {
         if (other.gameObject.tag == "foxbite" && other.transform.parent != transform) {
             this.GetComponent<PlayerHealth>().TakeDamage(other.GetComponentInParent<FoxController>().getDamage());
+        }
+        else if (other.gameObject.name == "Water") {
+            this._fallDamageImmune = true; // Immune from falldamage when in water
+            Debug.Log("in water");
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.name == "Water") {
+            this._fallDamageImmune = false;
+            Debug.Log("out of water");
         }
     }
 }

@@ -37,9 +37,6 @@ public class PlayerController : NetworkBehaviour {
         this._controller = this.GetComponent<CharacterController>();
 
         this.airControlPercent = 1;
-
-
-        //this.spawn();
     }
 
 
@@ -141,16 +138,9 @@ public class PlayerController : NetworkBehaviour {
         Cursor.visible = true;
     }
 
-    //private void spawn() {
-    //    transform.position = new Vector3(Random.Range(-40, 40),
-    //                                     10,
-    //                                     Random.Range(-40, 40));
-    //}
-
     private void OnCollisionEnter(Collision other) {
         if (other.gameObject.tag == "projectile") {
             this.GetComponent<PlayerHealth>().TakeDamage(other.gameObject.GetComponent<BunnyPoop>().GetDamage());
-            //this.spawn();
             Destroy(other.gameObject);
         }
     }

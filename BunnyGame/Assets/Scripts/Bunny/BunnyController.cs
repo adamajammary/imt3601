@@ -8,18 +8,16 @@ public class BunnyController : NetworkBehaviour {
     private float _timer;
     private float _fireRate;
 
-    private BunnyCommands _bunnyCommands;
-    //private Transform _cameraTransform;
     private CharacterController _controller;
+    private GameObject bunnyPoop;
 
 
     void Start () {
+        bunnyPoop = Resources.Load<GameObject>("Prefabs/poop");
+
         if (!this.isLocalPlayer) { return; }
 
         _controller = GetComponent<CharacterController>();
-        //_cameraTransform = Camera.main.transform;
-        //_bunnyCommands = gameObject.AddComponent<BunnyCommands>();
-        _bunnyCommands = gameObject.GetComponent<BunnyCommands>();
         _timer = 0;
         _fireRate = 0.2f;
 
@@ -33,14 +31,6 @@ public class BunnyController : NetworkBehaviour {
         if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1))
             this.shoot();
     }
-
-    //private void shoot() {
-    //    this._timer += Time.deltaTime;
-    //    if (this._timer > this._fireRate) {
-    //        this._bunnyCommands.Cmdshootpoop(this._cameraTransform.forward, this._controller.velocity);
-    //        this._timer = 0;
-    //    }
-    //}
 
 
     private void shoot()
@@ -57,15 +47,27 @@ public class BunnyController : NetworkBehaviour {
             {
                 Vector3 direction = hit.point - this.transform.position;
                 Vector3 dirNorm = direction.normalized;
-                this._bunnyCommands.Cmdshootpoop(dirNorm, this._controller.velocity);
+                this.CmdShootPoop(dirNorm, this._controller.velocity);
             }
             else
             {
                 Vector3 direction = ray.GetPoint(50.0f) - this.transform.position;
                 Vector3 dirNorm = direction.normalized;
-                this._bunnyCommands.Cmdshootpoop(dirNorm, this._controller.velocity);
+                this.CmdShootPoop(dirNorm, this._controller.velocity);
             }
             this._timer = 0;
         }
+    }
+
+    [Command]
+    public void CmdShootPoop(Vector3 dir, Vector3 startVel)
+    {
+        GameObject poop = Instantiate(bunnyPoop);
+
+        Vector3 pos = transform.position;
+        pos += dir * 4.0f;
+        poop.GetComponent<BunnyPoop>().shoot(dir, pos, startVel);
+
+        NetworkServer.Spawn(poop);
     }
 }

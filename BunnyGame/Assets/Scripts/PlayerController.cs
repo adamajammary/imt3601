@@ -67,15 +67,12 @@ public class PlayerController : NetworkBehaviour {
         if (Input.GetAxisRaw("Jump") > 0)
             this.jump();
 
+        handleFallDamage();
         HandleAiming();
 
         handleMouse();
     }
 
-    void LateUpdate() {
-
-        handleFallDamage();
-    }
 
     // Turn off and on MeshRenderer so FPS camera works
     private void HandleAiming(){

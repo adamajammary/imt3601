@@ -88,7 +88,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4359435528829398}
-  - component: {fileID: 114381312607271926}
   m_Layer: 8
   m_Name: FoxModel
   m_TagString: Untagged
@@ -1520,38 +1519,7 @@ MonoBehaviour:
   airControlPercent: 0
   turnSmoothTime: 0.2
   speedSmoothTime: 0.2
---- !u!114 &114381312607271926
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1278377267260602}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SceneId:
-    m_Value: 0
-  m_AssetId:
-    i0: 138
-    i1: 229
-    i2: 171
-    i3: 27
-    i4: 153
-    i5: 161
-    i6: 139
-    i7: 180
-    i8: 233
-    i9: 123
-    i10: 229
-    i11: 78
-    i12: 120
-    i13: 15
-    i14: 2
-    i15: 86
-  m_ServerOnly: 0
-  m_LocalPlayerAuthority: 1
+  insideWall: 0
 --- !u!114 &114836446058181868
 MonoBehaviour:
   m_ObjectHideFlags: 1

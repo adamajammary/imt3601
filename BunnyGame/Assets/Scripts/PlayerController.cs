@@ -189,7 +189,7 @@ public class PlayerController : NetworkBehaviour {
         }
         else if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
-            Debug.Log("in water");
+            //Debug.Log("in water");
         }
     }
 
@@ -197,7 +197,7 @@ public class PlayerController : NetworkBehaviour {
     {
         if (other.gameObject.name == "Water") {
             this._fallDamageImmune = false;
-            Debug.Log("out of water");
+            //Debug.Log("out of water");
         }
     }
 }

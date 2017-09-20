@@ -22,6 +22,20 @@ public class PlayerSelectCanvasEvents : NetworkBehaviour {
         this.onClick(0);
     }
 
+    // Returns the unique identifier for the lobby player object instance.
+    private uint getClientID() {
+        uint id = 0;
+
+        foreach (NetworkLobbyPlayer player in FindObjectsOfType<NetworkLobbyPlayer>()) {
+            if (player.isLocalPlayer) {
+                id = player.netId.Value;
+                break;
+            }
+        }
+
+        return id;
+    }
+
     // Updates the model selection index based on which button the player clicked on.
     private void onClick(int model) {
         if ((model < 0) || (model >= this._buttons.Length)) { return; }
@@ -30,14 +44,14 @@ public class PlayerSelectCanvasEvents : NetworkBehaviour {
             this._buttons[i].GetComponent<Image>().color = (i == model ? Color.yellow : Color.white);
         }
 
-        this.SendPlayerSelectMessage(this._client.connection.connectionId, model);
+        this.SendPlayerSelectMessage(this.getClientID(), model);
     }
 
     // Create the player select message, and send it to the server.
-    private void SendPlayerSelectMessage(int id, int model) {
+    private void SendPlayerSelectMessage(uint clientID, int model) {
         PlayerSelectMessage message = new PlayerSelectMessage();
 
-        message.connectionId  = id;
+        message.clientID      = clientID;
         message.selectedModel = model;
 
         this.SendNetworkMessage(MetworkMessageType.MSG_PLAYERSELECT, message);

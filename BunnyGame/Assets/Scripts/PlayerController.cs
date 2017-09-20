@@ -16,6 +16,11 @@ public class PlayerController : NetworkBehaviour {
     public float turnSmoothTime = 0.2f;
     public float speedSmoothTime = 0.2f;
 
+    public bool insideWall;
+
+    private const float _damageRate = 0.25f;    //How often to damage player outside wall
+    private float _damageTimer;                 //Timer used to find out when to damage player    
+
     private float _turnSmoothVelocity;
     private float _speedSmoothVelocity;
     private float _currentSpeed;
@@ -37,10 +42,15 @@ public class PlayerController : NetworkBehaviour {
         this._controller = this.GetComponent<CharacterController>();
 
         this.airControlPercent = 1;
+
+        this._damageTimer = 0;
+        this.insideWall = true;
     }
 
 
     void Update() {
+        if (!this.insideWall) //Feels hacky, but when TakeDamage only works on the server its got to be this way
+            wallDamage();
         if (!this.isLocalPlayer) { return; }
 
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
@@ -55,7 +65,7 @@ public class PlayerController : NetworkBehaviour {
         
         HandleAiming();
 
-        handleMouse();
+        handleMouse();       
     }
 
     // Turn off and on MeshRenderer so FPS camera works
@@ -136,6 +146,14 @@ public class PlayerController : NetworkBehaviour {
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+    private void wallDamage() {
+        if (this._damageTimer > _damageRate) {
+            this.GetComponent<PlayerHealth>().TakeDamage(1);
+            this._damageTimer = 0;
+        }   
+        this._damageTimer += Time.deltaTime;
     }
 
     private void OnCollisionEnter(Collision other) {

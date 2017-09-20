@@ -10,6 +10,8 @@ public class FireWall : NetworkBehaviour {
     private const float _wallShrinkRate = 0.1f; //The rate at which the wall shrinks
     private const float _damageRate = 0.25f;     //How often to damage player outside wall
 
+    private WallMapRenderer _actualWallRenderer;//Renders the actual fire wall
+    private WallMapRenderer _targetWallRenderer;//Renders the target fire wall
     private PlayerHealth    _playerHealth;
     private RectTransform   _wallTransitionUI;  //The little onscreen bar indicating when the wall will shrink
     private Image           _outsideWallEffect; //A red transparent UI panel indicating that the player is outside the wall
@@ -24,13 +26,14 @@ public class FireWall : NetworkBehaviour {
     private float           _wallShrinkTimer;   //Timer for when to shrink _wall   
     private bool            _wallIsShrinking;   //Keeps track of wheter or not the wall is shrinking
     private float           _damageTimer;       //Timer used to find out when to damage player
-   
 
     // Use this for initialization
     void Start () {
-        _wallTransitionUI = GameObject.Find("wallTransitionUI").GetComponent<RectTransform>();
-        _outsideWallEffect = GameObject.Find("OutsideWallEffect").GetComponent<Image>();
-        _playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerHealth>();
+        this._wallTransitionUI = GameObject.Find("wallTransitionUI").GetComponent<RectTransform>();
+        this._outsideWallEffect = GameObject.Find("OutsideWallEffect").GetComponent<Image>();
+        this._playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerHealth>();
+        this._targetWallRenderer = GameObject.Find("TargetWallMapRenderer").GetComponent<WallMapRenderer>();
+        this._actualWallRenderer = GameObject.Find("FireWallMapRenderer").GetComponent<WallMapRenderer>();
 
         this._fs = GetComponent<Renderer>().material;
         this._ft = new Texture2D(128, 128, TextureFormat.ARGB32, false);
@@ -44,9 +47,8 @@ public class FireWall : NetworkBehaviour {
         this._damageTimer = 0;
 
         if (this.isServer)
-            this._rngSeed = (UnityEngine.Random.Range(0, 9999999));
-        this._RNG = new System.Random(this._rngSeed);
-        
+            this._rngSeed = UnityEngine.Random.Range(0, 9999999);
+        StartCoroutine(lateStart());
     }
 
     // Update is called once per frame
@@ -54,7 +56,6 @@ public class FireWall : NetworkBehaviour {
         this.generateWallTexture();
 
         if (this._wallShrinkTimer > _wallShrinkTime) {
-            this.recalculateWalls();
             StartCoroutine(interpolateWall());
             this._wallShrinkTimer = 0;
         }
@@ -63,6 +64,14 @@ public class FireWall : NetworkBehaviour {
             this.UpdateWallUI();
         }
         this.calculatePlayerDamage();
+        this._actualWallRenderer.draw(this.transform);
+    }
+
+    private IEnumerator lateStart() {
+        yield return new WaitForSeconds(1.0f); //Wait one frame for _rngSeed to sync
+        this._RNG = new System.Random(this._rngSeed);
+        this.recalculateWalls();
+        this._targetWallRenderer.draw(this._target.wall.transform);
     }
 
     private void calculatePlayerDamage() {
@@ -122,6 +131,8 @@ public class FireWall : NetworkBehaviour {
             yield return 0;
         }
         this._wallIsShrinking = false;
+        this.recalculateWalls();
+        this._targetWallRenderer.draw(this._target.wall.transform);
     }
 
     // Generates values from 0.4-1.0 based on perlin noise

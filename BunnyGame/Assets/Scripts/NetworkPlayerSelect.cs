@@ -83,7 +83,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     // Return the model selection made by the user.
     public int GetSelectedModel(uint clientID) {
         if (!this._selections.ContainsKey(clientID)) {
-            Debug.Log("ERROR! Unknown client ID: " + clientID);
+            //Debug.Log("ERROR! Unknown client ID: " + clientID);
             return 0;
         }
 

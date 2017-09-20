@@ -67,10 +67,14 @@ public class PlayerController : NetworkBehaviour {
         if (Input.GetAxisRaw("Jump") > 0)
             this.jump();
 
-        handleFallDamage();
         HandleAiming();
 
         handleMouse();
+    }
+
+    void LateUpdate() {
+
+        handleFallDamage();
     }
 
     // Turn off and on MeshRenderer so FPS camera works
@@ -125,7 +129,10 @@ public class PlayerController : NetworkBehaviour {
 
     private void handleFallDamage()
     {
-        if (-this._velocityY > _maxFallSpeed && !_dealFallDamageOnCollision && !_fallDamageImmune)
+        if (_fallDamageImmune) { // Cannot take damage while immune
+            _dealFallDamageOnCollision = false;
+        }
+        else if (-this._velocityY > _maxFallSpeed && !_dealFallDamageOnCollision)
             _dealFallDamageOnCollision = true;
         else if (-this._velocityY < 1 && _dealFallDamageOnCollision) {
             this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage);

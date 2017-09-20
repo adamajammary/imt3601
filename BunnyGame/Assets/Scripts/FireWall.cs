@@ -6,9 +6,11 @@ using UnityEngine.Networking;
 
 public class FireWall : NetworkBehaviour {
     private const float _noiseSpeed = -1.25f;   //The rate at which the seed changes for perlin   
-    private const float _wallShrinkTime = 15.0f; //Time in seconds between _wall shrinking
+    private const float _wallShrinkTime = 15.0f;//Time in seconds between _wall shrinking
     private const float _wallShrinkRate = 0.1f; //The rate at which the wall shrinks
+    private const float _damageRate = 0.25f;     //How often to damage player outside wall
 
+    private PlayerHealth    _playerHealth;
     private RectTransform   _wallTransitionUI;  //The little onscreen bar indicating when the wall will shrink
     private Image           _outsideWallEffect; //A red transparent UI panel indicating that the player is outside the wall
     private Texture2D       _ft;                //ft = fire texture
@@ -21,11 +23,14 @@ public class FireWall : NetworkBehaviour {
     private float           _noiseSeed;         //seed for perlin
     private float           _wallShrinkTimer;   //Timer for when to shrink _wall   
     private bool            _wallIsShrinking;   //Keeps track of wheter or not the wall is shrinking
+    private float           _damageTimer;       //Timer used to find out when to damage player
+   
 
     // Use this for initialization
     void Start () {
         _wallTransitionUI = GameObject.Find("wallTransitionUI").GetComponent<RectTransform>();
         _outsideWallEffect = GameObject.Find("OutsideWallEffect").GetComponent<Image>();
+        _playerHealth = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerHealth>();
 
         this._fs = GetComponent<Renderer>().material;
         this._ft = new Texture2D(128, 128, TextureFormat.ARGB32, false);
@@ -36,6 +41,8 @@ public class FireWall : NetworkBehaviour {
         this._noiseSeed = 0;
         this._wallShrinkTimer = 0;
         this._wallIsShrinking = false;
+        this._damageTimer = 0;
+
         if (this.isServer)
             this._rngSeed = (UnityEngine.Random.Range(0, 9999999));
         this._RNG = new System.Random(this._rngSeed);
@@ -55,6 +62,16 @@ public class FireWall : NetworkBehaviour {
             this._wallShrinkTimer += Time.deltaTime;
             this.UpdateWallUI();
         }
+        this.calculatePlayerDamage();
+    }
+
+    private void calculatePlayerDamage() {
+        if (this._outsideWallEffect.enabled)
+            if (this._damageTimer > _damageRate) {
+                this._playerHealth.TakeDamage(1);
+                this._damageTimer = 0;
+            }
+        this._damageTimer += Time.deltaTime;
     }
 
     private void UpdateWallUI() {

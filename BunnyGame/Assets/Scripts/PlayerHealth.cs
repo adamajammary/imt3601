@@ -7,11 +7,15 @@ using UnityEngine.UI;
 public class PlayerHealth : NetworkBehaviour {
 
     private const int MAX_HEALTH = 100;
-    private bool _damageImmune = true;
+    private bool _damageImmune;
 
     [SyncVar(hook = "OnChangeHealth")]
     private int _currentHealth = MAX_HEALTH;
 
+
+    void Start() {
+        StartCoroutine(damageImmune(5)); // Make player immune from damage for the first 5 seconds after spawning
+    }
 
     // Update the health/damage screen overlay on the client whenever the health value changes on the server
     private void OnChangeHealth(int health) {
@@ -51,6 +55,6 @@ public class PlayerHealth : NetworkBehaviour {
     [ClientRpc]
     private void RpcSpawn() {
         transform.position = new Vector3(Random.Range(-40, 40), 10, Random.Range(-40, 40));
-        StartCoroutine(damageImmune(5)); // Make player immune from damage for the first 5 seconds after spawning
+        StartCoroutine(damageImmune(5)); // Make player immune from damage for the first 5 seconds after respawning
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 
 public class PlayerController : NetworkBehaviour {
 
-    public List<SpecialAbility> abilities;
+    public List<SpecialAbility> abilities = new List<SpecialAbility>();
 
     public float walkSpeed = 5;
     public float runSpeed = 12;
@@ -35,7 +35,7 @@ public class PlayerController : NetworkBehaviour {
 
 
     private Transform _cameraTransform;
-    private CharacterController _controller;
+    public CharacterController controller;
 
     bool lockCursor = false;
 
@@ -47,12 +47,13 @@ public class PlayerController : NetworkBehaviour {
         if (!this.isLocalPlayer) { return; }
 
         this._cameraTransform = Camera.main.transform;
-        this._controller = this.GetComponent<CharacterController>();
+        this.controller = this.GetComponent<CharacterController>();
 
         this.airControlPercent = 1;
 
         this._damageTimer = 0;
         this.insideWall = true;
+
     }
 
 
@@ -65,8 +66,9 @@ public class PlayerController : NetworkBehaviour {
         Vector2 inputDir = input.normalized;
         bool running = Input.GetKey(KeyCode.LeftShift);
 
-        Move(inputDir, running);
+        handleSpecialAbilities();
 
+        Move(inputDir, running);
         if (Input.GetAxisRaw("Jump") > 0)
             this.jump();
 
@@ -79,23 +81,25 @@ public class PlayerController : NetworkBehaviour {
 
     // Turn off and on MeshRenderer so FPS camera works
     private void HandleAiming(){
-        if (Input.GetKeyDown(KeyCode.Mouse1))
-        {
-            foreach (Transform t in this.gameObject.transform.GetChild(1))
-            {
+        if (Input.GetKeyDown(KeyCode.Mouse1)) {
+            foreach (Transform t in this.gameObject.transform.GetChild(1)) {
                 t.gameObject.GetComponent<MeshRenderer>().enabled = false;
             }
         }
-        else if(Input.GetKeyUp(KeyCode.Mouse1))
-        {
-            foreach (Transform t in this.gameObject.transform.GetChild(1))
-            {
+        else if(Input.GetKeyUp(KeyCode.Mouse1)) {
+            foreach (Transform t in this.gameObject.transform.GetChild(1)) {
                 t.gameObject.GetComponent<MeshRenderer>().enabled = true;
             }
         }
     }
 
-
+    private void handleSpecialAbilities() {
+        for (int i = 0; i < abilities.Count && i < 9; i++) {
+            if (Input.GetKeyDown(KeyCode.Alpha1 + i)) {
+                StartCoroutine(abilities[i].useAbility());
+            }
+        }
+    }
 
     void Move(Vector2 inputDir, bool running) {
 
@@ -112,16 +116,16 @@ public class PlayerController : NetworkBehaviour {
 
         Vector3 velocity = transform.forward * _currentSpeed + Vector3.up * _velocityY;
 
-        this._controller.Move(velocity * Time.deltaTime);
+        this.controller.Move(velocity * Time.deltaTime);
 
-        if (_controller.isGrounded)
+        if (controller.isGrounded)
             _velocityY = 0;
     }
 
 
 
-    void jump() {
-        if (_controller.isGrounded) {
+    public void jump() {
+        if (controller.isGrounded) {
             float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight); 
             this._velocityY = jumpVelocity;
         }
@@ -142,7 +146,7 @@ public class PlayerController : NetworkBehaviour {
 
     //Controll player in air after jump
     float GetModifiedSmoothTime(float smoothTime) {
-        if (_controller.isGrounded)
+        if (controller.isGrounded)
             return smoothTime;
 
         if (smoothTime == 0)
@@ -192,7 +196,6 @@ public class PlayerController : NetworkBehaviour {
         }
         else if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
-            //Debug.Log("in water");
         }
     }
 
@@ -200,7 +203,6 @@ public class PlayerController : NetworkBehaviour {
     {
         if (other.gameObject.name == "Water") {
             this._fallDamageImmune = false;
-            //Debug.Log("out of water");
         }
     }
 }

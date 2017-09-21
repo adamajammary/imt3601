@@ -3,16 +3,37 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-class SuperJump : SpecialAbility {
+public class SuperJump : SpecialAbility {
+    private float _jumpHeight;
 
-
-    override public void useAbility() {
-        if (cooldown > 0)
-            return;
-        doCoolDown();
-
-        // Do super jump things here
-
+    //public SuperJump(PlayerController pc, string imagePath, float jumpHeight) : base(pc, imagePath) {
+    //    _jumpHeight = jumpHeight;
+    //}
+    void Start(int a)
+    {
+        ;
     }
 
+    public void init(string imagePath, float jumpHeight){
+        base.init("");
+        _jumpHeight = jumpHeight;
+    }
+
+    override public IEnumerator useAbility() {
+        Debug.Log("Supa Jump~~!");
+        PlayerController playerController = GetComponent<PlayerController>();
+        if (base._cooldown > 0 || !playerController.controller.isGrounded)
+            yield break;
+        
+        base.doCoolDown();
+
+        float oldHeight = playerController.jumpHeight;
+        playerController.jumpHeight = _jumpHeight;
+        while (!playerController.controller.isGrounded) {
+            yield return null;
+        }
+        playerController.jump();
+        playerController.jumpHeight = oldHeight;
+
+    }
 }

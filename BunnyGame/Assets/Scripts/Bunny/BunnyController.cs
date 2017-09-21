@@ -23,6 +23,11 @@ public class BunnyController : NetworkBehaviour {
 
         PlayerController playerController = GetComponent<PlayerController>();
         playerController.jumpHeight = 3;
+
+        SuperJump sj = gameObject.AddComponent<SuperJump>();
+        sj.init("", 10);
+        playerController.abilities.Add(sj);
+
     }
 	
 	void Update () {

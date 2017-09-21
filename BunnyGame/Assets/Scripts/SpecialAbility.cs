@@ -11,20 +11,29 @@ using UnityEngine.Networking;
  */
 public abstract class SpecialAbility : MonoBehaviour {
     public string imagePath;
-    protected float cooldown;
-    public float cooldownTimeInSeconds;
+    protected float _cooldown = 0;
+    protected float _cooldownTimeInSeconds = 5;
 
-    public abstract void useAbility();
+    //public SpecialAbility(PlayerController pc, string imagePath) {
+    //    this._playerController = pc;
+    //    this.imagePath = imagePath;
+    //}
+
+    protected void init(string imagePath) {
+        this.imagePath = imagePath;
+    }
+
+    public abstract IEnumerator useAbility();
 
     public float getCooldown() {
-        return cooldown;
+        return _cooldown;
     }
 
     protected IEnumerator doCoolDown() {
-        while (cooldown> 0.01f) {
-            cooldown -= Time.deltaTime;
+        while (_cooldown> 0.01f) {
+            _cooldown -= Time.deltaTime;
             yield return 0;
         }
-        cooldown = 0;
+        _cooldown = 0;
     }
 }

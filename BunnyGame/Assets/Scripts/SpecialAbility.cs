@@ -7,7 +7,8 @@ using UnityEngine.Networking;
 /*
  * Base class for all special abilities
  * 
- * To use the cooldown, check this.cooldown at the start of subclass.useAbility(). Followed by calling doCooldown()
+ * The execution of an ability should override from the useAbility() coroutine. 
+ * The sub-class' useAbility() should always check base._cooldown and call base.doCoolDown() at the start (see SuperJump). (This is of course only when you want to use the cooldown feature).
  */
 public abstract class SpecialAbility : MonoBehaviour {
     public string imagePath;

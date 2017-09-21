@@ -12,7 +12,6 @@ public class SuperJump : SpecialAbility {
     }
 
     override public IEnumerator useAbility() {
-        Debug.Log("Supa Jump~~!");
         PlayerController playerController = GetComponent<PlayerController>();
         if (base._cooldown > 0 || !playerController.controller.isGrounded)
             yield break;

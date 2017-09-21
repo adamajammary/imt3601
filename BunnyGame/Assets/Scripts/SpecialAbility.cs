@@ -14,10 +14,6 @@ public abstract class SpecialAbility : MonoBehaviour {
     protected float _cooldown = 0;
     protected float _cooldownTimeInSeconds = 5;
 
-    //public SpecialAbility(PlayerController pc, string imagePath) {
-    //    this._playerController = pc;
-    //    this.imagePath = imagePath;
-    //}
 
     protected void init(string imagePath) {
         this.imagePath = imagePath;

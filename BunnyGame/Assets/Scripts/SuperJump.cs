@@ -9,6 +9,7 @@ public class SuperJump : SpecialAbility {
     public void init(string imagePath, float jumpHeight){
         base.init("");
         _jumpHeight = jumpHeight;
+        base.abilityName = "Super Jump";
     }
 
     override public IEnumerator useAbility() {

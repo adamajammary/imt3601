@@ -11,6 +11,7 @@ using UnityEngine.Networking;
  * The sub-class' useAbility() should always check base._cooldown and call base.doCoolDown() at the start (see SuperJump). (This is of course only when you want to use the cooldown feature).
  */
 public abstract class SpecialAbility : MonoBehaviour {
+    public string abilityName;
     public string imagePath;
     protected float _cooldown = 0;
     protected float _cooldownTimeInSeconds = 5;

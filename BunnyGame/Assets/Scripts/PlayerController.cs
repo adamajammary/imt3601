@@ -5,6 +5,8 @@ using UnityEngine.Networking;
 
 public class PlayerController : NetworkBehaviour {
 
+    public List<SpecialAbility> abilities;
+
     public float walkSpeed = 5;
     public float runSpeed = 12;
     public float gravity = -12;
@@ -30,6 +32,7 @@ public class PlayerController : NetworkBehaviour {
     private int _fallDamage = 40;
     private bool _dealFallDamageOnCollision = false;
     private bool _fallDamageImmune = false;
+
 
     private Transform _cameraTransform;
     private CharacterController _controller;

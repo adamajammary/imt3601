@@ -6,14 +6,6 @@ using UnityEngine.Networking;
 public class SuperJump : SpecialAbility {
     private float _jumpHeight;
 
-    //public SuperJump(PlayerController pc, string imagePath, float jumpHeight) : base(pc, imagePath) {
-    //    _jumpHeight = jumpHeight;
-    //}
-    void Start(int a)
-    {
-        ;
-    }
-
     public void init(string imagePath, float jumpHeight){
         base.init("");
         _jumpHeight = jumpHeight;

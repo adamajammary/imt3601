@@ -7,19 +7,16 @@ public class AbilityPanel : MonoBehaviour {
     public PlayerController _playerController;
 
     public List<GameObject> _abilities;
-
-    // Use this for initialization
-	void Start () {
-        _playerController = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
-        setupPanel();
-    }
-
+    
     // Update is called once per frame
-    void Update () {
+    void FixedUpdate () {
         updatePanel();
     }
 
-    public void setupPanel() {
+    // Call this whenever the Player gets a new ability
+    public void setupPanel(PlayerController playerController) {
+        _playerController = playerController;
+
         _abilities = new List<GameObject>();
         GameObject abilityIcon = Resources.Load<GameObject>("Prefabs/AbilityIcon");
         int numAbilities = _playerController.abilities.Count;
@@ -63,7 +60,7 @@ public class AbilityPanel : MonoBehaviour {
         }
     }
 
-
+    // Updates the cooldown indicators for the abilities
     public void updatePanel()
     {
         for(int i = 0; i < _abilities.Count; i++) {

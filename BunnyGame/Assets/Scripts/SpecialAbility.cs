@@ -20,9 +20,6 @@ public abstract class SpecialAbility : MonoBehaviour {
     protected void init(string imagePath) {
         this.imagePath = imagePath;
     }
-    void Update() {
-        Debug.Log(_cooldown+ ","+ _cooldownTimeInSeconds);
-    }
 
     public abstract IEnumerator useAbility();
 

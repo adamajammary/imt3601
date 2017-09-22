@@ -30,7 +30,7 @@ public class BunnyController : NetworkBehaviour {
         SuperJump sj = gameObject.AddComponent<SuperJump>();
         sj.init(10);
         playerController.abilities.Add(sj);
-        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel();
+        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
 
 
         this._playerHealth = this.GetComponent<PlayerHealth>();

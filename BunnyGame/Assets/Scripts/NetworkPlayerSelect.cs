@@ -19,9 +19,14 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     private string[]              _models     = { "PlayerCharacterBunny", "PlayerCharacterFox" };
     private Dictionary<uint, int> _selections = new Dictionary<uint, int>();
 
-    // Returns the unique identifier for the lobby player object instance.
+    // Return the unique identifier for the lobby player object instance.
     private uint getClientID(NetworkConnection conn) {
         return (conn.playerControllers[0] != null ? conn.playerControllers[0].unetView.netId.Value : 0);
+    }
+
+    // Return the model selection made by the user.
+    private int getSelectedModel(uint clientID) {
+        return (this._selections.ContainsKey(clientID) ? this._selections[clientID] : 0);
     }
 
     // Register listening for player select messages from clients.
@@ -39,14 +44,15 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     // NB! Prefabs for this has to be stored in "Assets/Resources/Prefabs/".
     //
     public override GameObject OnLobbyServerCreateGamePlayer(NetworkConnection conn, short playerControllerId) {
-        int        selectedModel  = this.GetSelectedModel(this.getClientID(conn));
-        GameObject playerPrefab   = Resources.Load<GameObject>("Prefabs/" + this._models[selectedModel]);
-        GameObject playerInstance = Instantiate(playerPrefab, new Vector3(Random.Range(-40, 40), 10, Random.Range(-40, 40)), playerPrefab.transform.rotation);
+        NetworkStartPosition[] spawnPoints    = Object.FindObjectsOfType<NetworkStartPosition>();
+        Vector3                position       = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
+        int                    selectedModel  = this.getSelectedModel(this.getClientID(conn));
+        GameObject             playerPrefab   = Resources.Load<GameObject>("Prefabs/" + this._models[selectedModel]);
+        GameObject             playerInstance = Instantiate(playerPrefab, position, playerPrefab.transform.rotation);
 
         //foreach (Transform model in playerInstance.transform) {
-        //    model.gameObject.tag     = playerInstance.tag;
-        //    model.transform.rotation = playerInstance.transform.rotation;
-
+        //    model.gameObject.tag = playerInstance.tag;
+        //
         //    foreach (Transform mesh in model.transform) {
         //        mesh.gameObject.tag = model.gameObject.tag;
         //    }
@@ -69,24 +75,14 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
     // Parse the player select message, and select the player model.
     private void RecievePlayerSelectMessage(PlayerSelectMessage message) {
-        this.SelectModel(message.clientID, message.selectedModel);
+        this.selectModel(message.clientID, message.selectedModel);
     }
 
     // Save the model selection made by the user.
-    public void SelectModel(uint clientID, int model) {
+    private void selectModel(uint clientID, int model) {
         if (!this._selections.ContainsKey(clientID))
             this._selections.Add(clientID, model);
         else
             this._selections[clientID] = model;
-    }
-
-    // Return the model selection made by the user.
-    public int GetSelectedModel(uint clientID) {
-        if (!this._selections.ContainsKey(clientID)) {
-            //Debug.Log("ERROR! Unknown client ID: " + clientID);
-            return 0;
-        }
-
-        return this._selections[clientID];
     }
 }

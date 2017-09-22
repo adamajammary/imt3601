@@ -4,10 +4,10 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class AbilityPanel : MonoBehaviour {
-    public PlayerController _playerController;
+    private PlayerController _playerController;
 
-    public List<GameObject> _abilities;
-    
+    private List<GameObject> _abilities = new List<GameObject>();
+
     // Update is called once per frame
     void FixedUpdate () {
         updatePanel();
@@ -19,6 +19,10 @@ public class AbilityPanel : MonoBehaviour {
 
         _abilities = new List<GameObject>();
         GameObject abilityIcon = Resources.Load<GameObject>("Prefabs/AbilityIcon");
+        GameObject iconMask = new GameObject();
+
+
+
         int numAbilities = _playerController.abilities.Count;
         for (int i = 0; i < numAbilities; i++) {
             _abilities.Add(Instantiate(abilityIcon));
@@ -33,25 +37,24 @@ public class AbilityPanel : MonoBehaviour {
         displayNames();
     }
 
-    // Displays the name of abilities where no image is found
+    // Displays the name of abilities who doesn't have an image
     public void displayNames() {
         for (int i = 0; i < _abilities.Count; i++) {
             SpecialAbility ability = _playerController.abilities[i];
-            if (ability.imagePath == "")
+            if (ability.getImagePath() == "")
                 GetComponent<RectTransform>().GetComponentInChildren<Text>().text = ability.name.Replace(" ", "\n");
             else
                 GetComponent<RectTransform>().GetComponentInChildren<Text>().text = "";
         }
     }
 
-    // Display the ability's image
-    public void displayImages()
-    {
+    // Display the abilities' images
+    public void displayImages() {
         for (int i = 0; i < _abilities.Count; i++) {
             SpecialAbility ability = _playerController.abilities[i];
-            if (ability.imagePath != "") {
+            if (ability.getImagePath() != "") {
                 Sprite s = Sprite.Create(
-                    Resources.Load<Texture2D>(ability.imagePath), 
+                    Resources.Load<Texture2D>(ability.getImagePath()), 
                     new Rect(new Vector2(0, 0), new Vector2(128,128)), 
                     new Vector2(0.5f, 0.5f)
                 );
@@ -61,12 +64,10 @@ public class AbilityPanel : MonoBehaviour {
     }
 
     // Updates the cooldown indicators for the abilities
-    public void updatePanel()
-    {
+    public void updatePanel() {
         for(int i = 0; i < _abilities.Count; i++) {
             GameObject cooldownOverlay = _abilities[i].transform.GetChild(0).gameObject;
             RectTransform cort = cooldownOverlay.GetComponent<RectTransform>();
-            //cort.localScale = new Vector2(cort.localScale.x, _playerController.abilities[i].getCooldownPercent());
             cort.anchorMax = new Vector2(cort.anchorMax.x, _playerController.abilities[i].getCooldownPercent());
             cort.offsetMax = new Vector2(0, 0);
         }

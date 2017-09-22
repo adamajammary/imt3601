@@ -10,7 +10,7 @@ public class BunnyController : NetworkBehaviour {
 
     private CharacterController _controller;
     private GameObject bunnyPoop;
-
+    private PlayerHealth _playerHealth;
 
     void Start () {
         bunnyPoop = Resources.Load<GameObject>("Prefabs/poop");
@@ -29,9 +29,10 @@ public class BunnyController : NetworkBehaviour {
         playerController.abilities.Add(sj);
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().updatePanel();
 
+        this._playerHealth = this.GetComponent<PlayerHealth>();
     }
-	
-	void Update () {
+
+    void Update () {
         if (!this.isLocalPlayer) { return; }
 
         if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1))
@@ -39,8 +40,8 @@ public class BunnyController : NetworkBehaviour {
     }
 
 
-    private void shoot()
-    {
+    private void shoot() {
+        if (this._playerHealth.IsDead()) { return; }
 
         this._timer += Time.deltaTime;
         if (this._timer > this._fireRate)

@@ -314,7 +314,6 @@ GameObject:
   - component: {fileID: 114529705314550160}
   - component: {fileID: 114900676238164442}
   - component: {fileID: 114222918294070388}
-  - component: {fileID: 114619951832799760}
   m_Layer: 0
   m_Name: PlayerCharacterBunny
   m_TagString: Player
@@ -1251,6 +1250,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c6ed6ade47953248a50fff70594b3cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  abilities: []
   walkSpeed: 5
   runSpeed: 12
   gravity: -12
@@ -1259,18 +1259,7 @@ MonoBehaviour:
   turnSmoothTime: 0.2
   speedSmoothTime: 0.2
   insideWall: 0
---- !u!114 &114619951832799760
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1987588776468962}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7dc7fec47d03116468c1ba52e21e71de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bunnyPoop: {fileID: 1414541341299080, guid: a21a1bc70d54d8b4db8b9c9aeabe862f, type: 2}
+  controller: {fileID: 0}
 --- !u!114 &114893125111181148
 MonoBehaviour:
   m_ObjectHideFlags: 1

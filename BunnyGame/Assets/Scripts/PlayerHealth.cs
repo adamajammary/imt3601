@@ -10,6 +10,7 @@ public class PlayerHealth : NetworkBehaviour {
     private bool      _damageImmune;
     private bool      _isDead;
     private Text      _isDeadText;
+    private Button    _spectateButton;
     private Image     _spectateImage;
     private Text      _spectateText;
     private bool      _showDeathScreen;
@@ -23,9 +24,12 @@ public class PlayerHealth : NetworkBehaviour {
         this._damageImage     = GameObject.Find("Canvas/BloodSplatterOverlay").GetComponent<Image>();
         this._isDead          = false;
         this._isDeadText      = GameObject.Find("Canvas/PlayerIsDeadText").GetComponent<Text>();
+        this._spectateButton  = GameObject.Find("Canvas/SpectateButton").GetComponent<Button>();
         this._spectateImage   = GameObject.Find("Canvas/SpectateButton").GetComponent<Image>();
         this._spectateText    = GameObject.Find("Canvas/SpectateButton/SpectateButtonText").GetComponent<Text>();
         this._showDeathScreen = false;
+
+        this._spectateButton.onClick.AddListener(this.spectate); // TODO: see spectate method below
 
         // Make player immune from damage for the first 5 seconds after spawning
         StartCoroutine(this.damageImmune(5.0f));
@@ -63,6 +67,12 @@ public class PlayerHealth : NetworkBehaviour {
         this._spectateText.color  = new Color(this._spectateText.color.r,  this._spectateText.color.g,  this._spectateText.color.b,  1.0f);
     }
 
+    // TODO: Implement spectating (remember to set the correct script and method when implemented)
+    private void spectate() {
+        Debug.Log("TODO: Implement spectating");
+        Debug.Log("DISCUSS: Hide death screen?");
+    }
+
     // Take damage when hit, and respawn the player if dead.
     public void TakeDamage(int amount) {
         if (!this.isServer || this._damageImmune) { return; }
@@ -89,7 +99,6 @@ public class PlayerHealth : NetworkBehaviour {
     // Respawn the player in a new random position.
     [ClientRpc]
     private void RpcDie() {
-        Debug.Log("TODO: DISABLE ATTACK ABILITIES");
         this._isDead = true;
         this.gameObject.transform.GetChild(1).gameObject.SetActive(false);
     }

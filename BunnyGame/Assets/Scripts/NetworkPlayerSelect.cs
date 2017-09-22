@@ -19,7 +19,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     private string[]              _models     = { "PlayerCharacterBunny", "PlayerCharacterFox" };
     private Dictionary<uint, int> _selections = new Dictionary<uint, int>();
 
-    // Returns the unique identifier for the lobby player object instance.
+    // Return the unique identifier for the lobby player object instance.
     private uint getClientID(NetworkConnection conn) {
         return (conn.playerControllers[0] != null ? conn.playerControllers[0].unetView.netId.Value : 0);
     }

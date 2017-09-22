@@ -12,22 +12,26 @@ using UnityEngine.Networking;
  */
 public abstract class SpecialAbility : MonoBehaviour {
     public string abilityName;
-    public string imagePath;
+    public string imagePath = "";
     protected float _cooldown = 0;
-    protected float _cooldownTimeInSeconds = 5;
+    protected float _cooldownTimeInSeconds = 10;
 
 
     protected void init(string imagePath) {
         this.imagePath = imagePath;
     }
+    void Update() {
+        Debug.Log(_cooldown+ ","+ _cooldownTimeInSeconds);
+    }
 
     public abstract IEnumerator useAbility();
 
-    public float getCooldown() {
-        return _cooldown;
+    public float getCooldownPercent() {
+        return _cooldown / _cooldownTimeInSeconds;
     }
 
     protected IEnumerator doCoolDown() {
+        _cooldown = _cooldownTimeInSeconds;
         while (_cooldown> 0.01f) {
             _cooldown -= Time.deltaTime;
             yield return 0;

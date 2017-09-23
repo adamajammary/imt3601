@@ -42,9 +42,7 @@ public class NPCWorldViewManager : MonoBehaviour {
         NPCWorldView.worldCellData cell = new NPCWorldView.worldCellData();
         Vector3 cubeCenter = new Vector3(x * _cellSize + _cellSize / 2, 0, y * _cellSize + _cellSize / 2) + _offset;
         Vector3 halfExtents = new Vector3(_cellSize / 2, _cellSize / 2, 0) * modifier;
-
         Vector3[] directions = { Vector3.forward, Vector3.back, Vector3.right, Vector3.left };
-
         foreach (Vector3 dir in directions) {
             Vector3 rayStart = cubeCenter - dir * _cellSize / 2;
             obstacle = Physics.BoxCast(rayStart, halfExtents, dir, Quaternion.identity, _cellSize * modifier);

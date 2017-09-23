@@ -8,8 +8,8 @@ public static class NPCWorldView {
         public bool blocked;
     }
 
-    public const int cellCount = 10;
-    public const float cellWorldSize = 5f;
+    public const int cellCount = 150;
+    public const float cellWorldSize = 2.3f;
 
     private static object _worldLock;
     private static worldCellData[,] _world;

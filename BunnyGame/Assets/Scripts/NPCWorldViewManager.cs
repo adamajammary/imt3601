@@ -24,14 +24,24 @@ public class NPCWorldViewManager : MonoBehaviour {
         for (int y = 0; y < _cellCount; y++) {
             for (int x = 0; x < _cellCount; x++) {
                 NPCWorldView.worldCellData cell = new NPCWorldView.worldCellData();
-                Vector3 cubeCenter = new Vector3(x * _cellSize + _cellSize / 2, 0, y * _cellSize - _cellSize) + _offset;
-                Vector3 halfExtents = new Vector3(_cellSize / 2, _cellSize / 2, _cellSize / 2);
-                cell.blocked = Physics.BoxCast(cubeCenter, halfExtents, Vector3.forward, Quaternion.identity, _cellSize);
-                //if (cell.blocked)
-                //    Debug.Log(string.Format("Blocked cell at pos {0}, hit by ray starting at: {1}", cubeCenter, cubeCenter - Vector3.forward * _cellSize / 2));
+                cell.blocked = obstacleInCell(x, y);
                 NPCWorldView.setCell(x, y, cell);
             }
         }
+    }
+
+    bool obstacleInCell(int x, int y) {
+        bool obstacle = false;
+        NPCWorldView.worldCellData cell = new NPCWorldView.worldCellData();
+        Vector3 cubeCenter = new Vector3(x * _cellSize + _cellSize / 2, 0, y * _cellSize + _cellSize / 2) + _offset;
+        Vector3 rayStart = cubeCenter - Vector3.forward * _cellSize / 2;
+        Vector3 halfExtents = new Vector3(_cellSize / 2, _cellSize / 2, 0);
+        obstacle = Physics.BoxCast(rayStart, halfExtents, Vector3.forward, Quaternion.identity, _cellSize);
+        if (obstacle) return obstacle;
+        //Gotta cast a ray from both sides, because checking collisions at the start of the ray behaves annoyingly
+        rayStart = cubeCenter - Vector3.back * _cellSize / 2;
+        obstacle = Physics.BoxCast(rayStart, halfExtents, Vector3.back, Quaternion.identity, _cellSize);
+        return obstacle;
     }
 
     void OnDrawGizmos() {

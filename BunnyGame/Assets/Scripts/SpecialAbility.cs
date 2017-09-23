@@ -11,22 +11,28 @@ using UnityEngine.Networking;
  * The sub-class' useAbility() should always check base._cooldown and call base.doCoolDown() at the start (see SuperJump). (This is of course only when you want to use the cooldown feature).
  */
 public abstract class SpecialAbility : MonoBehaviour {
-    public string imagePath;
+    public string abilityName;
     protected float _cooldown = 0;
-    protected float _cooldownTimeInSeconds = 5;
+    protected float _cooldownTimeInSeconds = 10;
+    private string imagePath = "";
 
+    public abstract IEnumerator useAbility();
+
+    public float getCooldownPercent() {
+        return _cooldown / _cooldownTimeInSeconds;
+    }
+
+    public string getImagePath() {
+        return imagePath;
+    }
 
     protected void init(string imagePath) {
         this.imagePath = imagePath;
     }
 
-    public abstract IEnumerator useAbility();
-
-    public float getCooldown() {
-        return _cooldown;
-    }
 
     protected IEnumerator doCoolDown() {
+        _cooldown = _cooldownTimeInSeconds;
         while (_cooldown> 0.01f) {
             _cooldown -= Time.deltaTime;
             yield return 0;

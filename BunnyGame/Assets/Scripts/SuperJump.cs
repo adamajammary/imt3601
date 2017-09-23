@@ -6,9 +6,10 @@ using UnityEngine.Networking;
 public class SuperJump : SpecialAbility {
     private float _jumpHeight;
 
-    public void init(string imagePath, float jumpHeight){
-        base.init("");
+    public void init(float jumpHeight){
+        base.init("Textures/AbilityIcons/test");
         _jumpHeight = jumpHeight;
+        base.abilityName = "Super Jump";
     }
 
     override public IEnumerator useAbility() {
@@ -16,7 +17,7 @@ public class SuperJump : SpecialAbility {
         if (base._cooldown > 0 || !playerController.controller.isGrounded)
             yield break;
         
-        base.doCoolDown();
+        StartCoroutine(base.doCoolDown());
 
         float oldHeight = playerController.jumpHeight;
         playerController.jumpHeight = _jumpHeight;

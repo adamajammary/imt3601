@@ -21,6 +21,12 @@ public class FoxController : NetworkBehaviour {
 
         PlayerController playerController = GetComponent<PlayerController>();
         playerController.runSpeed = 15;
+
+        // Set up abilities
+        Sprint sp = gameObject.AddComponent<Sprint>();
+        sp.init(45, 1);
+        playerController.abilities.Add(sp);
+        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
     }
 
     // Update is called once per frame

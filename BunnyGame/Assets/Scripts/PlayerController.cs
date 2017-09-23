@@ -66,7 +66,6 @@ public class PlayerController : NetworkBehaviour {
         Vector2 inputDir = input.normalized;
         bool running = Input.GetKey(KeyCode.LeftShift);
 
-        handleSpecialAbilities();
 
         Move(inputDir, running);
         if (Input.GetAxisRaw("Jump") > 0)
@@ -74,8 +73,9 @@ public class PlayerController : NetworkBehaviour {
 
         handleFallDamage();
         HandleAiming();
-
         handleMouse();
+
+        handleSpecialAbilities();
     }
 
 
@@ -101,7 +101,7 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
-    void Move(Vector2 inputDir, bool running) {
+    public void Move(Vector2 inputDir, bool running) {
 
         if (inputDir != Vector2.zero) {
             float targetRotation = Mathf.Atan2(inputDir.x, inputDir.y) * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;

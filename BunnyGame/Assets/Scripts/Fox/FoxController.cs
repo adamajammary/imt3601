@@ -13,8 +13,8 @@ public class FoxController : NetworkBehaviour {
     // Use this for initialization
     void Start()
     {
-        biteArea = transform.GetChild(2).gameObject;
         this._playerHealth = this.GetComponent<PlayerHealth>();
+        biteArea = transform.GetChild(2).gameObject;
 
         if (!this.isLocalPlayer)
             return; 

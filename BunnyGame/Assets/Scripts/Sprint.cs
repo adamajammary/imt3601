@@ -3,6 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
+/* ****************************************************************************
+ * TODO: 
+ * - Disable running while sprinting
+ * - Make ability use on demand? (Perhaps do this to the regular running for
+ *   all players(Stamina)? and keep this ability like this)
+ *      - Hold down a key to use it
+ *      - Use the cooldown as a "max boost time" meter so it can be used as
+ *        long as the cooldown isn't maxed out
+ *        
+ *****************************************************************************/
+
+
 public class Sprint : SpecialAbility {
     private float _speed;
     private float _time;
@@ -16,7 +28,7 @@ public class Sprint : SpecialAbility {
 
     override public IEnumerator useAbility() {
         PlayerController playerController = GetComponent<PlayerController>();
-        if (base._cooldown > 0 || !playerController.controller.isGrounded)
+        if (base._cooldown > 0 || !playerController.controller.isGrounded) // Can't sprint if in the air
             yield break;
         
         StartCoroutine(base.doCoolDown());
@@ -30,12 +42,6 @@ public class Sprint : SpecialAbility {
             time += Time.deltaTime;
             yield return null;
         }
-        //while (curSpeed > 0) {
-        //    curSpeed = Mathf.SmoothDamp(curSpeed, 0, ref speedSmoothVel, 0.05f);
-        //    GetComponent<CharacterController>().Move(transform.forward.normalized * curSpeed * Time.deltaTime);
-        //    time += Time.deltaTime;
-        //    yield return null;
-        //}
 
 
     }

@@ -19,9 +19,6 @@ public class AbilityPanel : MonoBehaviour {
 
         _abilities = new List<GameObject>();
         GameObject abilityIcon = Resources.Load<GameObject>("Prefabs/AbilityIcon");
-        GameObject iconMask = new GameObject();
-
-
 
         int numAbilities = _playerController.abilities.Count;
         for (int i = 0; i < numAbilities; i++) {

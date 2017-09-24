@@ -5,6 +5,42 @@ using UnityEngine.UI;
 using UnityEngine.Networking;
 
 public class FireWall : NetworkBehaviour {
+    class Circle {
+        public Vector3 _pos;
+        private float _radius;
+        public GameObject wall;
+
+        public Circle(float radius, Vector3 pos) {
+            this._radius = radius;
+            this._pos = pos;
+
+            this.wall = Resources.Load<GameObject>("Prefabs/WallShell");
+            this.wall = MonoBehaviour.Instantiate(this.wall);
+            this.wall.transform.position = pos;
+            this.wall.transform.localScale = new Vector3(this.radius * 2, 300, this.radius * 2);
+        }
+
+        public Vector3 pos {
+            get {
+                return _pos;
+            }
+            set {
+                _pos = value;
+                wall.transform.position = value;
+            }
+        }
+
+        public float radius {
+            get {
+                return _radius;
+            }
+            set {
+                _radius = value;
+                wall.transform.localScale = new Vector3(value * 2, 300, value * 2);
+            }
+        }
+    }
+
     private const float _noiseSpeed = -1.25f;   //The rate at which the seed changes for perlin   
     private const float _wallShrinkTime = 120.0f;//Time in seconds between _wall shrinking
     private const float _wallShrinkRate = 0.02f; //The rate at which the wall shrinks
@@ -46,6 +82,13 @@ public class FireWall : NetworkBehaviour {
         StartCoroutine(lateStart());
     }
 
+    private IEnumerator lateStart() {
+        yield return new WaitForSeconds(1.0f); //Wait one second for _rngSeed to sync (kinda hacky)
+        this._RNG = new System.Random(this._rngSeed);
+        this.recalculateWalls();
+        this._targetWallRenderer.draw(this._target.wall.transform);
+    }
+
     // Update is called once per frame
     void Update() {
         this.generateWallTexture();
@@ -59,16 +102,7 @@ public class FireWall : NetworkBehaviour {
             this.UpdateWallUI();
         }
         this._actualWallRenderer.draw(this.transform);
-    }
-
-    private IEnumerator lateStart() {
-        yield return new WaitForSeconds(1.0f); //Wait one second for _rngSeed to sync (kinda hacky)
-        this._RNG = new System.Random(this._rngSeed);
-        this.recalculateWalls();
-        this._targetWallRenderer.draw(this._target.wall.transform);
-    }
-
-   
+    }   
 
     private void UpdateWallUI() {
         _wallTransitionUI.sizeDelta = new Vector2(150 * this._wallShrinkTimer / _wallShrinkTime, 10);
@@ -154,40 +188,3 @@ public class FireWall : NetworkBehaviour {
         }
     }
 }
-
-class Circle {
-    public Vector3 _pos;
-    private float _radius;   
-    public GameObject wall;
-
-    public Circle(float radius, Vector3 pos) {
-        this._radius = radius;
-        this._pos = pos;
-
-        this.wall = Resources.Load<GameObject>("Prefabs/WallShell");
-        this.wall = MonoBehaviour.Instantiate(this.wall);
-        this.wall.transform.position = pos;
-        this.wall.transform.localScale = new Vector3(this.radius * 2, 300, this.radius * 2);
-    }
-
-    public Vector3 pos {
-        get {
-            return _pos;
-        }
-        set {
-            _pos = value;
-            wall.transform.position = value;
-        }
-    }
-
-    public float radius {
-        get {
-            return _radius;
-        }
-        set {
-            _radius = value;
-            wall.transform.localScale = new Vector3(value * 2, 300, value * 2);
-        }
-    }
-}
-

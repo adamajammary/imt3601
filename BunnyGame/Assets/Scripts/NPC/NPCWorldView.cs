@@ -56,14 +56,62 @@ public static class NPCWorldView {
         }
     }
 
+    public class GameCharacter { //Representation of living creatures in the game, from NPCs to players
+        private Vector3 _pos;
+        private Vector3 _dir;
+        private int _id;
+
+        public GameCharacter(int id) {
+            this._id = id;
+            this._pos = Vector3.zero;
+            this._dir = Vector3.zero;
+        }
+
+        public GameCharacter(int id, Vector3 pos, Vector3 dir) {
+            this._id = id;
+            this._pos = pos;
+            this._dir = dir;
+        }
+        public void update(Vector3 pos, Vector3 dir) {
+            this._dir = dir;
+            this._pos = pos;
+        }   
+        
+        public Vector3 getPos() {
+            return this._pos;
+        }    
+
+        public Vector3 getDir() {
+            return this._dir;
+        }
+
+        public int getId() {
+            return this._id;
+        }
+    }
+
     public const int cellCount = 150;
     public const float cellSize = 2.3f;
-   
+
+    private static object _npcsLock;
+    private static List<GameCharacter> _npcs;
+    private static object _playersLock;
+    private static List<GameCharacter> _players;
+    private static object _runNPCThreadLock;
+    private static bool _runNPCThread;
+
     private static object _worldLock;
     private static worldCellData[,] _world;
     private static Vector3 _offset;
-
     static NPCWorldView() {
+        _runNPCThreadLock = new object();
+        _runNPCThread = true;
+
+        _npcsLock = new object();
+        _npcs = new List<GameCharacter>();
+        _playersLock = new object();
+        _players = new List<GameCharacter>();
+
         _offset = new Vector3(-(cellCount * cellSize / 2.0f + cellSize / 2.0f),
                               -15,
                               -(cellCount * cellSize / 2.0f + cellSize / 2.0f));
@@ -96,6 +144,7 @@ public static class NPCWorldView {
     }
 
     public static Vector3 offset { get { return _offset; } }
+
     public static void resetAStarData() {
         for (int y = 0; y < cellCount; y++) {
             for (int x = 0; x < cellCount; x++) {
@@ -109,5 +158,26 @@ public static class NPCWorldView {
     public static worldCellData getCell(int x, int y) {
         lock(_worldLock)
             return _world[x, y];
+    }
+
+    public static List<GameCharacter> getPlayers() {
+        lock (_playersLock)
+            return _players;
+    }
+    public static List<GameCharacter> getNpcs() {
+        lock (_npcsLock)
+            return _npcs;
+    }   
+
+    public static bool getRunNPCThread() {
+        lock (_runNPCThreadLock) {
+            return _runNPCThread;
+        }
+    }
+
+    public static void setRunNPCThread(bool run) {
+        lock (_runNPCThreadLock) {
+            _runNPCThread = run;
+        }
     }
 }

@@ -2,26 +2,101 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class NPCManager : MonoBehaviour {
+public class NPCManager : NetworkBehaviour {
     public bool debugRender;
 
-    float _cellSize;
-    int _cellCount;
-    Vector3 _offset;
+    private float _cellSize;
+    private int _cellCount;
+    private Vector3 _offset;
+
+    private List<GameObject> _players;
+    private List<GameObject> _npcs;
+    private NPCThread _npcThread;
+    private BlockingQueue<NPCThread.instruction> _instructions;
+
+    private bool _ready; 
     // Use this for initialization
     void Start() {
-        _cellSize = NPCWorldView.cellSize;
-        _cellCount = NPCWorldView.cellCount;
-        _offset = NPCWorldView.offset;
-        //findObstacles();
-        findObstacles();
+        if (this.isServer) {
+            _cellSize = NPCWorldView.cellSize;
+            _cellCount = NPCWorldView.cellCount;
+            _offset = NPCWorldView.offset;
+            findObstacles();
+
+            this._players = new List<GameObject>();
+            this._npcs = new List<GameObject>();
+            _ready = false;
+            StartCoroutine(lateStart());
+        }
     }
 
-	// Update is called once per frame
-	void Update () {
-       
-	}
+    //This is how i deal with networking until i learn more about it
+    private IEnumerator lateStart() {
+        yield return new WaitForSeconds(1.0f);
+
+        //gather data about players for the NPCs
+        GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");
+        this._players.Add(localPlayer);
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (GameObject enemy in enemies)
+            this._players.Add(enemy);
+        var players = NPCWorldView.getPlayers();
+        for (int i = 0; i < this._players.Count; i++)
+            players.Add(new NPCWorldView.GameCharacter(i));
+
+        //spawn npcs and gather npc data for the NPCs
+        GameObject turtle = Resources.Load<GameObject>("Prefabs/TurtleNPC");
+        for (int i = 0; i < 100; i++)  // Spawn turtles            
+            this.CmdSpawnNPC(turtle, i);
+        
+        this._instructions = new BlockingQueue<NPCThread.instruction>();
+        this._npcThread = new NPCThread(this._instructions);
+        this._ready = true;
+    }
+
+    // Update is called once per frame
+    void Update () {
+        //Update data about gamecharacters in NPCWorldView
+        if (this._ready) {
+            this.updateNPCView();
+            this.handleInstructions();
+        }
+    }
+
+    void handleInstructions() {
+        while (!this._instructions.isEmpty()) {
+            var instruction = this._instructions.Dequeue();
+            Debug.Log("Recieved instruction for npc with id " + instruction.id);
+            this._npcs[instruction.id].GetComponent<NPC>().setMoveDir(instruction.moveDir);
+        }
+    }
+
+    void updateNPCView() {
+        var players = NPCWorldView.getPlayers();
+        for (int i = 0; i < this._players.Count; i++)
+            players[i].update(this._players[i].transform.position, this._players[i].transform.forward);
+
+        var npcs = NPCWorldView.getNpcs();
+        for (int i = 0; i < this._npcs.Count; i++)
+            npcs[i].update(this._npcs[i].transform.position, this._npcs[i].transform.forward);
+    }
+
+    [Command]
+    private void CmdSpawnNPC(GameObject npc, int id) {
+        var turtle = Instantiate(npc);
+        NPCWorldView.worldCellData cell;
+        do {
+            cell = NPCWorldView.getCell(Random.Range(0, this._cellCount), Random.Range(0, this._cellCount));
+            turtle.GetComponent<NPC>().setSpawnPos(cell.pos);
+        } while (cell.blocked);
+        float angle = Random.Range(0, Mathf.PI * 2);
+        turtle.GetComponent<NPC>().setMoveDir(new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)));
+        this._npcs.Add(turtle);
+        NPCWorldView.getNpcs().Add(new NPCWorldView.GameCharacter(id));
+        NetworkServer.Spawn(turtle);
+    }
 
     void findObstacles() {
         float time = Time.realtimeSinceStartup;
@@ -36,7 +111,7 @@ public class NPCManager : MonoBehaviour {
         for (int y = 0; y < _cellCount; y++) {
             for (int x = 0; x < _cellCount; x++) {
                 var cell = NPCWorldView.getCell(x, y);
-                if (!cell.blocked && lastCellBlocked) 
+                if (!cell.blocked && lastCellBlocked)
                     fillAreaIfBlocked(cell);
                 lastCellBlocked = cell.blocked;
             }
@@ -57,7 +132,7 @@ public class NPCManager : MonoBehaviour {
         return obstacle;
     }
 
-    //This is basically a*, if it cant find a path from startPos to the corner node, then all the nodes in
+    //This is basically a*, if it cant find a path from startPos to the goal node, then all the nodes in
     //  the closed list are blocked nodes.
     void fillAreaIfBlocked(NPCWorldView.worldCellData startCell) {
         SortedList<float, NPCWorldView.worldCellData> open = 
@@ -107,7 +182,6 @@ public class NPCManager : MonoBehaviour {
         if (debugRender) {
             for (int y = 0; y < _cellCount; y++) {
                 for (int x = 0; x < _cellCount; x++) {
-
                     if (!NPCWorldView.getCell(x, y).blocked)
                         Gizmos.color = Color.green;
                     else
@@ -116,6 +190,18 @@ public class NPCManager : MonoBehaviour {
                     Gizmos.DrawCube(cubeCenter, new Vector3(_cellSize, 0, _cellSize));
                 }
             }
+            foreach (var npc in NPCWorldView.getNpcs()) {
+                Gizmos.DrawSphere(npc.getPos(), 2);
+                Gizmos.DrawLine(npc.getPos(), npc.getPos() + npc.getDir());
+            }
+            foreach (var player in NPCWorldView.getPlayers()) {
+                Gizmos.DrawSphere(player.getPos(), 2);
+                Gizmos.DrawLine(player.getPos(), player.getPos() + player.getDir());
+            }
         }
+    }
+
+    void OnApplicationQuit() {
+        NPCWorldView.setRunNPCThread(false);
     }
 }

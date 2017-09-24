@@ -8,6 +8,7 @@ public class FoxController : NetworkBehaviour {
     GameObject biteArea;
     GameObject foxModel;
 
+
     
     Material[] objMaterials;
     Color alfaColor;
@@ -22,23 +23,31 @@ public class FoxController : NetworkBehaviour {
     private float _stealthTime      = 31.0f;
 
     // Use this for initialization
-    void Start()
-    {
+{
+    void Start() {
+        this._playerHealth = this.GetComponent<PlayerHealth>();
         foxModel = transform.GetChild(1).gameObject;
        
         biteArea = transform.GetChild(2).gameObject;
-        this._playerHealth = this.GetComponent<PlayerHealth>();
+
 
         if (!this.isLocalPlayer)
-            return; 
 
+
+        // Set custom attributes for class:
         PlayerController playerController = GetComponent<PlayerController>();
         playerController.runSpeed = 15;
+
+        // Add abilities to class:
+        Sprint sp = gameObject.AddComponent<Sprint>();
+        sp.init(50, 1);
+        playerController.abilities.Add(sp);
+        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
     }
 
     // Update is called once per frame
-    void Update()
-    {
+
+    void Update() {
         if (!this.isLocalPlayer)
             return;
 
@@ -58,16 +67,16 @@ public class FoxController : NetworkBehaviour {
     }
 
     // Biting is enabled for 1 tick after called
-    private IEnumerator bite()
-    {
+
+    private IEnumerator bite() {
         biteArea.GetComponent<BoxCollider>().enabled = true; 
         yield return 0;
         biteArea.GetComponent<BoxCollider>().enabled = false;
     }
 
     [Command]
-    private void CmdBite()
-    {
+
+    private void CmdBite() {
         if (this._playerHealth.IsDead()) { return; }
 
         StartCoroutine(bite());

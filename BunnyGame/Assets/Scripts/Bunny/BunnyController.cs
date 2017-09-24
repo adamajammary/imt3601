@@ -13,6 +13,7 @@ public class BunnyController : NetworkBehaviour {
     private PlayerHealth _playerHealth;
 
     void Start () {
+        this._playerHealth = this.GetComponent<PlayerHealth>();
         bunnyPoop = Resources.Load<GameObject>("Prefabs/poop");
 
         if (!this.isLocalPlayer)
@@ -33,7 +34,6 @@ public class BunnyController : NetworkBehaviour {
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
 
 
-        this._playerHealth = this.GetComponent<PlayerHealth>();
     }
 
     void Update () {

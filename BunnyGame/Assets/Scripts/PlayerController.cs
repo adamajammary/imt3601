@@ -25,7 +25,7 @@ public class PlayerController : NetworkBehaviour {
 
     private float _turnSmoothVelocity;
     private float _speedSmoothVelocity;
-    private float _currentSpeed;
+    public float currentSpeed;
     private float _velocityY;
 
     private float _maxFallSpeed = 20; // How fast you can fall before starting to take fall damage
@@ -38,6 +38,7 @@ public class PlayerController : NetworkBehaviour {
     public CharacterController controller;
 
     bool lockCursor = false;
+    public bool running = false;
 
     public void onWaterStay(float waterForce) {
         this._velocityY += waterForce * Time.deltaTime;
@@ -64,18 +65,18 @@ public class PlayerController : NetworkBehaviour {
 
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         Vector2 inputDir = input.normalized;
-        bool running = Input.GetKey(KeyCode.LeftShift);
+        running = Input.GetKey(KeyCode.LeftShift);
 
         handleSpecialAbilities();
 
-        Move(inputDir, running);
+        Move(inputDir);
         if (Input.GetAxisRaw("Jump") > 0)
             this.jump();
 
         handleFallDamage();
         HandleAiming();
-
         handleMouse();
+
     }
 
 
@@ -101,7 +102,7 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
-    void Move(Vector2 inputDir, bool running) {
+    public void Move(Vector2 inputDir) {
 
         if (inputDir != Vector2.zero) {
             float targetRotation = Mathf.Atan2(inputDir.x, inputDir.y) * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
@@ -110,11 +111,11 @@ public class PlayerController : NetworkBehaviour {
         }
 
         float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
-        this._currentSpeed = Mathf.SmoothDamp(_currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
+        this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
 
         this._velocityY += Time.deltaTime * gravity;
 
-        Vector3 velocity = transform.forward * _currentSpeed + Vector3.up * _velocityY;
+        Vector3 velocity = transform.forward * currentSpeed + Vector3.up * _velocityY;
 
         this.controller.Move(velocity * Time.deltaTime);
 

@@ -3,10 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
+
+
+/********************************************
+ * Allows for the player to jump extra high
+ *******************************************/
 public class SuperJump : SpecialAbility {
     private float _jumpHeight;
 
-    public void init(float jumpHeight){
+    public void init(float jumpHeight) {
         base.init("Textures/AbilityIcons/test");
         _jumpHeight = jumpHeight;
         base.abilityName = "Super Jump";
@@ -26,6 +31,5 @@ public class SuperJump : SpecialAbility {
         }
         playerController.jump();
         playerController.jumpHeight = oldHeight;
-
     }
 }

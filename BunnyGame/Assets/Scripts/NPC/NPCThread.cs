@@ -46,7 +46,7 @@ public class NPCThread {
                     float det = dir.x * cellDir.y - dir.y * cellDir.x;
                     float angle = Mathf.Atan2(det, dot);
                     if (angle < 90 || angle > 270) {
-                        Debug.Log("Adding instruction for npc with id " + npc.getId());
+                        //Debug.Log("Adding instruction for npc with id " + npc.getId());
                         this._instructions.Enqueue(new instruction(npc.getId(), npc.getDir() * -1));
                     }
                 }

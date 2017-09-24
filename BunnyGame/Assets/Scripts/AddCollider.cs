@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class AddCollider : MonoBehaviour {
 	// Use this for initialization
-	void Start () {
+	void Awake () {
         foreach (Transform t in transform) {
             t.gameObject.AddComponent<MeshCollider>();
         }

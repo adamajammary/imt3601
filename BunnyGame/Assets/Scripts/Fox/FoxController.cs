@@ -24,7 +24,7 @@ public class FoxController : NetworkBehaviour {
 
         // Set up abilities
         Sprint sp = gameObject.AddComponent<Sprint>();
-        sp.init(45, 1);
+        sp.init(100, 1);
         playerController.abilities.Add(sp);
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
     }

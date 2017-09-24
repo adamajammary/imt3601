@@ -21,13 +21,21 @@ public class Sprint : SpecialAbility {
         
         StartCoroutine(base.doCoolDown());
 
-
+        float curSpeed = _speed;
+        float speedSmoothVel = 0;
         float time = 0;
         while (time < _time) {
-            GetComponent<CharacterController>().Move(transform.forward.normalized);
+            curSpeed = Mathf.SmoothDamp(curSpeed, _speed, ref speedSmoothVel, 0.05f);
+            GetComponent<CharacterController>().Move(transform.forward * curSpeed * Time.deltaTime);
             time += Time.deltaTime;
             yield return null;
         }
+        //while (curSpeed > 0) {
+        //    curSpeed = Mathf.SmoothDamp(curSpeed, 0, ref speedSmoothVel, 0.05f);
+        //    GetComponent<CharacterController>().Move(transform.forward.normalized * curSpeed * Time.deltaTime);
+        //    time += Time.deltaTime;
+        //    yield return null;
+        //}
 
 
     }

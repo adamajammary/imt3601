@@ -138,7 +138,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4693569531874254}
-  - component: {fileID: 114881863307411292}
   m_Layer: 8
   m_Name: BunnyModel
   m_TagString: Untagged
@@ -315,7 +314,6 @@ GameObject:
   - component: {fileID: 114529705314550160}
   - component: {fileID: 114900676238164442}
   - component: {fileID: 114222918294070388}
-  - component: {fileID: 114619951832799760}
   m_Layer: 0
   m_Name: PlayerCharacterBunny
   m_TagString: Player
@@ -330,7 +328,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1987588776468962}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 25.353794, y: -13.904185, z: -61.465572}
   m_LocalScale: {x: 1.7394154, y: 1.7394158, z: 1.7394158}
   m_Children:
   - {fileID: 4764288285337480}
@@ -461,7 +459,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1400830166664410}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 0.11320323, z: 0, w: 0.9935719}
   m_LocalPosition: {x: 0, y: 0.3, z: 0}
   m_LocalScale: {x: 1.7394172, y: 1.7394158, z: 1.7394176}
   m_Children:
@@ -482,7 +480,7 @@ Transform:
   - {fileID: 4659536087332494}
   m_Father: {fileID: 4066585971673066}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 13, z: 0}
 --- !u!4 &4702897797604752
 Transform:
   m_ObjectHideFlags: 1
@@ -1252,6 +1250,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c6ed6ade47953248a50fff70594b3cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  abilities: []
   walkSpeed: 5
   runSpeed: 12
   gravity: -12
@@ -1259,50 +1258,8 @@ MonoBehaviour:
   airControlPercent: 0
   turnSmoothTime: 0.2
   speedSmoothTime: 0.2
---- !u!114 &114619951832799760
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1987588776468962}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7dc7fec47d03116468c1ba52e21e71de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bunnyPoop: {fileID: 1414541341299080, guid: a21a1bc70d54d8b4db8b9c9aeabe862f, type: 2}
---- !u!114 &114881863307411292
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1400830166664410}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SceneId:
-    m_Value: 0
-  m_AssetId:
-    i0: 128
-    i1: 158
-    i2: 83
-    i3: 212
-    i4: 239
-    i5: 136
-    i6: 83
-    i7: 52
-    i8: 120
-    i9: 219
-    i10: 172
-    i11: 152
-    i12: 13
-    i13: 51
-    i14: 113
-    i15: 131
-  m_ServerOnly: 0
-  m_LocalPlayerAuthority: 1
+  insideWall: 0
+  controller: {fileID: 0}
 --- !u!114 &114893125111181148
 MonoBehaviour:
   m_ObjectHideFlags: 1

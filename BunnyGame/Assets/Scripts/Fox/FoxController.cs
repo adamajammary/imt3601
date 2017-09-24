@@ -8,7 +8,9 @@ public class FoxController : NetworkBehaviour {
     GameObject biteArea;
     GameObject foxModel;
 
+    
     Material[] objMaterials;
+    private PlayerHealth _playerHealth;
 
     Color alfaColor;
 
@@ -23,13 +25,13 @@ public class FoxController : NetworkBehaviour {
         foxModel = transform.GetChild(1).gameObject;
        
         biteArea = transform.GetChild(2).gameObject;
+        this._playerHealth = this.GetComponent<PlayerHealth>();
 
         if (!this.isLocalPlayer)
             return; 
 
         PlayerController playerController = GetComponent<PlayerController>();
         playerController.runSpeed = 15;
-
     }
 
     // Update is called once per frame
@@ -56,9 +58,12 @@ public class FoxController : NetworkBehaviour {
         yield return 0;
         biteArea.GetComponent<BoxCollider>().enabled = false;
     }
+
     [Command]
     private void CmdBite()
     {
+        if (this._playerHealth.IsDead()) { return; }
+
         StartCoroutine(bite());
     }
 

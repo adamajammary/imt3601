@@ -1,40 +1,105 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
 public class PlayerHealth : NetworkBehaviour {
 
     private const int MAX_HEALTH = 100;
+    private Image     _damageImage;
+    private bool      _damageImmune;
+    private bool      _isDead;
+    private Text      _isDeadText;
+    private Button    _spectateButton;
+    private Image     _spectateImage;
+    private Text      _spectateText;
+    private bool      _showDeathScreen;
 
     [SyncVar(hook = "OnChangeHealth")]
     private int _currentHealth = MAX_HEALTH;
 
-    // Update the health/damage screen overlay on the client whenever the health value changes on the server
+    void Start() {
+        if (!this.isLocalPlayer) { return; }
+
+        this._damageImage     = GameObject.Find("Canvas/BloodSplatterOverlay").GetComponent<Image>();
+        this._isDead          = false;
+        this._isDeadText      = GameObject.Find("Canvas/PlayerIsDeadText").GetComponent<Text>();
+        this._spectateButton  = GameObject.Find("Canvas/SpectateButton").GetComponent<Button>();
+        this._spectateImage   = GameObject.Find("Canvas/SpectateButton").GetComponent<Image>();
+        this._spectateText    = GameObject.Find("Canvas/SpectateButton/SpectateButtonText").GetComponent<Text>();
+        this._showDeathScreen = false;
+
+        this._spectateButton.onClick.AddListener(this.spectate); // TODO: see spectate method below
+
+        // Make player immune from damage for the first 5 seconds after spawning
+        StartCoroutine(this.damageImmune(5.0f));
+    }
+
+    // Make the player immune from damage for <seconds>
+    private IEnumerator damageImmune(float seconds) {
+        this._damageImmune = true;
+        yield return new WaitForSeconds(seconds);
+        this._damageImmune = false;
+    }
+
+    public bool IsDead() {
+        return this._isDead;
+    }
+
+    // Update the health/damage on the client whenever the health value changes on the server.
     private void OnChangeHealth(int health) {
         if (!this.isLocalPlayer) { return; }
 
-        Image image = GameObject.Find("Canvas/BloodSplatterOverlay").GetComponent<Image>();
-        if (!image) { return; }
+        this.updateDamageScreen((float)health);
+        
+        if (this._isDead && !this._showDeathScreen) {
+            this.showDeathScreen();
+        }
+    }
 
-        float alpha = (1.0f - (float)health / (float)MAX_HEALTH);
-        image.color = new Color(image.color.r, image.color.g, image.color.b, alpha);
+    // Show the death screen.
+    private void showDeathScreen() {
+        if ((this._isDeadText == null) || (this._spectateImage == null) || (this._spectateText == null)) { return; }
+
+        this._showDeathScreen     = true;
+        this._isDeadText.color    = new Color(this._isDeadText.color.r,    this._isDeadText.color.g,    this._isDeadText.color.b,    1.0f);
+        this._spectateImage.color = new Color(this._spectateImage.color.r, this._spectateImage.color.g, this._spectateImage.color.b, 1.0f);
+        this._spectateText.color  = new Color(this._spectateText.color.r,  this._spectateText.color.g,  this._spectateText.color.b,  1.0f);
+    }
+
+    // TODO: Implement spectating (remember to set the correct script and method when implemented)
+    private void spectate() {
+        Debug.Log("TODO: Implement spectating");
+        Debug.Log("DISCUSS: Hide death screen?");
     }
 
     // Take damage when hit, and respawn the player if dead.
     public void TakeDamage(int amount) {
-        if (!this.isServer) { return; }
+        if (!this.isServer || this._damageImmune) { return; }
 
         this._currentHealth -= amount;
         
-        if (this._currentHealth <= 0) {
-            this._currentHealth = MAX_HEALTH;
-            this.RpcSpawn();
+        if (!this._isDead && (this._currentHealth <= 0)) {
+            this.RpcDie();
         }
+    }
+
+    public void TakeDamage(float amount) {
+        this.TakeDamage((int)amount);
+    }
+
+    // Update the health/damage screen overlay.
+    private void updateDamageScreen(float health) {
+        if ((this._damageImage == null) || (this._damageImage.color.a >= 1.0f)) { return; }
+
+        float alpha             = (1.0f - (float)health / (float)MAX_HEALTH);
+        this._damageImage.color = new Color(this._damageImage.color.r, this._damageImage.color.g, this._damageImage.color.b, alpha);
     }
 
     // Respawn the player in a new random position.
     [ClientRpc]
-    private void RpcSpawn() {
-        transform.position = new Vector3(Random.Range(-40, 40), 10, Random.Range(-40, 40));
+    private void RpcDie() {
+        this._isDead = true;
+        this.gameObject.transform.GetChild(1).gameObject.SetActive(false);
     }
 }

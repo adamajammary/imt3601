@@ -238,7 +238,6 @@ GameObject:
   - component: {fileID: 462937789}
   - component: {fileID: 462937788}
   - component: {fileID: 462937787}
-  - component: {fileID: 462937793}
   m_Layer: 5
   m_Name: PlayerSelectCanvas
   m_TagString: Untagged
@@ -365,34 +364,13 @@ RectTransform:
   - {fileID: 341557029}
   - {fileID: 1088794621}
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &462937793
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 462937786}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1768714887, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_TransformSyncMode: 1
-  m_SendInterval: 0.1
-  m_SyncRotationAxis: 7
-  m_RotationSyncCompression: 0
-  m_SyncSpin: 0
-  m_MovementTheshold: 0.001
-  m_VelocityThreshold: 0.0001
-  m_SnapThreshold: 5
-  m_InterpolateRotation: 1
-  m_InterpolateMovement: 1
 --- !u!1 &674393557
 GameObject:
   m_ObjectHideFlags: 0
@@ -542,7 +520,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &832357795
 GameObject:
@@ -877,6 +855,7 @@ MonoBehaviour:
   - {fileID: 1414541341299080, guid: a21a1bc70d54d8b4db8b9c9aeabe862f, type: 2}
   - {fileID: 1987588776468962, guid: 809e53d4ef88533478dbac980d337183, type: 2}
   - {fileID: 1812289213968426, guid: 8ae5ab1b99a18bb4e97be54e780f0256, type: 2}
+  - {fileID: 1821135780120678, guid: e401706bb86e2664192b693d66285355, type: 2}
   m_CustomConfig: 0
   m_MaxConnections: 4
   m_ConnectionConfig:

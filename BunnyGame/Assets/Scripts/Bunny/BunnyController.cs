@@ -15,24 +15,30 @@ public class BunnyController : NetworkBehaviour {
     void Start () {
         bunnyPoop = Resources.Load<GameObject>("Prefabs/poop");
 
-        if (!this.isLocalPlayer) { return; }
+        if (!this.isLocalPlayer)
+            return;
 
         _controller = GetComponent<CharacterController>();
         _timer = 0;
         _fireRate = 0.2f;
 
+        // Set custom attributes for class:
         PlayerController playerController = GetComponent<PlayerController>();
         playerController.jumpHeight = 3;
 
+        // Add abilities to class:
         SuperJump sj = gameObject.AddComponent<SuperJump>();
-        sj.init("", 10);
+        sj.init(10);
         playerController.abilities.Add(sj);
+        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
+
 
         this._playerHealth = this.GetComponent<PlayerHealth>();
     }
 
     void Update () {
-        if (!this.isLocalPlayer) { return; }
+        if (!this.isLocalPlayer)
+            return;
 
         if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1))
             this.shoot();

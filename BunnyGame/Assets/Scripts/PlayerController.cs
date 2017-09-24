@@ -44,7 +44,8 @@ public class PlayerController : NetworkBehaviour {
     }
 
     void Start() {
-        if (!this.isLocalPlayer) { return; }
+        if (!this.isLocalPlayer)
+            return;
 
         this._cameraTransform = Camera.main.transform;
         this.controller = this.GetComponent<CharacterController>();
@@ -53,7 +54,6 @@ public class PlayerController : NetworkBehaviour {
 
         this._damageTimer = 0;
         this.insideWall = true;
-
     }
 
 

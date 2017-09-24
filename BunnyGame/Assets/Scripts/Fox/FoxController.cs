@@ -10,14 +10,16 @@ public class FoxController : NetworkBehaviour {
 
     
     Material[] objMaterials;
-    private PlayerHealth _playerHealth;
-
     Color alfaColor;
 
+    private PlayerHealth _playerHealth;
+
     private int   _biteDamage       = 15;
-    private float _cooldownStealth  = 10.0f; 
+    private float _cooldownStealth  = 30.0f;
+    private float _stealthActive    = 10.0f;
     private float _transparency     = 0.1f;
     private float _notTransparent   = 1.0f;
+    private float _stealthTime      = 31.0f;
 
     // Use this for initialization
     void Start()
@@ -44,11 +46,15 @@ public class FoxController : NetworkBehaviour {
             CmdBite();
         }
 
+        this._stealthTime += Time.deltaTime;
         //The '1' key on the top of the alphanumeric keyboard
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-            CmdStealth();
-         
-        
+        if (Input.GetKeyDown(KeyCode.Alpha1)) {
+            if (this._stealthTime >= this._cooldownStealth)
+            {
+                CmdStealth();
+                this._stealthTime = 0;
+            }     
+        }   
     }
 
     // Biting is enabled for 1 tick after called
@@ -80,7 +86,7 @@ public class FoxController : NetworkBehaviour {
     private IEnumerator stealth()
     {
         RpcSetTransparentFox();
-        yield return new WaitForSeconds(_cooldownStealth);
+        yield return new WaitForSeconds(this._stealthActive);
         RpcSetOrginalFox();
     }
 

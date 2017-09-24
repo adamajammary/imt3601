@@ -75,7 +75,6 @@ public class FoxController : NetworkBehaviour {
     }
 
     [Command]
-
     private void CmdBite() {
         if (this._playerHealth.IsDead()) { return; }
 

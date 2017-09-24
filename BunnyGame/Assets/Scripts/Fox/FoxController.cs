@@ -8,8 +8,6 @@ public class FoxController : NetworkBehaviour {
     GameObject biteArea;
     GameObject foxModel;
 
-
-    
     Material[] objMaterials;
     Color alfaColor;
 
@@ -23,16 +21,16 @@ public class FoxController : NetworkBehaviour {
     private float _stealthTime      = 31.0f;
 
     // Use this for initialization
-{
-    void Start() {
+
+    void Start()
+    {
+        if (!this.isLocalPlayer)
+            return;
+
         this._playerHealth = this.GetComponent<PlayerHealth>();
         foxModel = transform.GetChild(1).gameObject;
        
         biteArea = transform.GetChild(2).gameObject;
-
-
-        if (!this.isLocalPlayer)
-
 
         // Set custom attributes for class:
         PlayerController playerController = GetComponent<PlayerController>();

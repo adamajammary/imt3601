@@ -68,7 +68,7 @@ public class NPCManager : NetworkBehaviour {
     void handleInstructions() {
         while (!this._instructions.isEmpty()) {
             var instruction = this._instructions.Dequeue();
-            Debug.Log("Recieved instruction for npc with id " + instruction.id);
+            //Debug.Log("Recieved instruction for npc with id " + instruction.id);
             this._npcs[instruction.id].GetComponent<NPC>().setMoveDir(instruction.moveDir);
         }
     }
@@ -100,7 +100,7 @@ public class NPCManager : NetworkBehaviour {
 
     void findObstacles() {
         float time = Time.realtimeSinceStartup;
-        Debug.Log("NPCManager: Setting up NPCWorldView by detecting obstacles!");
+        //Debug.Log("NPCManager: Setting up NPCWorldView by detecting obstacles!");
         for (int y = 0; y < _cellCount; y++) {
             for (int x = 0; x < _cellCount; x++) {
                 var cell = NPCWorldView.getCell(x, y);
@@ -116,7 +116,7 @@ public class NPCManager : NetworkBehaviour {
                 lastCellBlocked = cell.blocked;
             }
         }
-        Debug.Log("NPCManager: Finished detecting obstacles for NPCWorldView, time elapsed: " + (Time.realtimeSinceStartup - time));
+        //Debug.Log("NPCManager: Finished detecting obstacles for NPCWorldView, time elapsed: " + (Time.realtimeSinceStartup - time));
     }
 
     bool obstacleInCell(NPCWorldView.worldCellData cell) {

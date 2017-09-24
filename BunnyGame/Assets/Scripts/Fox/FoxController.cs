@@ -55,7 +55,7 @@ public class FoxController : NetworkBehaviour {
 
         this._stealthTime += Time.deltaTime;
         //The '1' key on the top of the alphanumeric keyboard
-        if (Input.GetKeyDown(KeyCode.Alpha1)) {
+        if (Input.GetKeyDown(KeyCode.Alpha2)) {
             if (this._stealthTime >= this._cooldownStealth)
             {
                 CmdStealth();

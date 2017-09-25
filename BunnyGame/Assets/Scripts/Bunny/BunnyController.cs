@@ -10,10 +10,8 @@ public class BunnyController : NetworkBehaviour {
 
     private CharacterController _controller;
     private GameObject bunnyPoop;
-    private PlayerHealth _playerHealth;
 
     void Start () {
-        this._playerHealth = this.GetComponent<PlayerHealth>();
         bunnyPoop = Resources.Load<GameObject>("Prefabs/poop");
 
         if (!this.isLocalPlayer)
@@ -46,7 +44,8 @@ public class BunnyController : NetworkBehaviour {
 
 
     private void shoot() {
-        if (this._playerHealth.IsDead()) { return; }
+        if (this.GetComponent<PlayerHealth>().IsDead())
+            return;
 
         this._timer += Time.deltaTime;
         if (this._timer > this._fireRate)

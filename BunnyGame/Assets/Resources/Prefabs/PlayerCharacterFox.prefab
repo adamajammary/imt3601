@@ -242,6 +242,7 @@ GameObject:
   - component: {fileID: 33244107237258214}
   - component: {fileID: 65167013829320180}
   - component: {fileID: 23714213636148060}
+  - component: {fileID: 54038857399589794}
   m_Layer: 0
   m_Name: FoxBiteHitboxCube
   m_TagString: foxbite
@@ -1478,6 +1479,21 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1079456887424838}
   m_Mesh: {fileID: 4300012, guid: 9633f8f5cbea8a645a7accf6022b5728, type: 3}
+--- !u!54 &54038857399589794
+Rigidbody:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1592742502781462}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!65 &65167013829320180
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -1512,6 +1528,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c6ed6ade47953248a50fff70594b3cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  abilities: []
   walkSpeed: 5
   runSpeed: 12
   gravity: -12
@@ -1520,6 +1537,9 @@ MonoBehaviour:
   turnSmoothTime: 0.2
   speedSmoothTime: 0.2
   insideWall: 0
+  currentSpeed: 0
+  controller: {fileID: 0}
+  running: 0
 --- !u!114 &114836446058181868
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1603,7 +1623,7 @@ CapsuleCollider:
   m_GameObject: {fileID: 1012460508770070}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   m_Radius: 0.5
   m_Height: 2
   m_Direction: 1

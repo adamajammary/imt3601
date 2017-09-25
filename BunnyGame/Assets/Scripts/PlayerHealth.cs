@@ -8,7 +8,7 @@ public class PlayerHealth : NetworkBehaviour {
     private const int MAX_HEALTH = 100;
     private Image     _damageImage;
     private bool      _damageImmune;
-    private bool      _isDead;
+    //private bool      _isDead;
     private Text      _isDeadText;
     private Button    _spectateButton;
     private Image     _spectateImage;
@@ -22,7 +22,7 @@ public class PlayerHealth : NetworkBehaviour {
         if (!this.isLocalPlayer) { return; }
 
         this._damageImage     = GameObject.Find("Canvas/BloodSplatterOverlay").GetComponent<Image>();
-        this._isDead          = false;
+        //this._isDead          = false;
         this._isDeadText      = GameObject.Find("Canvas/PlayerIsDeadText").GetComponent<Text>();
         this._spectateButton  = GameObject.Find("Canvas/SpectateButton").GetComponent<Button>();
         this._spectateImage   = GameObject.Find("Canvas/SpectateButton").GetComponent<Image>();
@@ -43,23 +43,28 @@ public class PlayerHealth : NetworkBehaviour {
     }
 
     public bool IsDead() {
-        return this._isDead;
-    }
+        //return this._isDead;
+		return (this._currentHealth <= 0);
+	}
 
-    // Update the health/damage on the client whenever the health value changes on the server.
-    private void OnChangeHealth(int health) {
+	// Update the health/damage on the client whenever the health value changes on the server.
+	private void OnChangeHealth(int health) {
+		print("OnChangeHealth: " + this.isLocalPlayer);
         if (!this.isLocalPlayer) { return; }
 
         this.updateDamageScreen((float)health);
-        
-        if (this._isDead && !this._showDeathScreen) {
-            this.showDeathScreen();
+
+		print("_isDead: " + this.IsDead());
+		if (this.IsDead() && !this._showDeathScreen) {
+			print("OnChangeHealth: " + this.isLocalPlayer);
+			this.showDeathScreen();
         }
     }
 
     // Show the death screen.
     private void showDeathScreen() {
-        if ((this._isDeadText == null) || (this._spectateImage == null) || (this._spectateText == null)) { return; }
+		print("showDeathScreen");
+		if ((this._isDeadText == null) || (this._spectateImage == null) || (this._spectateText == null)) { return; }
 
         this._showDeathScreen     = true;
         this._isDeadText.color    = new Color(this._isDeadText.color.r,    this._isDeadText.color.g,    this._isDeadText.color.b,    1.0f);
@@ -79,8 +84,9 @@ public class PlayerHealth : NetworkBehaviour {
 
         this._currentHealth -= amount;
         
-        if (!this._isDead && (this._currentHealth <= 0)) {
-            this.RpcDie();
+        if (this.IsDead()) {
+			print("TakeDamage: SERVER");
+			this.RpcDie();
         }
     }
 
@@ -90,16 +96,18 @@ public class PlayerHealth : NetworkBehaviour {
 
     // Update the health/damage screen overlay.
     private void updateDamageScreen(float health) {
-        if ((this._damageImage == null) || (this._damageImage.color.a >= 1.0f)) { return; }
+		print("updateDamageScreen: " + health);
+		if ((this._damageImage == null) || (this._damageImage.color.a >= 1.0f)) { return; }
 
         float alpha             = (1.0f - (float)health / (float)MAX_HEALTH);
         this._damageImage.color = new Color(this._damageImage.color.r, this._damageImage.color.g, this._damageImage.color.b, alpha);
     }
-
-    // Respawn the player in a new random position.
+    
+	// Respawn the player in a new random position.
     [ClientRpc]
     private void RpcDie() {
-        this._isDead = true;
+		print("RpcDie: OK");
+		//this._isDead = true;
         this.gameObject.transform.GetChild(1).gameObject.SetActive(false);
     }
 }

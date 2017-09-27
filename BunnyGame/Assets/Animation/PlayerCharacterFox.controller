@@ -8,9 +8,9 @@ AnimatorController:
   m_Name: PlayerCharacterFox
   serializedVersion: 5
   m_AnimatorParameters:
-  - m_Name: forward
+  - m_Name: movespeed
     m_Type: 1
-    m_DefaultFloat: 1
+    m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 0}
@@ -35,7 +35,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 4
-    m_ConditionEvent: forward
+    m_ConditionEvent: movespeed
     m_EventTreshold: 0.1
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1102791705712494928}
@@ -59,7 +59,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 3
-    m_ConditionEvent: forward
+    m_ConditionEvent: movespeed
     m_EventTreshold: 0.1
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 1102027523554985698}
@@ -88,7 +88,7 @@ AnimatorState:
   - {fileID: 1101205760453248464}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
+  m_IKOnFeet: 1
   m_WriteDefaultValues: 1
   m_Mirror: 0
   m_SpeedParameterActive: 1
@@ -96,7 +96,7 @@ AnimatorState:
   m_CycleOffsetParameterActive: 0
   m_Motion: {fileID: 7400000, guid: f95ce198b2764a44c8aade76e8a2928c, type: 3}
   m_Tag: 
-  m_SpeedParameter: forward
+  m_SpeedParameter: movespeed
   m_MirrorParameter: isMoving
   m_CycleOffsetParameter: 
 --- !u!1102 &1102791705712494928

@@ -158,6 +158,10 @@ public class FoxController : NetworkBehaviour {
 
     public void animate() {
         Animator animator = GetComponentInChildren<Animator>();
-        //animator.SetFloat("forward", GetComponent<PlayerController>().currentSpeed);
+        animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
+        Debug.Log(GetComponent<PlayerController>().currentSpeed +
+            "::" + animator.GetFloat("movespeed") +
+            "::" + animator.GetCurrentAnimatorStateInfo(0).IsName("foxMoving") + 
+            "::" + animator.GetCurrentAnimatorStateInfo(0).IsName("foxStanding"));
     }
 }

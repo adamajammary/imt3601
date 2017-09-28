@@ -5,16 +5,16 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class NPCManager : NetworkBehaviour {
-    public bool debugRender;
+    public bool debugRender;        //Should NPCWorldView be rendered in the editor?
 
-    private float _cellSize;
-    private int _cellCount;
-    private Vector3 _offset;
+    private float       _cellSize;  //The size of cells in NPCWorldView
+    private int         _cellCount; //Amount of cells in NPCWorldView
+    private Vector3     _offset;    //The offset for the cells in NPCWorldView
 
     private List<GameObject> _players;
     private List<GameObject> _npcs;
-    private NPCThread _npcThread;
-    private BlockingQueue<NPCThread.instruction> _instructions;
+    private NPCThread        _npcThread; //The thread running the logic for NPCs using NPCWorldView maintained by this class
+    private BlockingQueue<NPCThread.instruction> _instructions; //Queue used to recieve instuctions from NPCThread
 
     private bool _ready; 
     // Use this for initialization
@@ -53,14 +53,43 @@ public class NPCManager : NetworkBehaviour {
         
         this._instructions = new BlockingQueue<NPCThread.instruction>();
         this._npcThread = new NPCThread(this._instructions);
+        StartCoroutine(ASyncUpdate());
         this._ready = true;
+    }
+
+    private IEnumerator ASyncUpdate() {
+        //Update data about gamecharacters in NPCWorldView
+        int updateCount = 0; //How many objects have been updated this far
+        int updatesPerFrame = 20; //How many objects to update per frame
+        while (NPCWorldView.getRunNPCThread()) {
+            //Update Players
+            var players = NPCWorldView.getPlayers();
+            for (int i = 0; i < this._players.Count; i++) {
+                if (this._players[i] != null) {
+                    players[i].update(this._players[i].transform.position, this._players[i].transform.forward);
+                    updateCount++;
+                }
+                if (updateCount > updatesPerFrame) {
+                    updateCount = 0;
+                    yield return 0;
+                }
+            }
+            //Update NPCS
+            var npcs = NPCWorldView.getNpcs();
+            for (int i = 0; i < this._npcs.Count; i++) {
+                npcs[i].update(this._npcs[i].transform.position, this._npcs[i].transform.forward);
+                updateCount++;
+                if (updateCount > updatesPerFrame) {
+                    updateCount = 0;
+                    yield return 0;
+                }
+            }
+        }
     }
 
     // Update is called once per frame
     void Update () {
-        //Update data about gamecharacters in NPCWorldView
         if (this._ready) {
-            this.updateNPCView();
             this.handleInstructions();
         }
     }
@@ -73,33 +102,26 @@ public class NPCManager : NetworkBehaviour {
         }
     }
 
-    void updateNPCView() {
-        var players = NPCWorldView.getPlayers();
-        for (int i = 0; i < this._players.Count; i++) {
-            if (this._players[i] != null)
-                players[i].update(this._players[i].transform.position, this._players[i].transform.forward);
-        }
-
-        var npcs = NPCWorldView.getNpcs();
-        for (int i = 0; i < this._npcs.Count; i++)
-            npcs[i].update(this._npcs[i].transform.position, this._npcs[i].transform.forward);
-    }
-
+    //Spawns a NPC with a random direction
     [Command]
     private void CmdSpawnNPC(GameObject npc, int id) {
         var turtle = Instantiate(npc);
         NPCWorldView.worldCellData cell;
-        do {
+        do { //Give NPC a random position until it isnt in a blocked cell
             cell = NPCWorldView.getCell(Random.Range(0, this._cellCount), Random.Range(0, this._cellCount));
             turtle.GetComponent<NPC>().setSpawnPos(cell.pos);
         } while (cell.blocked);
+        //Angle is used to generate a direction
         float angle = Random.Range(0, Mathf.PI * 2);
         turtle.GetComponent<NPC>().setMoveDir(new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)));
         this._npcs.Add(turtle);
+        //Add a datastructure for the NPC in the NPCWorldView class
         NPCWorldView.getNpcs().Add(new NPCWorldView.GameCharacter(id));
         NetworkServer.Spawn(turtle);
     }
 
+    //Finds obstacles in every cell of NPCWorldView, and marks them as blocked
+    //Areas that are closed off by blocked cells will also be blocked
     void findObstacles() {
         float time = Time.realtimeSinceStartup;
         //Debug.Log("NPCManager: Setting up NPCWorldView by detecting obstacles!");
@@ -121,6 +143,7 @@ public class NPCManager : NetworkBehaviour {
         //Debug.Log("NPCManager: Finished detecting obstacles for NPCWorldView, time elapsed: " + (Time.realtimeSinceStartup - time));
     }
 
+    //Determines if there are any colliders inside a cell
     bool obstacleInCell(NPCWorldView.worldCellData cell) {
         bool obstacle = false;
         float modifier = 1.0f;

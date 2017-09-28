@@ -83,6 +83,7 @@ public class FoxController : NetworkBehaviour {
 
     public void updateAnimator() {
         Animator animator = GetComponentInChildren<Animator>();
-        animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
+        if(animator != null)
+            animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
     }
 }

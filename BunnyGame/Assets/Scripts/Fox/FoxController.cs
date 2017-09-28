@@ -37,6 +37,7 @@ public class FoxController : NetworkBehaviour {
 
     // Update is called once per frame
     void Update() {
+        updateAnimator();
         if (!this.isLocalPlayer)
             return;
 
@@ -80,5 +81,9 @@ public class FoxController : NetworkBehaviour {
     }
 
 
-
+    public void updateAnimator() {
+        Animator animator = GetComponentInChildren<Animator>();
+        if(animator != null)
+            animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
+    }
 }

@@ -29,7 +29,10 @@ public class BunnyController : NetworkBehaviour {
         SuperJump sj = gameObject.AddComponent<SuperJump>();
         sj.init(10);
         playerController.abilities.Add(sj);
-        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
+		Stealth st = gameObject.AddComponent<Stealth>();
+		st.init(1, 0.1f);
+		playerController.abilities.Add(st);
+		GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
 
 
     }

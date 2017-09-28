@@ -45,6 +45,7 @@ public class PlayerController : NetworkBehaviour {
     }
 
     void Start() {
+		CorrectRenderingMode(); // Calling this here to fix the rendering order of the model, because materials have rendering mode fade
         if (!this.isLocalPlayer)
             return;
 
@@ -55,7 +56,7 @@ public class PlayerController : NetworkBehaviour {
 
         this._damageTimer = 0;
         this.insideWall = true;
-    }
+	}
 
     void Update() {
         if (!this.isLocalPlayer) // NB! wallDamage should now work on clients
@@ -205,4 +206,20 @@ public class PlayerController : NetworkBehaviour {
             this._fallDamageImmune = false;
         }
     }
+
+	public void CorrectRenderingMode() {
+		Material[] materials;
+
+		foreach (Transform child in this.transform.GetChild(1)) {
+			if (child.gameObject.GetComponent<Renderer>() != null)
+				materials = child.gameObject.GetComponent<Renderer>().materials;
+			else if (child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+				materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
+			else
+				continue;
+			foreach (Material mat in materials) {
+				mat.SetInt("_ZWrite", 1);
+			}
+		}
+	}
 }

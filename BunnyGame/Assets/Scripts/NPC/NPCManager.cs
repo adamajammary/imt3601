@@ -75,8 +75,10 @@ public class NPCManager : NetworkBehaviour {
 
     void updateNPCView() {
         var players = NPCWorldView.getPlayers();
-        for (int i = 0; i < this._players.Count; i++)
-            players[i].update(this._players[i].transform.position, this._players[i].transform.forward);
+        for (int i = 0; i < this._players.Count; i++) {
+            if (this._players[i] != null)
+                players[i].update(this._players[i].transform.position, this._players[i].transform.forward);
+        }
 
         var npcs = NPCWorldView.getNpcs();
         for (int i = 0; i < this._npcs.Count; i++)

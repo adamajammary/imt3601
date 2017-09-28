@@ -19314,7 +19314,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "YOU'RE DEAD\r\nRank: #0   Kills: 0"
+  m_Text: "YOU'RE DEAD\r\nKills: 0   Rank: #0"
 --- !u!222 &1809991310
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -19851,7 +19851,13 @@ Prefab:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 81815320387905068, guid: d9790684e476b4c2baa89170f14ed5f7,
+        type: 2}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 81815320387905068, guid: d9790684e476b4c2baa89170f14ed5f7, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: d9790684e476b4c2baa89170f14ed5f7, type: 2}
   m_IsPrefabParent: 0
 --- !u!1001 &1894252687

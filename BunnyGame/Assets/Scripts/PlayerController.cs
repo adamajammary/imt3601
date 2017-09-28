@@ -57,11 +57,14 @@ public class PlayerController : NetworkBehaviour {
         this.insideWall = true;
     }
 
-
     void Update() {
-        if (!this.insideWall) //Feels hacky, but when TakeDamage only works on the server its got to be this way
+        if (!this.isLocalPlayer) // NB! wallDamage should now work on clients
+            return;
+
+        if (!this.insideWall) // Feels hacky, but when TakeDamage only works on the server its got to be this way
             wallDamage();
-        if (!this.isLocalPlayer) { return; }
+
+        //if (!this.isLocalPlayer) { return; }
 
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         Vector2 inputDir = input.normalized;
@@ -78,7 +81,6 @@ public class PlayerController : NetworkBehaviour {
         handleMouse();
 
     }
-
 
     // Turn off and on MeshRenderer so FPS camera works
     private void HandleAiming(){
@@ -123,8 +125,6 @@ public class PlayerController : NetworkBehaviour {
             _velocityY = 0;
     }
 
-
-
     public void jump() {
         if (controller.isGrounded) {
             float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight); 
@@ -132,8 +132,7 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
-    private void handleFallDamage()
-    {
+    private void handleFallDamage() {
         if (_fallDamageImmune) { // Cannot take damage while immune
             _dealFallDamageOnCollision = false;
         }
@@ -169,8 +168,7 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
-    private void OnDestroy()
-    {
+    private void OnDestroy() {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -190,18 +188,19 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.tag == "foxbite" && other.transform.parent != transform) {
-            this.GetComponent<PlayerHealth>().TakeDamage(other.GetComponentInParent<FoxController>().getDamage());
-        }
-        else if (other.gameObject.name == "Water") {
+    private void OnTriggerEnter(Collider other) {
+        if (!this.isLocalPlayer)
+            return;
+
+        //if (other.gameObject.tag == "foxbite" && other.transform.parent != transform) {
+        if ((other.gameObject.tag == "foxbite") && (other.gameObject.transform.parent.gameObject.tag == "Enemy")) {
+            this.GetComponent<PlayerHealth>().TakeDamage(other.GetComponentInParent<FoxController>().GetDamage());
+        } else if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
         }
     }
 
-    private void OnTriggerExit(Collider other)
-    {
+    private void OnTriggerExit(Collider other) {
         if (other.gameObject.name == "Water") {
             this._fallDamageImmune = false;
         }

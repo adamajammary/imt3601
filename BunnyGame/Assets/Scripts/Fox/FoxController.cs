@@ -6,20 +6,20 @@ using UnityEngine.Networking;
 
 public class FoxController : NetworkBehaviour {
     GameObject biteArea;
-  
+
     private PlayerHealth _playerHealth;
 
     private int   _biteDamage       = 15;
 
+
     // Use this for initialization
-    void Start()
-    {
+    void Start() {
+    
+        biteArea = transform.GetChild(2).gameObject;
+        this._playerHealth = this.GetComponent<PlayerHealth>();
         if (!this.isLocalPlayer)
             return;
 
-        this._playerHealth = this.GetComponent<PlayerHealth>();
-       
-        biteArea = transform.GetChild(2).gameObject;
 
         // Set custom attributes for class:
         PlayerController playerController = GetComponent<PlayerController>();
@@ -41,25 +41,53 @@ public class FoxController : NetworkBehaviour {
             return;
 
         if (Input.GetKeyDown(KeyCode.Mouse0)) {
-            CmdBite();
+            this.bite();
         }
+
+    }
+
+
+    private void bite() {
+        if (this.GetComponent<PlayerHealth>().IsDead())
+            return;
+
+        if (this.isClient)
+            this.CmdBite();
+        else if (this.isServer)
+            this.RpcBite();
+
+    }
+
+    [Command]
+    private void CmdBite() {
+        this.RpcBite();
+    }
+
+    [ClientRpc]
+    private void RpcBite() {
+        StartCoroutine(this.toggleBite());
     }
 
     // Biting is enabled for 1 tick after called
-    private IEnumerator bite() {
+    private IEnumerator toggleBite() {
         biteArea.GetComponent<BoxCollider>().enabled = true; 
         yield return 0;
         biteArea.GetComponent<BoxCollider>().enabled = false;
     }
 
-    [Command]
-    private void CmdBite() {
-        if (this._playerHealth.IsDead()) { return; }
-
-        StartCoroutine(bite());
+    public int GetDamage() {
+        return this._biteDamage;
     }
 
-    public int getDamage() {
-        return _biteDamage;
+    private void stealth() {
+        if (this.GetComponent<PlayerHealth>().IsDead())
+            return;
+
+        if (this.isClient)
+            this.CmdStealth();
+        else if (this.isServer)
+            this.RpcStealth();
     }
+
+
 }

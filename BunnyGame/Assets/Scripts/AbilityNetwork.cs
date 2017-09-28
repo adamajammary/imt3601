@@ -51,11 +51,17 @@ public class AbilityNetwork : NetworkBehaviour {
       
         foreach (Transform child in this.transform.GetChild(modelChildNum))
         {
-            materials = child.gameObject.GetComponent<Renderer>().materials;
-            int count = 0;
+			if(child.gameObject.GetComponent<Renderer>() != null)
+				materials = child.gameObject.GetComponent<Renderer>().materials;
+			else if (child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+				materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
+			else
+				continue;
+
+			int count = 0;
             foreach (Material mat in materials)
             {
-                alfa = mat.color;
+				alfa = mat.color;
                 alfa.a = transparancy;
                 materials[count++].SetColor("_Color", alfa);
             }
@@ -63,22 +69,25 @@ public class AbilityNetwork : NetworkBehaviour {
     }
 
     [ClientRpc]
-    private void RpcSetOrginalFox()
+    public void RpcSetOrginalFox()
     {
         Material[] materials;
         Color alfa;
         float orginal = 1.0f;
         
-        foreach (Transform child in this.transform.GetChild(modelChildNum))
-        {
-            materials = child.gameObject.GetComponent<Renderer>().materials;
-            int count = 0;
-            foreach (Material mat in materials)
-            {
-                alfa = mat.color;
+        foreach (Transform child in this.transform.GetChild(modelChildNum)) {
+			if (child.gameObject.GetComponent<Renderer>() != null)
+				materials = child.gameObject.GetComponent<Renderer>().materials;
+			else if (child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+				materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
+			else
+				continue;
+			int count = 0;
+            foreach (Material mat in materials) {
+				alfa = mat.color;
                 alfa.a = orginal;
                 materials[count++].SetColor("_Color", alfa);
-            }
+			}
         }
     }
     /////////////////////////////////////////////////////////////////

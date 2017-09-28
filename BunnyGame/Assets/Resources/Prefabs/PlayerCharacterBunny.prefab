@@ -314,6 +314,7 @@ GameObject:
   - component: {fileID: 114529705314550160}
   - component: {fileID: 114900676238164442}
   - component: {fileID: 114222918294070388}
+  - component: {fileID: 114039551738387226}
   m_Layer: 0
   m_Name: PlayerCharacterBunny
   m_TagString: Player
@@ -1196,6 +1197,17 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1112921559236994}
   m_Mesh: {fileID: 4300026, guid: 46a901cb08ea62f42a487ead58a0ca8e, type: 3}
+--- !u!114 &114039551738387226
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1987588776468962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 137f3531404a4e4408c0c04a7a878685, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114222918294070388
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -79,15 +79,6 @@ public class FoxController : NetworkBehaviour {
         return this._biteDamage;
     }
 
-    private void stealth() {
-        if (this.GetComponent<PlayerHealth>().IsDead())
-            return;
-
-        if (this.isClient)
-            this.CmdStealth();
-        else if (this.isServer)
-            this.RpcStealth();
-    }
 
 
 }

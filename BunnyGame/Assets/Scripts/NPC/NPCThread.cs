@@ -34,19 +34,19 @@ public class NPCThread {
             var players = NPCWorldView.getPlayers();
 
             foreach (var npc in npcs) {     
-                int[] cellPos = this.convertWorld2Cell(npc.getPos());
-                var currentCell = NPCWorldView.getCell(cellPos[0], cellPos[1]);
-                if (currentCell.blocked) {
+                int[] cellPos = NPCWorldView.convertWorld2Cell(npc.getPos());
+                var landCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.LAND, cellPos[0], cellPos[1]);
+                var waterCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.WATER, cellPos[0], cellPos[1]);
+                Debug.Log("FUUUCK");
+                if (landCell.blocked) {
                     //find out if the NPC is facing the obstacle, or is moving away from it
-                    //Math source: https://math.stackexchange.com/questions/878785/how-to-find-an-angle-in-range0-360-between-2-vectors
-                    Vector3 temp = currentCell.pos - npc.getPos();
+                    Vector3 temp = landCell.pos - npc.getPos();
                     Vector2 cellDir = new Vector2(temp.x, temp.z);
                     Vector2 dir = new Vector2(npc.getDir().x, npc.getDir().z);
-                    float dot = Vector2.Dot(dir, cellDir) / (dir.magnitude * cellDir.magnitude);
-                    float det = dir.x * cellDir.y - dir.y * cellDir.x;
-                    float angle = Mathf.Atan2(det, dot);
-                    if (angle < 90 || angle > 270) {
-                        //Debug.Log("Adding instruction for npc with id " + npc.getId());
+                    float angle = Vector2.Angle(dir, cellDir);
+                    
+                    if (angle < 90) {
+                        Debug.Log("Sending instructions!");
                         this._instructions.Enqueue(new instruction(npc.getId(), npc.getDir() * -1));
                     }
                 }
@@ -54,24 +54,4 @@ public class NPCThread {
             Thread.Sleep(100); // Will improve next week
         }
 	}
-
-    int[] convertWorld2Cell(Vector3 world) {
-        int[] cellPos = { 0, 0 };
-        //new Vector3(x * cellSize + cellSize / 2, 0, y * cellSize + cellSize / 2) + _offset;
-        world -= NPCWorldView.offset;
-        world /= NPCWorldView.cellSize;
-        //world.x -= NPCWorldView.cellSize / 2;
-        //world.z -= NPCWorldView.cellSize / 2;
-
-        cellPos[0] = clamp((int)world.x);
-        cellPos[1] = clamp((int)world.z);
-
-        return cellPos;
-    }
-
-    int clamp(int input) {
-        input = (input >= 0) ? input : 0;
-        input = (input < NPCWorldView.cellCount) ? input : NPCWorldView.cellCount - 1;
-        return input;
-    }
 }

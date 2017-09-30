@@ -158,8 +158,14 @@ public class NPCWorldViewManager : MonoBehaviour {
         }
         foreach (var npc in NPCWorldView.getNpcs()) {
             Gizmos.DrawSphere(npc.getPos(), 2);
-            Gizmos.DrawLine(npc.getPos(), npc.getPos() + npc.getDir());
+            Vector3 dir = npc.getDir();
+            Gizmos.DrawLine(npc.getPos(), npc.getPos() + dir);
+            Vector3 left = Quaternion.AngleAxis(80, Vector3.up) * dir;
+            Vector3 right = Quaternion.AngleAxis(-80, Vector3.up) * dir;
+            Gizmos.DrawLine(npc.getPos(), npc.getPos() + left);
+            Gizmos.DrawLine(npc.getPos(), npc.getPos() + right);
         }
+          
         foreach (var player in NPCWorldView.getPlayers()) {
             Gizmos.DrawSphere(player.getPos(), 2);
             Gizmos.DrawLine(player.getPos(), player.getPos() + player.getDir());

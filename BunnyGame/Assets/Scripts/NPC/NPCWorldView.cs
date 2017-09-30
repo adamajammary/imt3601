@@ -222,33 +222,33 @@ public static class NPCWorldView {
     }
 
     delegate float Line(float x, float y);
-    public static bool rayCast(WorldPlane plane, Vector3 start, Vector3 end) {
+    public static float rayCast(WorldPlane plane, Vector3 start, Vector3 end) {
         float a = (end.z - start.z) / (end.x - start.x + 0.000001f); //Don't want to divide by zero
         Line line = (x, y) => a * (x - start.x) - (y - start.z);
 
         int[] startIndex = convertWorld2Cell(start);
         int[] endIndex = convertWorld2Cell(end);
-        int xStart = (startIndex[0] < endIndex[0]) ? startIndex[0] : endIndex[0];
-        int xEnd = (startIndex[0] > endIndex[0]) ? startIndex[0] : endIndex[0];
-        int yStart = (startIndex[1] < endIndex[1]) ? startIndex[1] : endIndex[1];
-        int yEnd = (startIndex[1] > endIndex[1]) ? startIndex[1] : endIndex[1];
+        int xStart = clamp((startIndex[0] < endIndex[0]) ? startIndex[0] : endIndex[0] - 1);
+        int xEnd = clamp((startIndex[0] > endIndex[0]) ? startIndex[0] : endIndex[0] + 1);
+        int yStart = clamp((startIndex[1] < endIndex[1]) ? startIndex[1] : endIndex[1] - 1);
+        int yEnd = clamp((startIndex[1] > endIndex[1]) ? startIndex[1] : endIndex[1] + 1);
 
         for (int y = yStart; y < yEnd; y++) {
             for (int x = xStart; x < xEnd; x++) {
                 if (plane == WorldPlane.LAND) {
                     if (_land[x, y].blocked || !_water[x, y].blocked) {
                         if (cellLineCollision(line, _land[x, y]))
-                            return true;
+                            return Vector3.Distance(start, _land[x, y].pos);
                     }
                 } else if (plane == WorldPlane.WATER) {
                     if (!_land[x, y].blocked || _water[x, y].blocked) {
                         if (cellLineCollision(line, _land[x, y]))
-                            return true;
+                            return Vector3.Distance(start, _land[x, y].pos);
                     }
                 }
             }
         }
-        return false;
+        return float.MaxValue;
     }
 
     public static bool writeToFile() {

@@ -54,7 +54,7 @@ public class NPCManager : NetworkBehaviour {
     private IEnumerator ASyncUpdate() {
         //Update data about gamecharacters in NPCWorldView
         int updateCount = 0; //How many objects have been updated this far
-        int updatesPerFrame = 20; //How many objects to update per frame
+        int updatesPerFrame = 100; //How many objects to update per frame
         while (NPCWorldView.getRunNPCThread()) {
             //Update Players
             var players = NPCWorldView.getPlayers();
@@ -91,7 +91,6 @@ public class NPCManager : NetworkBehaviour {
     void handleInstructions() {
         while (!this._instructions.isEmpty()) {
             var instruction = this._instructions.Dequeue();
-            //Debug.Log("Recieved instruction for npc with id " + instruction.id);
             this._npcs[instruction.id].GetComponent<NPC>().setMoveDir(instruction.moveDir);
         }
     }

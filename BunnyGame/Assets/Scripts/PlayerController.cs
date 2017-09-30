@@ -116,7 +116,8 @@ public class PlayerController : NetworkBehaviour {
     public void Move(Vector2 inputDir) {
         bool isFPP = Input.GetKey(KeyCode.Mouse1); // FPP: First Person Perspective
 
-        if (inputDir != Vector2.zero) {
+
+        if (inputDir != Vector2.zero || isFPP) {
             float angle = isFPP ? 0 : Mathf.Atan2(inputDir.x, inputDir.y); // We don't care about what direction you're moving in when in FPP, as your camera alone decides the direction
             float targetRotation = angle * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
             transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation,

@@ -14,45 +14,54 @@ public class NPCThread {
     }
 
     private Thread _thread;
-    private bool _runThread;
+    private bool _isUpdating;
     private BlockingQueue<instruction> _instructions;
     System.Random _rng;
     
 
 	// Use this for initialization
 	public NPCThread (BlockingQueue<instruction> i) {
-        this._runThread = true;
         this._thread = new Thread(new ThreadStart(threadRunner)); //This starts running the update function
         this._instructions = i;
         _rng = new System.Random();
         this._thread.Start();
 	}
 	
+    public bool isUpdating { get { return this._isUpdating; } }
+
 	// Update is called once per frame
 	void threadRunner () {
         while (NPCWorldView.getRunNPCThread()) {
             if (this._instructions.isEmpty()) {
+                this._isUpdating = true;
                 var npcs = NPCWorldView.getNpcs();
                 var players = NPCWorldView.getPlayers();
-                foreach (var npc in npcs) {
-                    Vector3 avoidDir = avoidObstacle(npc);
-                    if (avoidDir != Vector3.zero) {
-                        npc.update(npc.getPos(), avoidDir);
-                        instruction i = new instruction(npc.getId(), avoidDir);
-                        this._instructions.Enqueue(i);
-                    } else if (_rng.NextDouble() < 0.05f) {
-                        Vector3 dir = npc.getDir();
-                        if (this._rng.NextDouble() > 0.5f) 
-                            dir = Quaternion.AngleAxis(10, Vector3.up) * dir;
-                        else
-                            dir = Quaternion.AngleAxis(-10, Vector3.up) * dir;
-                        instruction i = new instruction(npc.getId(), dir);
-                        this._instructions.Enqueue(i);
+                foreach (var npc in npcs.Values) {
+                    Vector3 dir = avoidObstacle(npc);
+                    if (dir != Vector3.zero) {
+                        this.sendInstuction(npc, dir);
+                    } else {
+                        dir = avoidPlayers(npc);
+                        if (dir != Vector3.zero) {
+                            this.sendInstuction(npc, dir);
+                        } else {
+                            dir = this.randomDir(npc);
+                            if (dir != Vector3.zero) {
+                                this.sendInstuction(npc, dir);
+                            }
+                        }
                     }
                 }
+                this._isUpdating = false;
             }
         }
 	}
+
+    private void sendInstuction(NPCWorldView.GameCharacter npc, Vector3 dir) {
+        npc.update(npc.getPos(), dir);
+        instruction i = new instruction(npc.getId(), dir);
+        this._instructions.Enqueue(i);
+    }
 
     private Vector3 avoidObstacle(NPCWorldView.GameCharacter npc) {
         float viewDist = 10.0f;
@@ -67,7 +76,42 @@ public class NPCThread {
             float rightDist = NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), npc.getPos() + superRight * viewDist);
             return (leftDist >= rightDist) ? left : right;
         }
+        return Vector3.zero;
+    }
 
+    private Vector3 avoidPlayers(NPCWorldView.GameCharacter npc) {
+        var players = NPCWorldView.getPlayers();
+        NPCWorldView.GameCharacter closestPlayer = null;
+        float closestDist = float.MaxValue;
+        foreach (var player in players.Values) {
+            float dist = Vector3.Distance(npc.getPos(), player.getPos());
+            if (dist < closestDist) {
+                closestDist = dist;
+                closestPlayer = player;
+            }
+        }
+
+        if (closestDist < 20) {
+            float a = angle(npc.getDir(), closestPlayer.getPos() - npc.getPos());
+            if (a < 75) { // In field of view?
+                if (NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), closestPlayer.getPos()) == float.MaxValue) { // in line of sight?
+                    Vector3 flee = npc.getPos() - closestPlayer.getPos();
+                    flee.y = 0;
+                    return flee.normalized;
+                }
+            }
+        }
+        return Vector3.zero;
+    }
+
+    private Vector3 randomDir(NPCWorldView.GameCharacter npc) {
+        if (this._rng.NextDouble() < 0.05f) {
+            Vector3 dir = npc.getDir();
+            if (this._rng.NextDouble() > 0.5f)
+                return Quaternion.AngleAxis(10, Vector3.up) * dir;
+            else
+                return Quaternion.AngleAxis(-10, Vector3.up) * dir;
+        }
         return Vector3.zero;
     }
 
@@ -77,3 +121,4 @@ public class NPCThread {
         return Vector2.Angle(a2, b2); 
     }
 }
+

@@ -123,8 +123,8 @@ public static class NPCWorldView {
     public const int cellCount = 160;
     public const float cellSize = 2.3f;
 
-    private static List<GameCharacter> _npcs;
-    private static List<GameCharacter> _players;
+    private static Dictionary<int,GameCharacter> _npcs;
+    private static Dictionary<int, GameCharacter> _players;
     private static bool _runNPCThread;
 
     private static worldCellData[,] _land;
@@ -139,8 +139,8 @@ public static class NPCWorldView {
         _runNPCThread = true;
         _ready = false;
 
-        _npcs = new List<GameCharacter>();
-        _players = new List<GameCharacter>();
+        _npcs = new Dictionary<int, GameCharacter>();
+        _players = new Dictionary<int, GameCharacter>();
 
         _land = new worldCellData[cellCount, cellCount];
         _water = new worldCellData[cellCount, cellCount];
@@ -206,10 +206,10 @@ public static class NPCWorldView {
             return null;
     }
 
-    public static List<GameCharacter> getPlayers() {
+    public static Dictionary<int, GameCharacter> getPlayers() {
         return _players;
     }
-    public static List<GameCharacter> getNpcs() {
+    public static Dictionary<int, GameCharacter> getNpcs() {
         return _npcs;
     }   
 

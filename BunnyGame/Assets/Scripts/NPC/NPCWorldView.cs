@@ -33,13 +33,27 @@ public static class NPCWorldView {
     // they would need their own copy anyways to get personal g, h, f values
     public class worldCellData {
         public int x, y;
-        public Vector3 pos;
         public bool blocked;
-        public List<worldCellData> neighbours;      
+        public List<worldCellData> neighbours;
+        public Vector3[] corners = new Vector3[4];
 
+        private Vector3 _pos;
         private float _h;
         private float _g;
         private float _f;
+
+        public Vector3 pos {
+            get {
+                return _pos;
+            }
+            set {
+                _pos = value;
+                corners[0] = _pos + new Vector3(cellSize / 2, 0, cellSize / 2);
+                corners[1] = _pos + new Vector3(-cellSize / 2, 0, cellSize / 2);
+                corners[2] = _pos + new Vector3(cellSize / 2, 0, -cellSize / 2);
+                corners[3] = _pos + new Vector3(-cellSize / 2, 0, -cellSize / 2);
+            }
+        }
 
         public float h {
             get {
@@ -207,6 +221,36 @@ public static class NPCWorldView {
          _runNPCThread = run;
     }
 
+    delegate float Line(float x, float y);
+    public static bool rayCast(WorldPlane plane, Vector3 start, Vector3 end) {
+        float a = (end.z - start.z) / (end.x - start.x + 0.000001f); //Don't want to divide by zero
+        Line line = (x, y) => a * (x - start.x) - (y - start.z);
+
+        int[] startIndex = convertWorld2Cell(start);
+        int[] endIndex = convertWorld2Cell(end);
+        int xStart = (startIndex[0] < endIndex[0]) ? startIndex[0] : endIndex[0];
+        int xEnd = (startIndex[0] > endIndex[0]) ? startIndex[0] : endIndex[0];
+        int yStart = (startIndex[1] < endIndex[1]) ? startIndex[1] : endIndex[1];
+        int yEnd = (startIndex[1] > endIndex[1]) ? startIndex[1] : endIndex[1];
+
+        for (int y = yStart; y < yEnd; y++) {
+            for (int x = xStart; x < xEnd; x++) {
+                if (plane == WorldPlane.LAND) {
+                    if (_land[x, y].blocked || !_water[x, y].blocked) {
+                        if (cellLineCollision(line, _land[x, y]))
+                            return true;
+                    }
+                } else if (plane == WorldPlane.WATER) {
+                    if (!_land[x, y].blocked || _water[x, y].blocked) {
+                        if (cellLineCollision(line, _land[x, y]))
+                            return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     public static bool writeToFile() {
         bool success = true;
         FileStream fsLand = new FileStream("./Assets/Data/land.nwl", FileMode.Create);
@@ -223,7 +267,7 @@ public static class NPCWorldView {
             fsLand.Close();
             fsWater.Close();
         }
-        return false;
+        return success;
     }
 
     public static bool readFromFile() {
@@ -254,6 +298,15 @@ public static class NPCWorldView {
         return success;
     }
     //===============================================================================
+    private static bool cellLineCollision(Line line, worldCellData cell) {
+        int sign = 0;
+        foreach (var corner in cell.corners) 
+            sign += Math.Sign(line(corner.x, corner.z));
+        if (Math.Abs(sign) != 4)
+            return true;
+        return false;
+    }
+
     private static void initPlane(worldCellData[,] plane, Vector3 offset) {
         for (int y = 0; y < cellCount; y++) {
             for (int x = 0; x < cellCount; x++) {

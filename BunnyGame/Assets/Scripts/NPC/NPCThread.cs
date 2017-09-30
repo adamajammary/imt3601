@@ -46,18 +46,8 @@ public class NPCThread {
 
     private Vector3 avoidObstacle(NPCWorldView.GameCharacter npc) {
         Vector3 avoidDir = Vector3.zero;
-
-
-        int[] cellPos = NPCWorldView.convertWorld2Cell(npc.getPos());
-        var landCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.LAND, cellPos[0], cellPos[1]);
-        var waterCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.WATER, cellPos[0], cellPos[1]);
-        for (int i = 0; i < waterCell.neighbours.Count; i++) {
-            if (!waterCell.blocked || landCell.blocked) {
-                if (angle(landCell.pos - npc.getPos(), npc.getDir()) < 90)
-                    avoidDir = -npc.getDir(); 
-            }
-        }
-
+        if (NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), npc.getPos() + npc.getDir() * 7.5f))
+            avoidDir = -npc.getDir();
         return avoidDir.normalized;
     }
 

@@ -217,7 +217,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4153515067649688}
-  - component: {fileID: 95932936552592842}
   m_Layer: 0
   m_Name: Red Fox
   m_TagString: Untagged
@@ -321,6 +320,8 @@ GameObject:
   - component: {fileID: 114919590370034422}
   - component: {fileID: 114884857835433452}
   - component: {fileID: 114322930942263824}
+  - component: {fileID: 95906887298916214}
+  - component: {fileID: 114234935192648348}
   m_Layer: 0
   m_Name: PlayerCharacterFox
   m_TagString: Player
@@ -973,13 +974,13 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!95 &95932936552592842
+--- !u!95 &95906887298916214
 Animator:
   serializedVersion: 3
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1449943955105458}
+  m_GameObject: {fileID: 1812289213968426}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: f95ce198b2764a44c8aade76e8a2928c, type: 3}
   m_Controller: {fileID: 9100000, guid: de978abd1d216b5479deb2f8df91c056, type: 2}
@@ -1024,6 +1025,25 @@ MonoBehaviour:
   currentSpeed: 0
   controller: {fileID: 0}
   running: 0
+--- !u!114 &114234935192648348
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1812289213968426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1590678366, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Animator: {fileID: 95906887298916214}
+  m_ParameterSendBits: 1
+  param0: 
+  param1: 
+  param2: 
+  param3: 
+  param4: 
+  param5: 
 --- !u!114 &114322930942263824
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -44,6 +44,7 @@ public class PlayerController : NetworkBehaviour {
         this._velocityY += waterForce * Time.deltaTime;
     }
 
+
     void Start() {
 		CorrectRenderingMode(); // Calling this here to fix the rendering order of the model, because materials have rendering mode fade
         if (!this.isLocalPlayer)

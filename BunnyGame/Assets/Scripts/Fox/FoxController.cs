@@ -5,16 +5,29 @@ using UnityEngine.Networking;
 
 
 public class FoxController : NetworkBehaviour {
+
     GameObject biteArea;
 
+    private int  _biteDamage = 15;
     private PlayerHealth _playerHealth;
 
-    private int   _biteDamage       = 15;
 
+
+    public override void PreStartClient()
+    {
+        base.PreStartClient();
+        NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
+        for (int i = 0; i < GetComponent<Animator>().parameterCount; i++)
+            netAnimator.SetParameterAutoSend(i, true);
+    }
 
     // Use this for initialization
     void Start() {
-    
+        NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
+        for (int i = 0; i < netAnimator.animator.parameterCount; i++)
+            netAnimator.SetParameterAutoSend(i, true);
+
+
         biteArea = transform.GetChild(2).gameObject;
         this._playerHealth = this.GetComponent<PlayerHealth>();
         if (!this.isLocalPlayer)
@@ -37,9 +50,10 @@ public class FoxController : NetworkBehaviour {
 
     // Update is called once per frame
     void Update() {
-        updateAnimator();
         if (!this.isLocalPlayer)
             return;
+
+        updateAnimator();
 
         if (Input.GetKeyDown(KeyCode.Mouse0)) {
             this.bite();
@@ -80,9 +94,9 @@ public class FoxController : NetworkBehaviour {
         return this._biteDamage;
     }
 
-
+    // Updata the animator with current state
     public void updateAnimator() {
-        Animator animator = GetComponentInChildren<Animator>();
+        Animator animator = GetComponent<Animator>();
         if(animator != null)
             animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
     }

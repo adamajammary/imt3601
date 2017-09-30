@@ -122,6 +122,7 @@ public static class NPCWorldView {
     private static bool _ready;
     //===============================================================================
     static NPCWorldView() {
+        _runNPCThread = true;
         _ready = false;
 
         _npcs = new List<GameCharacter>();
@@ -137,7 +138,7 @@ public static class NPCWorldView {
         );
         _waterOffset = new Vector3(
             -(cellCount * cellSize / 2.0f + cellSize / 2.0f),
-            -20,
+            -18,
             -(cellCount * cellSize / 2.0f + cellSize / 2.0f)
         );
 

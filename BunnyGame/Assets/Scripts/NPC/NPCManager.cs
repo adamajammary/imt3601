@@ -29,6 +29,7 @@ public class NPCManager : NetworkBehaviour {
     //This is how i deal with networking until i learn more about it
     private IEnumerator lateStart() {
         yield return new WaitForSeconds(1.0f);
+        while (!NPCWorldView.ready) yield return 0;
         //gather data about players for the NPCs
         GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");
         this._players.Add(localPlayer);
@@ -106,7 +107,7 @@ public class NPCManager : NetworkBehaviour {
             int y = Random.Range(0, this._cellCount);
             landCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.LAND, x, y);
             waterCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.WATER, x, y);            
-        } while (landCell.blocked && !waterCell.blocked);
+        } while (landCell.blocked || !waterCell.blocked);
         turtle.GetComponent<NPC>().setSpawnPos(landCell.pos);
         //Angle is used to generate a direction
         float angle = Random.Range(0, Mathf.PI * 2);
@@ -115,5 +116,9 @@ public class NPCManager : NetworkBehaviour {
         //Add a datastructure for the NPC in the NPCWorldView class
         NPCWorldView.getNpcs().Add(new NPCWorldView.GameCharacter(id));
         NetworkServer.Spawn(turtle);
+    }
+
+    void OnApplicationQuit() {
+        NPCWorldView.setRunNPCThread(false);
     }
 }

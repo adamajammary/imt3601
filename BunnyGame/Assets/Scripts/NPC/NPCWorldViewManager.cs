@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class NPCWorldViewManager : MonoBehaviour {
-    public bool debugRender;        //Should NPCWorldView be rendered in the editor?
+    public bool debugRenderLand;        //Should NPCWorldView be rendered in the editor?
+    public bool debugRenderWater;
 
     public Transform[] waterBodies;
 
@@ -18,6 +19,7 @@ public class NPCWorldViewManager : MonoBehaviour {
             calcNPCWorld();
             NPCWorldView.writeToFile();
         }
+        NPCWorldView.ready = true;
     }
 
     
@@ -124,8 +126,10 @@ public class NPCWorldViewManager : MonoBehaviour {
     }
 
     void OnDrawGizmos() {
-        if (debugRender) {
+        if (debugRenderLand) {
             drawGizmo(NPCWorldView.WorldPlane.LAND);
+        }
+        if (debugRenderWater) {
             drawGizmo(NPCWorldView.WorldPlane.WATER);
             Vector3 offset = NPCWorldView.waterOffset;
             foreach (var waterbody in waterBodies) {
@@ -160,9 +164,5 @@ public class NPCWorldViewManager : MonoBehaviour {
             Gizmos.DrawSphere(player.getPos(), 2);
             Gizmos.DrawLine(player.getPos(), player.getPos() + player.getDir());
         }
-    }
-
-    void OnApplicationQuit() {
-        NPCWorldView.setRunNPCThread(false);
     }
 }

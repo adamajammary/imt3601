@@ -32,26 +32,38 @@ public class NPCThread {
         while (NPCWorldView.getRunNPCThread()) {
             var npcs = NPCWorldView.getNpcs();
             var players = NPCWorldView.getPlayers();
-
-            foreach (var npc in npcs) {     
-                int[] cellPos = NPCWorldView.convertWorld2Cell(npc.getPos());
-                var landCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.LAND, cellPos[0], cellPos[1]);
-                var waterCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.WATER, cellPos[0], cellPos[1]);
-                Debug.Log("FUUUCK");
-                if (landCell.blocked) {
-                    //find out if the NPC is facing the obstacle, or is moving away from it
-                    Vector3 temp = landCell.pos - npc.getPos();
-                    Vector2 cellDir = new Vector2(temp.x, temp.z);
-                    Vector2 dir = new Vector2(npc.getDir().x, npc.getDir().z);
-                    float angle = Vector2.Angle(dir, cellDir);
-                    
-                    if (angle < 90) {
-                        Debug.Log("Sending instructions!");
-                        this._instructions.Enqueue(new instruction(npc.getId(), npc.getDir() * -1));
-                    }
-                }
+            foreach (var npc in npcs) {
+                Vector3 avoidDir = avoidObstacle(npc);
+                if (avoidDir != Vector3.zero) {
+                    npc.update(npc.getPos(), avoidDir);
+                    instruction i = new instruction(npc.getId(), avoidDir);
+                    this._instructions.Enqueue(i);
+                }           
             }
-            Thread.Sleep(100); // Will improve next week
+            
         }
 	}
+
+    private Vector3 avoidObstacle(NPCWorldView.GameCharacter npc) {
+        Vector3 avoidDir = Vector3.zero;
+
+
+        int[] cellPos = NPCWorldView.convertWorld2Cell(npc.getPos());
+        var landCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.LAND, cellPos[0], cellPos[1]);
+        var waterCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.WATER, cellPos[0], cellPos[1]);
+        for (int i = 0; i < waterCell.neighbours.Count; i++) {
+            if (!waterCell.blocked || landCell.blocked) {
+                if (angle(landCell.pos - npc.getPos(), npc.getDir()) < 90)
+                    avoidDir = -npc.getDir(); 
+            }
+        }
+
+        return avoidDir.normalized;
+    }
+
+    float angle(Vector3 a3, Vector3 b3) {
+        Vector2 a2 = new Vector2(a3.x, a3.z);
+        Vector2 b2 = new Vector2(b3.x, b3.z);
+        return Vector2.Angle(a2, b2); 
+    }
 }

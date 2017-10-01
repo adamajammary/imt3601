@@ -58,71 +58,67 @@ public class NPCManager : NetworkBehaviour {
     private IEnumerator ASyncUpdate() {
         //Update data about gamecharacters in NPCWorldView
         int updateCount = 0; //How many objects have been updated this far
-        int updatesPerFrame = 30; //How many objects to update per frame
+        int updatesPerFrame = 50; //How many objects to update per frame
         while (NPCWorldView.getRunNPCThread()) {
-            //Update Players
-            var players = NPCWorldView.getPlayers();
-            for (int i = 0; i < this._players.Count; i++) {
-                if (this._players[i] != null) {
-                    players[i].update(this._players[i].transform.position, this._players[i].transform.forward);
-                    updateCount++;
-                } else
-                    this._deadPlayers.Add(players[i].getId());
-                
-                if (updateCount > updatesPerFrame) {
-                    updateCount = 0;
-                    yield return 0;
-                }
-            }
             //Update NPCS
             var npcs = NPCWorldView.getNpcs();
-            for (int i = 0; i < this._npcs.Count; i++) {
-                if (this._npcs[i] != null) {
-                    npcs[i].update(this._npcs[i].transform.position, this._npcs[i].transform.forward);
+            foreach (var npc in this._npcs) {
+                if (npc.Value != null) {
+                    npcs[npc.Key].update(npc.Value.transform.position, npc.Value.transform.forward);
                     updateCount++;
                 } else
-                    this._deadNpcs.Add(npcs[i].getId());
+                    this._deadNpcs.Add(npc.Key);
+
                 if (updateCount > updatesPerFrame) {
                     updateCount = 0;
-                    yield return 0;
+                    yield return 0;       
+
+                    //Update Players, put it here so that players get updated every frame
+                    var players = NPCWorldView.getPlayers();
+                    foreach (var player in this._players) {
+                        if (player.Value != null) {
+                            players[player.Key].update(player.Value.transform.position, player.Value.transform.forward);
+                            updateCount++;
+                        } else
+                            this._deadPlayers.Add(player.Key);
+                    }
                 }
             }
+            this.removeDeadStuff();
         }
     }
 
     // Update is called once per frame
     void Update () {
         if (this._ready) {
-            if (this._deadNpcs.Count > 0 || this._deadNpcs.Count > 0) {
-                while (this._npcThread.isUpdating) { /*Wait for npc thread to catch up */}
-                this.removeDeadStuff();
-                this.handleInstructions(true);
-            } else
-                this.handleInstructions(false);
+            this.handleInstructions();
         }
     }
 
     void removeDeadStuff() {
-        var players = NPCWorldView.getPlayers();
-        foreach (int dead in this._deadPlayers) {
-            this._players.Remove(dead);
-            players.Remove(dead);
-        }
-        var npcs = NPCWorldView.getNpcs();
-        foreach (int dead in this._deadNpcs) {
-            this._npcs.Remove(dead);
-            npcs.Remove(dead);
+        if (this._deadNpcs.Count > 0 || this._deadNpcs.Count > 0) {
+            while (this._npcThread.isUpdating) { /*Wait for npc thread to catch up */}
+
+
+            var players = NPCWorldView.getPlayers();
+            foreach (int dead in this._deadPlayers) {
+                this._players.Remove(dead);
+                players.Remove(dead);
+            }
+            var npcs = NPCWorldView.getNpcs();
+            foreach (int dead in this._deadNpcs) {
+                this._npcs.Remove(dead);
+                npcs.Remove(dead);
+            }
         }
     }
 
-    void handleInstructions(bool filter) {
+    void handleInstructions() {
         while (!this._instructions.isEmpty()) {
-            var instruction = this._instructions.Dequeue();
-            if (filter) {
-                if (this._npcs.ContainsKey(instruction.id)) // Filter param so that this test won't be done when not necessary
-                    this._npcs[instruction.id].GetComponent<NPC>().setMoveDir(instruction.moveDir);
-            } else
+            var instruction = this._instructions.Dequeue();            
+            if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null) // Filter param so that this test won't be done when not necessary
                 this._npcs[instruction.id].GetComponent<NPC>().setMoveDir(instruction.moveDir);
+            
         }
     }
 

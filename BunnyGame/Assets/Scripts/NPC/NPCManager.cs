@@ -34,6 +34,7 @@ public class NPCManager : NetworkBehaviour {
     private IEnumerator lateStart() {
         yield return new WaitForSeconds(1.0f);
         while (!NPCWorldView.ready) yield return 0;
+        NPCWorldView.clearGameCharacters();
         //gather data about players for the NPCs
         GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");
         this._players.Add(0, localPlayer);

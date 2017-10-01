@@ -189,6 +189,11 @@ public static class NPCWorldView {
         return cellPos;
     }
 
+    public static void clearGameCharacters() {
+        _npcs = new Dictionary<int, GameCharacter>();
+        _players = new Dictionary<int, GameCharacter>();
+    }
+
     // No convenient way of using get; set; or overloading [,] operator that i found
     //========================================================================================
     // Not using any locking for these, because only one thread writes to them              //

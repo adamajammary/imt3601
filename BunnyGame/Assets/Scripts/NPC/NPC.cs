@@ -10,11 +10,13 @@ public class NPC : NetworkBehaviour {
     [SyncVar]
     private Vector3 _moveDir;
     private CharacterController _cc;
+    private GameObject _blood;
     private const float _gravity = -12;
     private float _yVel;
     // Use this for initialization
     void Start () {
         this._cc = GetComponent<CharacterController>();
+        this._blood = Resources.Load<GameObject>("Prefabs/Blood");
         this._yVel = 0;
 	}
 	
@@ -37,5 +39,34 @@ public class NPC : NetworkBehaviour {
 
     public void setMoveDir(Vector3 moveDir) {
         this._moveDir = moveDir;
+    }
+
+    private void OnCollisionEnter(Collision other) {
+        if (other.gameObject.tag == "projectile") {
+            CmdBloodParticle(other.gameObject.transform.position);
+            Destroy(other.gameObject);
+            Destroy(this.gameObject);
+        }
+    }
+
+    private void OnTriggerEnter(Collider other) {
+        if (!this.isLocalPlayer)
+            return;
+
+        //if (other.gameObject.tag == "foxbite" && other.transform.parent != transform) {
+        if ((other.gameObject.tag == "foxbite") && (other.gameObject.transform.parent.gameObject.tag == "Enemy")) {
+            CmdBloodParticle(other.GetComponentInParent<FoxController>().biteInpact());
+            Destroy(this.gameObject);
+        }
+    }
+
+    [Command]
+    public void CmdBloodParticle(Vector3 hitPosition) {
+        GameObject blood = Instantiate(this._blood);
+
+        blood.transform.position = hitPosition;
+
+        NetworkServer.Spawn(blood);
+        Destroy(blood, 5.0f);
     }
 }

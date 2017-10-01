@@ -41,7 +41,7 @@ public class NPCThread {
 	public NPCThread (BlockingQueue<instruction> i) {
         this._thread = new Thread(new ThreadStart(threadRunner)); //This starts running the update function
         this._instructions = i;
-        _rng = new System.Random();
+        this._rng = new System.Random(691337);
 
         this._npcStates = new Dictionary<int, NPCState>();
         var npcs = NPCWorldView.getNpcs();
@@ -83,8 +83,9 @@ public class NPCThread {
                         fleeDir = this.avoidPlayer(npc, player);
                         this.sendInstuction(npc, fleeDir.normalized * speed);
                     } else if (state.contains(State.ROAMING)) {
-                        roamDir = this.randomDir(npc);
-                        if (roamDir != Vector3.zero) this.sendInstuction(npc, roamDir.normalized * speed);
+                        //This thing goes out of sync real fast
+                        //roamDir = this.randomDir(npc);
+                        //if (roamDir != Vector3.zero) this.sendInstuction(npc, roamDir.normalized * speed);
                     }
                     npc.update(npc.getPos() + npc.getDir() * (1 / 60),  npc.getDir()); // Try to guess next pos
                 }

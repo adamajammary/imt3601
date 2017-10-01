@@ -9,6 +9,7 @@ TagManager:
   - Enemy
   - foxbite
   - ground
+  - npc
   layers:
   - Default
   - TransparentFX

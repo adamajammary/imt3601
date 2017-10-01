@@ -17,17 +17,22 @@ public class NPCManager : NetworkBehaviour {
 
     // Use this for initialization
     void Start() {
-        if (this.isServer) {
-            _cellSize = NPCWorldView.cellSize;
-            _cellCount = NPCWorldView.cellCount;            
+        _cellSize = NPCWorldView.cellSize;
+        _cellCount = NPCWorldView.cellCount;            
 
-            this._players = new Dictionary<int, GameObject>();
-            this._npcs = new Dictionary<int, GameObject>();
-            this._deadPlayers = new List<int>();
-            this._deadNpcs = new List<int>();
-            this._ready = false;
-            StartCoroutine(lateStart());
+        this._players = new Dictionary<int, GameObject>();
+        this._npcs = new Dictionary<int, GameObject>();
+        this._deadPlayers = new List<int>();
+        this._deadNpcs = new List<int>();
+        this._ready = false;
+
+        if (this.isServer) {
+            GameObject turtle = Resources.Load<GameObject>("Prefabs/TurtleNPC");
+            for (int i = 0; i < 100; i++)  // Spawn turtles            
+                this.CmdSpawnNPC(turtle);
         }
+
+        StartCoroutine(lateStart());
     }
 
     //This is how i deal with networking until i learn more about it
@@ -43,11 +48,12 @@ public class NPCManager : NetworkBehaviour {
         var players = NPCWorldView.getPlayers();
         for (int i = 0; i < this._players.Count; i++)
             players.Add(i, new NPCWorldView.GameCharacter(i));
-
-        //spawn npcs and gather npc data for the NPCs
-        GameObject turtle = Resources.Load<GameObject>("Prefabs/TurtleNPC");
-        for (int i = 0; i < 100; i++)  // Spawn turtles            
-            this.CmdSpawnNPC(turtle, i);
+      
+        GameObject[] turtles = GameObject.FindGameObjectsWithTag("npc");
+        for (int i = 0; i < turtles.Length; i++) {
+            this._npcs.Add(i, turtles[i]);
+            NPCWorldView.getNpcs().Add(i, new NPCWorldView.GameCharacter(i));
+        }
         
         this._instructions = new BlockingQueue<NPCThread.instruction>();
         this._npcThread = new NPCThread(this._instructions);
@@ -126,7 +132,7 @@ public class NPCManager : NetworkBehaviour {
 
     //Spawns a NPC with a random direction
     [Command]
-    private void CmdSpawnNPC(GameObject npc, int id) {
+    private void CmdSpawnNPC(GameObject npc) {
         var turtle = Instantiate(npc);
         NPCWorldView.worldCellData landCell;
         NPCWorldView.worldCellData waterCell;
@@ -136,13 +142,11 @@ public class NPCManager : NetworkBehaviour {
             landCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.LAND, x, y);
             waterCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.WATER, x, y);            
         } while (landCell.blocked || !waterCell.blocked);
-        turtle.GetComponent<NPC>().setSpawnPos(landCell.pos);
+        turtle.GetComponent<NPC>().setSpawnPos(landCell.pos);        
         //Angle is used to generate a direction
         float angle = Random.Range(0, Mathf.PI * 2);
-        turtle.GetComponent<NPC>().setMoveDir(new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)));
-        this._npcs.Add(id, turtle);
+        turtle.GetComponent<NPC>().setSpawnRot(Quaternion.Euler(Mathf.Cos(angle), 0, Mathf.Sin(angle)));
         //Add a datastructure for the NPC in the NPCWorldView class
-        NPCWorldView.getNpcs().Add(id, new NPCWorldView.GameCharacter(id));
         NetworkServer.Spawn(turtle);
     }
 

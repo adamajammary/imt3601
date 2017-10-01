@@ -5,9 +5,10 @@ using UnityEngine.Networking;
 
 // All of the logic for the NPC will be handeled by NPCThread
 public class NPC : NetworkBehaviour {
-    [SyncVar(hook = "spawn")]
+    [SyncVar(hook = "spawnPos")]
     private Vector3 _spawnPos;
-    [SyncVar]
+    [SyncVar(hook = "spawnRot")]
+    private Quaternion _spawnRot;
     private Vector3 _moveDir;
     private CharacterController _cc;
     private GameObject _blood;
@@ -29,12 +30,21 @@ public class NPC : NetworkBehaviour {
         this.transform.LookAt(transform.position + this._moveDir);
 	}
 
-    public void spawn(Vector3 _spawnPos) {
+    public void spawnPos(Vector3 _spawnPos) {
         transform.position = _spawnPos;
+    }
+
+    public void spawnRot(Quaternion _spawnRot) {
+        transform.rotation = _spawnRot;
     }
 
     public void setSpawnPos(Vector3 spawnPos) {
         this._spawnPos = spawnPos;
+        this._moveDir = this.transform.forward;
+    }
+
+    public void setSpawnRot(Quaternion spawnRot) {
+        this._spawnRot = spawnRot;
     }
 
     public void setMoveDir(Vector3 moveDir) {

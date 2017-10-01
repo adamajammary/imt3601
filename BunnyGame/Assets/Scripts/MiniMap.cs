@@ -21,12 +21,14 @@ public class MiniMap : MonoBehaviour {
 	
 
 	void Update () {
-        if (_mode == MinimapMode.FOLLOW_PLAYER) {
-            if (_player == null)
-                setCameraMode(MinimapMode.VIEW_ALL);
-            else
-                transform.position = new Vector3(_player.transform.position.x, _cameraHeight, _player.transform.position.z);
+        if(_player == null) {
+            _player = GameObject.FindGameObjectWithTag("Player");
+            return;
         }
+
+        if (_mode == MinimapMode.FOLLOW_PLAYER)
+                transform.position = new Vector3(_player.transform.position.x, _cameraHeight, _player.transform.position.z);
+        
 
         if (Input.GetKeyDown(KeyCode.M)) {
             if (_mode == MinimapMode.FOLLOW_PLAYER)
@@ -40,7 +42,6 @@ public class MiniMap : MonoBehaviour {
         _mode = mode;
         switch (mode) {
             case MinimapMode.FOLLOW_PLAYER:
-                _player = GameObject.FindGameObjectWithTag("Player");
                 GetComponent<Camera>().orthographicSize = 65;
                 if (_player != null)
                     _player.transform.GetChild(0).localScale = new Vector3(3, 1, 3);

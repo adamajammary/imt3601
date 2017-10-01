@@ -110,6 +110,8 @@ public class NPCManager : NetworkBehaviour {
                 this._npcs.Remove(dead);
                 npcs.Remove(dead);
             }
+            this._deadNpcs.Clear();
+            this._deadPlayers.Clear();
         }
     }
 

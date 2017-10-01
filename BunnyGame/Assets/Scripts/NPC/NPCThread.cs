@@ -100,10 +100,10 @@ public class NPCThread {
     }
 
     private Vector3 avoidObstacle(NPCWorldView.GameCharacter npc) {
-        float viewDist = 15.0f;
+        float viewDist = 10.0f;
         float turnAngle = 10;
         Vector3 dir = npc.getDir();
-        if (NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), npc.getPos() + dir * 10f) != float.MaxValue) {
+        if (detectObstacle(npc)) {
             Vector3 left = Quaternion.AngleAxis(turnAngle, Vector3.up) * dir;
             Vector3 right = Quaternion.AngleAxis(-turnAngle, Vector3.up) * dir;
             Vector3 superLeft = Quaternion.AngleAxis(90, Vector3.up) * dir;
@@ -113,6 +113,21 @@ public class NPCThread {
             return (leftDist >= rightDist) ? left : right;
         }
         return Vector3.zero;
+    }
+
+    private bool detectObstacle(NPCWorldView.GameCharacter npc) {
+        float viewDist = 5.0f;
+        float fov = 45;
+        Vector3 dir = npc.getDir();
+        Vector3[] eyes = new Vector3[3];
+        eyes[0] = dir;
+        eyes[1] = Quaternion.AngleAxis(fov, Vector3.up) * dir;
+        eyes[2] = Quaternion.AngleAxis(-fov, Vector3.up) * dir;
+        foreach (var eye in eyes) {
+            if (NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), npc.getPos() + eye * viewDist) != float.MaxValue)
+                return true;
+        }
+        return false;
     }
 
     private bool canSeePlayer(NPCWorldView.GameCharacter npc, NPCWorldView.GameCharacter player) {        

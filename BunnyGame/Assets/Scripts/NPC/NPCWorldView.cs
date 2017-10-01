@@ -136,6 +136,9 @@ public static class NPCWorldView {
     private static bool _ready;
     //===============================================================================
     static NPCWorldView() {
+        init();
+    }
+    public static void init() {
         _runNPCThread = true;
         _ready = false;
 
@@ -187,11 +190,6 @@ public static class NPCWorldView {
         cellPos[1] = clamp((int)world.z);
 
         return cellPos;
-    }
-
-    public static void clearGameCharacters() {
-        _npcs = new Dictionary<int, GameCharacter>();
-        _players = new Dictionary<int, GameCharacter>();
     }
 
     // No convenient way of using get; set; or overloading [,] operator that i found

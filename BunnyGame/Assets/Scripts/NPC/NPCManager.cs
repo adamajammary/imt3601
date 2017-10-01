@@ -34,7 +34,6 @@ public class NPCManager : NetworkBehaviour {
     private IEnumerator lateStart() {
         yield return new WaitForSeconds(1.0f);
         while (!NPCWorldView.ready) yield return 0;
-        NPCWorldView.clearGameCharacters();
         //gather data about players for the NPCs
         GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");
         this._players.Add(0, localPlayer);
@@ -72,7 +71,7 @@ public class NPCManager : NetworkBehaviour {
 
                 if (updateCount > updatesPerFrame) {
                     updateCount = 0;
-                    yield return 0;
+                    yield return 0;       
 
                     //Update Players, put it here so that players get updated every frame
                     var players = NPCWorldView.getPlayers();
@@ -85,42 +84,41 @@ public class NPCManager : NetworkBehaviour {
                     }
                 }
             }
+            this.removeDeadStuff();
         }
     }
 
     // Update is called once per frame
     void Update () {
         if (this._ready) {
-            if (this._deadNpcs.Count > 0 || this._deadNpcs.Count > 0) {
-                while (this._npcThread.isUpdating) { /*Wait for npc thread to catch up */}
-                this.removeDeadStuff();
-                this.handleInstructions(true);
-            } else
-                this.handleInstructions(false);
+            this.handleInstructions();
         }
     }
 
     void removeDeadStuff() {
-        var players = NPCWorldView.getPlayers();
-        foreach (int dead in this._deadPlayers) {
-            this._players.Remove(dead);
-            players.Remove(dead);
-        }
-        var npcs = NPCWorldView.getNpcs();
-        foreach (int dead in this._deadNpcs) {
-            this._npcs.Remove(dead);
-            npcs.Remove(dead);
+        if (this._deadNpcs.Count > 0 || this._deadNpcs.Count > 0) {
+            while (this._npcThread.isUpdating) { /*Wait for npc thread to catch up */}
+
+
+            var players = NPCWorldView.getPlayers();
+            foreach (int dead in this._deadPlayers) {
+                this._players.Remove(dead);
+                players.Remove(dead);
+            }
+            var npcs = NPCWorldView.getNpcs();
+            foreach (int dead in this._deadNpcs) {
+                this._npcs.Remove(dead);
+                npcs.Remove(dead);
+            }
         }
     }
 
-    void handleInstructions(bool filter) {
+    void handleInstructions() {
         while (!this._instructions.isEmpty()) {
-            var instruction = this._instructions.Dequeue();
-            if (filter) {
-                if (this._npcs.ContainsKey(instruction.id)) // Filter param so that this test won't be done when not necessary
-                    this._npcs[instruction.id].GetComponent<NPC>().setMoveDir(instruction.moveDir);
-            } else
+            var instruction = this._instructions.Dequeue();            
+            if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null) // Filter param so that this test won't be done when not necessary
                 this._npcs[instruction.id].GetComponent<NPC>().setMoveDir(instruction.moveDir);
+            
         }
     }
 

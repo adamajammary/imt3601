@@ -33,7 +33,7 @@ public class PlayerController : NetworkBehaviour {
     private bool _dealFallDamageOnCollision = false;
     private bool _fallDamageImmune = false;
 
-
+    private GameObject _blood;
     private Transform _cameraTransform;
     public CharacterController controller;
 
@@ -44,9 +44,16 @@ public class PlayerController : NetworkBehaviour {
         this._velocityY += waterForce * Time.deltaTime;
     }
 
+
     void Start() {
+		CorrectRenderingMode(); // Calling this here to fix the rendering order of the model, because materials have rendering mode fade
+        this._blood = Resources.Load<GameObject>("Prefabs/Blood");
         if (!this.isLocalPlayer)
             return;
+
+        
+        if(this._blood == null)
+            Debug.Log("finnes ikke");
 
         this._cameraTransform = Camera.main.transform;
         this.controller = this.GetComponent<CharacterController>();
@@ -55,7 +62,7 @@ public class PlayerController : NetworkBehaviour {
 
         this._damageTimer = 0;
         this.insideWall = true;
-    }
+	}
 
     void Update() {
         if (!this.isLocalPlayer) // NB! wallDamage should now work on clients
@@ -70,9 +77,11 @@ public class PlayerController : NetworkBehaviour {
         Vector2 inputDir = input.normalized;
         running = Input.GetKey(KeyCode.LeftShift);
 
+
         handleSpecialAbilities();
 
         Move(inputDir);
+
         if (Input.GetAxisRaw("Jump") > 0)
             this.jump();
 
@@ -86,12 +95,18 @@ public class PlayerController : NetworkBehaviour {
     private void HandleAiming(){
         if (Input.GetKeyDown(KeyCode.Mouse1)) {
             foreach (Transform t in this.gameObject.transform.GetChild(1)) {
-                t.gameObject.GetComponent<MeshRenderer>().enabled = false;
+                if(t.gameObject.GetComponent<MeshRenderer>() != null)
+                    t.gameObject.GetComponent<MeshRenderer>().enabled = false;
+                else if(t.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+                    t.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false;
             }
         }
         else if(Input.GetKeyUp(KeyCode.Mouse1)) {
             foreach (Transform t in this.gameObject.transform.GetChild(1)) {
-                t.gameObject.GetComponent<MeshRenderer>().enabled = true;
+                if (t.gameObject.GetComponent<MeshRenderer>() != null)
+                    t.gameObject.GetComponent<MeshRenderer>().enabled = true;
+                else if (t.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+                    t.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = true;
             }
         }
     }
@@ -105,11 +120,14 @@ public class PlayerController : NetworkBehaviour {
     }
 
     public void Move(Vector2 inputDir) {
+        bool isFPP = Input.GetKey(KeyCode.Mouse1); // FPP: First Person Perspective
 
-        if (inputDir != Vector2.zero) {
-            float targetRotation = Mathf.Atan2(inputDir.x, inputDir.y) * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
+
+        if (inputDir != Vector2.zero || isFPP) {
+            float angle = isFPP ? 0 : Mathf.Atan2(inputDir.x, inputDir.y); // We don't care about what direction you're moving in when in FPP, as your camera alone decides the direction
+            float targetRotation = angle * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
             transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation,
-                                                ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
+                                                        ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
         }
 
         float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
@@ -117,7 +135,15 @@ public class PlayerController : NetworkBehaviour {
 
         this._velocityY += Time.deltaTime * gravity;
 
-        Vector3 velocity = transform.forward * currentSpeed + Vector3.up * _velocityY;
+        Vector3 moveDir = transform.forward;
+
+        // Set moveDir relative to the cameras direction
+        if (isFPP) {
+            moveDir = _cameraTransform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
+            moveDir.y = 0;
+        }
+
+        Vector3 velocity = moveDir * currentSpeed + Vector3.up * _velocityY;
 
         this.controller.Move(velocity * Time.deltaTime);
 
@@ -183,6 +209,10 @@ public class PlayerController : NetworkBehaviour {
 
     private void OnCollisionEnter(Collision other) {
         if (other.gameObject.tag == "projectile") {
+            //this.GetComponent<PlayerHealth>().TakeDamage(other.gameObject.GetComponent<BunnyPoop>().GetDamage());
+            //CmdBloodParticle(other.gameObject.transform.position);
+            //Destroy(other.gameObject);
+
             PlayerHealth healthScript = this.GetComponent<PlayerHealth>();
             BunnyPoop    poopScript   = other.gameObject.GetComponent<BunnyPoop>();
 
@@ -190,6 +220,7 @@ public class PlayerController : NetworkBehaviour {
             if ((healthScript != null) && (poopScript != null)) {// && !healthScript.IsDead()) {
                 if (this.isLocalPlayer) {
                     healthScript.TakeDamage(poopScript.GetDamage());
+					CmdBloodParticle(other.gameObject.transform.position);
                     Destroy(other.gameObject);
                 }
 
@@ -212,6 +243,7 @@ public class PlayerController : NetworkBehaviour {
 
         //if (other.gameObject.tag == "foxbite" && other.transform.parent != transform) {
         if ((other.gameObject.tag == "foxbite") && (other.gameObject.transform.parent.gameObject.tag == "Enemy")) {
+            CmdBloodParticle(other.GetComponentInParent<FoxController>().biteInpact());
             this.GetComponent<PlayerHealth>().TakeDamage(other.GetComponentInParent<FoxController>().GetDamage());
         } else if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
@@ -225,5 +257,32 @@ public class PlayerController : NetworkBehaviour {
         if (other.gameObject.name == "Water") {
             this._fallDamageImmune = false;
         }
+    }
+
+	public void CorrectRenderingMode() {
+		Material[] materials;
+
+		foreach (Transform child in this.transform.GetChild(1)) {
+			if (child.gameObject.GetComponent<Renderer>() != null)
+				materials = child.gameObject.GetComponent<Renderer>().materials;
+			else if (child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+				materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
+			else
+				continue;
+			foreach (Material mat in materials) {
+				mat.SetInt("_ZWrite", 1);
+			}
+		}
+	}
+
+    [Command]
+    public void CmdBloodParticle(Vector3 hitPosition)
+    {
+        GameObject blood = Instantiate(this._blood);
+
+        blood.transform.position = hitPosition;
+      
+        NetworkServer.Spawn(blood);
+        Destroy(blood, 5.0f);
     }
 }

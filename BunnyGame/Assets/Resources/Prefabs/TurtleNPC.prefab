@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 4817406780980544}
   - component: {fileID: 33758853715777702}
   - component: {fileID: 23938206712498768}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh676788026
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -36,7 +36,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4067234148424824}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: turtle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -53,7 +53,7 @@ GameObject:
   - component: {fileID: 4144626631220382}
   - component: {fileID: 33874017153578150}
   - component: {fileID: 23170167367526868}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh1038224451
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -70,7 +70,7 @@ GameObject:
   - component: {fileID: 4892947702854690}
   - component: {fileID: 33002587193675438}
   - component: {fileID: 23700483614802900}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh1839650639
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -87,7 +87,7 @@ GameObject:
   - component: {fileID: 4506726697214152}
   - component: {fileID: 33453791050062992}
   - component: {fileID: 23071498646304680}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh1121517664
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -104,7 +104,7 @@ GameObject:
   - component: {fileID: 4038976118267120}
   - component: {fileID: 33827532587958978}
   - component: {fileID: 23726080798645886}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh1048474976
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -121,7 +121,7 @@ GameObject:
   - component: {fileID: 4159503513623382}
   - component: {fileID: 33473832968729338}
   - component: {fileID: 23342646566986896}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh1813703169
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -138,7 +138,7 @@ GameObject:
   - component: {fileID: 4587192970925938}
   - component: {fileID: 33484632267379914}
   - component: {fileID: 23895175827265204}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh1756688852
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -155,7 +155,7 @@ GameObject:
   - component: {fileID: 4060972866740682}
   - component: {fileID: 33575620543496768}
   - component: {fileID: 23441560100065964}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh1239649851
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -172,7 +172,7 @@ GameObject:
   - component: {fileID: 4871264538869462}
   - component: {fileID: 33369192566682842}
   - component: {fileID: 23306010024536286}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh621707954
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -189,7 +189,7 @@ GameObject:
   - component: {fileID: 4528486645881010}
   - component: {fileID: 33433069068260036}
   - component: {fileID: 23889073594458244}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh972909651
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -206,7 +206,7 @@ GameObject:
   - component: {fileID: 4975284187453826}
   - component: {fileID: 33413682910000716}
   - component: {fileID: 23003505560356136}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh1085167349
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -225,7 +225,7 @@ GameObject:
   - component: {fileID: 114966764041966168}
   - component: {fileID: 114542634117668764}
   - component: {fileID: 114096059962507916}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: TurtleNPC
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -242,7 +242,7 @@ GameObject:
   - component: {fileID: 4865597190301004}
   - component: {fileID: 33215276197912840}
   - component: {fileID: 23503148328358620}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh1870822548
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -259,7 +259,7 @@ GameObject:
   - component: {fileID: 4179555094215964}
   - component: {fileID: 33887378818293738}
   - component: {fileID: 23647905602147362}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh111826660
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -276,7 +276,7 @@ GameObject:
   - component: {fileID: 4664317790408548}
   - component: {fileID: 33248701707786004}
   - component: {fileID: 23205757919269126}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh443504079
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -293,7 +293,7 @@ GameObject:
   - component: {fileID: 4591396358305736}
   - component: {fileID: 33474986759391024}
   - component: {fileID: 23924263886504890}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh750026756
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -310,7 +310,7 @@ GameObject:
   - component: {fileID: 4327516869692490}
   - component: {fileID: 33924769374729770}
   - component: {fileID: 23603338358666718}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh1001656658
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -327,7 +327,7 @@ GameObject:
   - component: {fileID: 4674517849894240}
   - component: {fileID: 33756771220981126}
   - component: {fileID: 23838968641898694}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh995471477
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -344,7 +344,7 @@ GameObject:
   - component: {fileID: 4960715561550660}
   - component: {fileID: 33948960040812800}
   - component: {fileID: 23006648102481858}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh1995513643
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -361,7 +361,7 @@ GameObject:
   - component: {fileID: 4448618599718416}
   - component: {fileID: 33829180331918784}
   - component: {fileID: 23714247126059788}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: mesh1712232708
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1426,7 +1426,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_TransformSyncMode: 4
-  m_SendInterval: 0.1
+  m_SendInterval: 1
   m_SyncRotationAxis: 7
   m_RotationSyncCompression: 0
   m_SyncSpin: 0
@@ -1466,7 +1466,7 @@ MonoBehaviour:
     i14: 245
     i15: 176
   m_ServerOnly: 0
-  m_LocalPlayerAuthority: 0
+  m_LocalPlayerAuthority: 1
 --- !u!143 &143267633037588566
 CharacterController:
   m_ObjectHideFlags: 1
@@ -1479,7 +1479,7 @@ CharacterController:
   serializedVersion: 2
   m_Height: 0.96
   m_Radius: 0.5
-  m_SlopeLimit: 45
+  m_SlopeLimit: 60
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001

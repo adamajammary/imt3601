@@ -5,26 +5,34 @@ using UnityEngine.Networking;
 
 
 public class FoxController : NetworkBehaviour {
+
     GameObject biteArea;
-    GameObject foxModel;
 
-    Material[] objMaterials;
-    Color alfaColor;
+    private int  _biteDamage = 15;
+    private PlayerHealth _playerHealth;
 
-    private int   _biteDamage      = 15;
-    private float _cooldownStealth = 30.0f;
-    private float _stealthActive   = 10.0f;
-    private float _transparency    = 0.1f;
-    private float _notTransparent  = 1.0f;
-    private float _stealthTime     = 31.0f;
+
+
+    public override void PreStartClient()
+    {
+        base.PreStartClient();
+        NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
+        for (int i = 0; i < GetComponent<Animator>().parameterCount; i++)
+            netAnimator.SetParameterAutoSend(i, true);
+    }
 
     // Use this for initialization
     void Start() {
-        foxModel = transform.GetChild(1).gameObject;
-        biteArea = transform.GetChild(2).gameObject;
+        NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
+        for (int i = 0; i < netAnimator.animator.parameterCount; i++)
+            netAnimator.SetParameterAutoSend(i, true);
 
+
+        biteArea = transform.GetChild(2).gameObject;
+        this._playerHealth = this.GetComponent<PlayerHealth>();
         if (!this.isLocalPlayer)
             return;
+
 
         // Set custom attributes for class:
         PlayerController playerController = GetComponent<PlayerController>();
@@ -34,6 +42,9 @@ public class FoxController : NetworkBehaviour {
         Sprint sp = gameObject.AddComponent<Sprint>();
         sp.init(50, 1);
         playerController.abilities.Add(sp);
+        Stealth st = gameObject.AddComponent<Stealth>();
+        st.init(1, 0.1f);
+        playerController.abilities.Add(st);
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
     }
 
@@ -42,20 +53,14 @@ public class FoxController : NetworkBehaviour {
         if (!this.isLocalPlayer)
             return;
 
+        updateAnimator();
+
         if (Input.GetKeyDown(KeyCode.Mouse0)) {
             this.bite();
         }
 
-        this._stealthTime += Time.deltaTime;
-
-        //The '1' key on the top of the alphanumeric keyboard
-        if (Input.GetKeyDown(KeyCode.Alpha2)) {
-            if (this._stealthTime >= this._cooldownStealth) {
-                this.stealth();
-                this._stealthTime = 0;
-            }     
-        }   
     }
+
 
     private void bite() {
         if (this.GetComponent<PlayerHealth>().IsDead())
@@ -65,6 +70,7 @@ public class FoxController : NetworkBehaviour {
             this.CmdBite();
         else if (this.isServer)
             this.RpcBite();
+
     }
 
     [Command]
@@ -88,70 +94,15 @@ public class FoxController : NetworkBehaviour {
         return this._biteDamage;
     }
 
-    private void stealth() {
-        if (this.GetComponent<PlayerHealth>().IsDead())
-            return;
-
-        if (this.isClient)
-            this.CmdStealth();
-        else if (this.isServer)
-            this.RpcStealth();
+    // Updata the animator with current state
+    public void updateAnimator() {
+        Animator animator = GetComponent<Animator>();
+        if(animator != null)
+            animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
     }
 
-    [Command]
-    private void CmdStealth() {
-        this.RpcStealth();
+    public Vector3 biteInpact()
+    {
+        return this.biteArea.transform.position;
     }
-
-    [ClientRpc]
-    private void RpcStealth() {
-        StartCoroutine(this.toggleStealth());
-    }
-
-    private IEnumerator toggleStealth() {
-        this.setTransparentFox(this._transparency);
-        yield return new WaitForSeconds(this._stealthActive);
-        this.setTransparentFox(this._notTransparent);
-    }
-
-    private void setTransparentFox(float alpha) {
-        foreach (Transform child in foxModel.transform) {
-            this.objMaterials = child.gameObject.GetComponent<Renderer>().materials;
-            int count = 0;
-
-            foreach (Material mat in objMaterials) {
-                alfaColor   = mat.color;
-                alfaColor.a = alpha;
-                objMaterials[count++].SetColor("_Color", alfaColor);
-            }
-        }
-    }
-
-    //[ClientRpc]
-    //private void RpcSetTransparentFox() {
-    //    foreach (Transform child in foxModel.transform) {
-    //        objMaterials = child.gameObject.GetComponent<Renderer>().materials;
-    //        int count = 0;
-
-    //        foreach (Material mat in objMaterials) {
-    //            alfaColor = mat.color;
-    //            alfaColor.a = _transparency;
-    //            objMaterials[count++].SetColor("_Color", alfaColor);
-    //        }
-    //    }
-    //}
-
-    //[ClientRpc]
-    //private void RpcSetOrginalFox() {
-    //    foreach (Transform child in foxModel.transform) {
-    //        objMaterials = child.gameObject.GetComponent<Renderer>().materials;
-    //        int count = 0;
-
-    //        foreach (Material mat in objMaterials) {
-    //            alfaColor = mat.color;
-    //            alfaColor.a = _notTransparent;
-    //            objMaterials[count++].SetColor("_Color", alfaColor);
-    //        }
-    //    }
-    //}
 }

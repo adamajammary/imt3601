@@ -13615,20 +13615,6 @@ Light:
   m_Lightmapping: 4
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
-  m_FalloffTable:
-    m_Table[0]: 0
-    m_Table[1]: 0
-    m_Table[2]: 0
-    m_Table[3]: 0
-    m_Table[4]: 0
-    m_Table[5]: 0
-    m_Table[6]: 0
-    m_Table[7]: 0
-    m_Table[8]: 0
-    m_Table[9]: 0
-    m_Table[10]: 0
-    m_Table[11]: 0
-    m_Table[12]: 0
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
   m_ShadowRadius: 0
@@ -16041,7 +16027,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 061a4f0739a459d449c9c5f6a084bcc9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  debugRender: 0
+  debugRenderLand: 0
+  debugRenderWater: 0
   waterBodies:
   - {fileID: 1804566619}
   - {fileID: 1544903129}
@@ -17433,7 +17420,7 @@ Camera:
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294955263
+    m_Bits: 4294938879
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 9858d8e2b5af0e74eaec6ebec11e7e8a, type: 2}
   m_TargetDisplay: 1

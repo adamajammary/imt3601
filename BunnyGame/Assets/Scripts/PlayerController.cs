@@ -33,7 +33,7 @@ public class PlayerController : NetworkBehaviour {
     private bool _dealFallDamageOnCollision = false;
     private bool _fallDamageImmune = false;
 
-
+    private GameObject _blood;
     private Transform _cameraTransform;
     public CharacterController controller;
 
@@ -47,8 +47,13 @@ public class PlayerController : NetworkBehaviour {
 
     void Start() {
 		CorrectRenderingMode(); // Calling this here to fix the rendering order of the model, because materials have rendering mode fade
+        this._blood = Resources.Load<GameObject>("Prefabs/Blood");
         if (!this.isLocalPlayer)
             return;
+
+        
+        if(this._blood == null)
+            Debug.Log("finnes ikke");
 
         this._cameraTransform = Camera.main.transform;
         this.controller = this.GetComponent<CharacterController>();
@@ -205,6 +210,7 @@ public class PlayerController : NetworkBehaviour {
     private void OnCollisionEnter(Collision other) {
         if (other.gameObject.tag == "projectile") {
             this.GetComponent<PlayerHealth>().TakeDamage(other.gameObject.GetComponent<BunnyPoop>().GetDamage());
+            CmdBloodParticle(other.gameObject.transform.position);
             Destroy(other.gameObject);
         }
     }
@@ -215,6 +221,7 @@ public class PlayerController : NetworkBehaviour {
 
         //if (other.gameObject.tag == "foxbite" && other.transform.parent != transform) {
         if ((other.gameObject.tag == "foxbite") && (other.gameObject.transform.parent.gameObject.tag == "Enemy")) {
+            CmdBloodParticle(other.GetComponentInParent<FoxController>().biteInpact());
             this.GetComponent<PlayerHealth>().TakeDamage(other.GetComponentInParent<FoxController>().GetDamage());
         } else if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
@@ -242,4 +249,15 @@ public class PlayerController : NetworkBehaviour {
 			}
 		}
 	}
+
+    [Command]
+    public void CmdBloodParticle(Vector3 hitPosition)
+    {
+        GameObject blood = Instantiate(this._blood);
+
+        blood.transform.position = hitPosition;
+      
+        NetworkServer.Spawn(blood);
+        Destroy(blood, 5.0f);
+    }
 }

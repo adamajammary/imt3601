@@ -100,4 +100,9 @@ public class FoxController : NetworkBehaviour {
         if(animator != null)
             animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
     }
+
+    public Vector3 biteInpact()
+    {
+        return this.biteArea.transform.position;
+    }
 }

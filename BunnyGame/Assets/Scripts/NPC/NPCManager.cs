@@ -151,4 +151,8 @@ public class NPCManager : NetworkBehaviour {
     void OnApplicationQuit() {
         NPCWorldView.setRunNPCThread(false);
     }
+
+    void OnDestroy() {
+        NPCWorldView.setRunNPCThread(false);
+    }
 }

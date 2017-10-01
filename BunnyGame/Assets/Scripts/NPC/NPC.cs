@@ -50,13 +50,10 @@ public class NPC : NetworkBehaviour {
     }
 
     private void OnTriggerEnter(Collider other) {
-        Debug.Log("FUUUCK");
         if (!this.isServer)
             return;
-        Debug.Log("Shiiit");
         //if (other.gameObject.tag == "foxbite" && other.transform.parent != transform) {
         if ((other.gameObject.tag == "foxbite")) {
-            Debug.Log("LOOL");
             CmdBloodParticle(other.GetComponentInParent<FoxController>().biteInpact());
             Destroy(this.gameObject);
         }

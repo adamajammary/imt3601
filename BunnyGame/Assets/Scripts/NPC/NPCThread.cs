@@ -1,5 +1,5 @@
 ﻿using System.Threading;
-using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class NPCThread {
@@ -13,9 +13,27 @@ public class NPCThread {
         }
     }
 
+    private enum State { FLEEING = 1, AVOIDING = 2, ROAMING = 4 }
+    private class NPCState {
+        private int _id;
+        private State _state;
+      
+        public NPCState(int id) {
+            this._id = id;
+            _state = State.ROAMING;
+        }
+
+        public int id { get { return id; } }
+        public State get() { return this._state; }
+        public bool contains(State state) { return ((this._state & state) == state); }
+        public void add(State state) { this._state |= state; }
+        public void remove(State state) { if (this.contains(state)) this._state ^= state; }
+    }
+
     private Thread _thread;
     private bool _isUpdating;
     private BlockingQueue<instruction> _instructions;
+    private Dictionary<int, NPCState> _npcStates;
     System.Random _rng;
     
 
@@ -24,7 +42,14 @@ public class NPCThread {
         this._thread = new Thread(new ThreadStart(threadRunner)); //This starts running the update function
         this._instructions = i;
         _rng = new System.Random();
-        this._thread.Start();
+
+        this._npcStates = new Dictionary<int, NPCState>();
+        var npcs = NPCWorldView.getNpcs();
+        foreach (var npc in npcs.Values) {
+            this._npcStates.Add(npc.getId(), new NPCState(npc.getId()));
+        }
+
+            this._thread.Start();
 	}
 	
     public bool isUpdating { get { return this._isUpdating; } }
@@ -35,22 +60,33 @@ public class NPCThread {
             if (this._instructions.isEmpty()) {
                 this._isUpdating = true;
                 var npcs = NPCWorldView.getNpcs();
-                var players = NPCWorldView.getPlayers();
                 foreach (var npc in npcs.Values) {
-                    Vector3 dir = avoidObstacle(npc);
-                    if (dir != Vector3.zero) {
-                        this.sendInstuction(npc, dir);
-                    } else {
-                        dir = avoidPlayers(npc);
-                        if (dir != Vector3.zero) {
-                            this.sendInstuction(npc, dir);
-                        } else {
-                            dir = this.randomDir(npc);
-                            if (dir != Vector3.zero) {
-                                this.sendInstuction(npc, dir);
-                            }
-                        }
+                    float speed = 1.0f;
+                    NPCState state;
+                    this._npcStates.TryGetValue(npc.getId(), out state);
+                    Vector3 avoidDir, fleeDir, roamDir;
+
+                    avoidDir = this.avoidObstacle(npc);
+                    if (avoidDir != Vector3.zero) state.add(State.AVOIDING);
+                    else state.remove(State.AVOIDING);
+
+                    var player = this.closestPlayer(npc);
+                    if (player != null) {
+                        if (this.canSeePlayer(npc, player)) state.add(State.FLEEING);                                           
+                    } else state.remove(State.FLEEING);
+
+                    if (state.contains(State.FLEEING)) speed = 3.0f;
+
+                    if (state.contains(State.AVOIDING)) {
+                        this.sendInstuction(npc, avoidDir.normalized * speed);
+                    } else if (state.contains(State.FLEEING)) {
+                        fleeDir = this.avoidPlayer(npc, player);
+                        this.sendInstuction(npc, fleeDir.normalized * speed);
+                    } else if (state.contains(State.ROAMING)) {
+                        roamDir = this.randomDir(npc);
+                        if (roamDir != Vector3.zero) this.sendInstuction(npc, roamDir.normalized * speed);
                     }
+                    npc.update(npc.getPos() + npc.getDir() * (1 / 60),  npc.getDir()); // Try to guess next pos
                 }
                 this._isUpdating = false;
             }
@@ -58,13 +94,13 @@ public class NPCThread {
 	}
 
     private void sendInstuction(NPCWorldView.GameCharacter npc, Vector3 dir) {
-        npc.update(npc.getPos(), dir);
+        npc.update(npc.getPos(), dir); // Try to guess next pos
         instruction i = new instruction(npc.getId(), dir);
         this._instructions.Enqueue(i);
     }
 
     private Vector3 avoidObstacle(NPCWorldView.GameCharacter npc) {
-        float viewDist = 10.0f;
+        float viewDist = 15.0f;
         float turnAngle = 10;
         Vector3 dir = npc.getDir();
         if (NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), npc.getPos() + dir * 10f) != float.MaxValue) {
@@ -79,7 +115,30 @@ public class NPCThread {
         return Vector3.zero;
     }
 
-    private Vector3 avoidPlayers(NPCWorldView.GameCharacter npc) {
+    private bool canSeePlayer(NPCWorldView.GameCharacter npc, NPCWorldView.GameCharacter player) {        
+            float a = angle(npc.getDir(), player.getPos() - npc.getPos());
+            if (a < 90) { // In field of view?
+                if (NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), player.getPos()) == float.MaxValue) { // in line of sight?
+                    return true;
+                }
+            }        
+        return false;
+    }
+
+    private Vector3 avoidPlayer(NPCWorldView.GameCharacter npc, NPCWorldView.GameCharacter player) {
+        float turnAngle = 5;
+        Vector3 dir = npc.getDir();
+        Vector3 flee = npc.getPos() - player.getPos();
+        flee.y = 0;
+
+        Vector3 left = Quaternion.AngleAxis(turnAngle, Vector3.up) * dir;
+        Vector3 right = Quaternion.AngleAxis(-turnAngle, Vector3.up) * dir;
+        float leftAngle = angle(flee, left);
+        float rightAngle = angle(flee, right);
+        return (leftAngle <= rightAngle) ? left : right;
+    }
+
+    private NPCWorldView.GameCharacter closestPlayer(NPCWorldView.GameCharacter npc) {
         var players = NPCWorldView.getPlayers();
         NPCWorldView.GameCharacter closestPlayer = null;
         float closestDist = float.MaxValue;
@@ -90,18 +149,8 @@ public class NPCThread {
                 closestPlayer = player;
             }
         }
-
-        if (closestDist < 20) {
-            float a = angle(npc.getDir(), closestPlayer.getPos() - npc.getPos());
-            if (a < 75) { // In field of view?
-                if (NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), closestPlayer.getPos()) == float.MaxValue) { // in line of sight?
-                    Vector3 flee = npc.getPos() - closestPlayer.getPos();
-                    flee.y = 0;
-                    return flee.normalized;
-                }
-            }
-        }
-        return Vector3.zero;
+        if (closestDist < 15) return closestPlayer;
+        else return null;        
     }
 
     private Vector3 randomDir(NPCWorldView.GameCharacter npc) {

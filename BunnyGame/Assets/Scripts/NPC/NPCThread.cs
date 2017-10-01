@@ -1,6 +1,5 @@
 ﻿using System.Threading;
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 public class NPCThread {
@@ -15,63 +14,111 @@ public class NPCThread {
     }
 
     private Thread _thread;
-    private bool _runThread;
+    private bool _isUpdating;
     private BlockingQueue<instruction> _instructions;
+    System.Random _rng;
     
 
 	// Use this for initialization
 	public NPCThread (BlockingQueue<instruction> i) {
-        this._runThread = true;
         this._thread = new Thread(new ThreadStart(threadRunner)); //This starts running the update function
         this._instructions = i;
+        _rng = new System.Random();
         this._thread.Start();
 	}
 	
+    public bool isUpdating { get { return this._isUpdating; } }
+
 	// Update is called once per frame
 	void threadRunner () {
         while (NPCWorldView.getRunNPCThread()) {
-            var npcs = NPCWorldView.getNpcs();
-            var players = NPCWorldView.getPlayers();
-
-            foreach (var npc in npcs) {     
-                int[] cellPos = this.convertWorld2Cell(npc.getPos());
-                var currentCell = NPCWorldView.getCell(cellPos[0], cellPos[1]);
-                if (currentCell.blocked) {
-                    //find out if the NPC is facing the obstacle, or is moving away from it
-                    //Math source: https://math.stackexchange.com/questions/878785/how-to-find-an-angle-in-range0-360-between-2-vectors
-                    Vector3 temp = currentCell.pos - npc.getPos();
-                    Vector2 cellDir = new Vector2(temp.x, temp.z);
-                    Vector2 dir = new Vector2(npc.getDir().x, npc.getDir().z);
-                    float dot = Vector2.Dot(dir, cellDir) / (dir.magnitude * cellDir.magnitude);
-                    float det = dir.x * cellDir.y - dir.y * cellDir.x;
-                    float angle = Mathf.Atan2(det, dot);
-                    if (angle < 90 || angle > 270) {
-                        //Debug.Log("Adding instruction for npc with id " + npc.getId());
-                        this._instructions.Enqueue(new instruction(npc.getId(), npc.getDir() * -1));
+            if (this._instructions.isEmpty()) {
+                this._isUpdating = true;
+                var npcs = NPCWorldView.getNpcs();
+                var players = NPCWorldView.getPlayers();
+                foreach (var npc in npcs.Values) {
+                    Vector3 dir = avoidObstacle(npc);
+                    if (dir != Vector3.zero) {
+                        this.sendInstuction(npc, dir);
+                    } else {
+                        dir = avoidPlayers(npc);
+                        if (dir != Vector3.zero) {
+                            this.sendInstuction(npc, dir);
+                        } else {
+                            dir = this.randomDir(npc);
+                            if (dir != Vector3.zero) {
+                                this.sendInstuction(npc, dir);
+                            }
+                        }
                     }
                 }
+                this._isUpdating = false;
             }
-            Thread.Sleep(100); // Will improve next week
         }
 	}
 
-    int[] convertWorld2Cell(Vector3 world) {
-        int[] cellPos = { 0, 0 };
-        //new Vector3(x * cellSize + cellSize / 2, 0, y * cellSize + cellSize / 2) + _offset;
-        world -= NPCWorldView.offset;
-        world /= NPCWorldView.cellSize;
-        //world.x -= NPCWorldView.cellSize / 2;
-        //world.z -= NPCWorldView.cellSize / 2;
-
-        cellPos[0] = clamp((int)world.x);
-        cellPos[1] = clamp((int)world.z);
-
-        return cellPos;
+    private void sendInstuction(NPCWorldView.GameCharacter npc, Vector3 dir) {
+        npc.update(npc.getPos(), dir);
+        instruction i = new instruction(npc.getId(), dir);
+        this._instructions.Enqueue(i);
     }
 
-    int clamp(int input) {
-        input = (input >= 0) ? input : 0;
-        input = (input < NPCWorldView.cellCount) ? input : NPCWorldView.cellCount - 1;
-        return input;
+    private Vector3 avoidObstacle(NPCWorldView.GameCharacter npc) {
+        float viewDist = 10.0f;
+        float turnAngle = 10;
+        Vector3 dir = npc.getDir();
+        if (NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), npc.getPos() + dir * 10f) != float.MaxValue) {
+            Vector3 left = Quaternion.AngleAxis(turnAngle, Vector3.up) * dir;
+            Vector3 right = Quaternion.AngleAxis(-turnAngle, Vector3.up) * dir;
+            Vector3 superLeft = Quaternion.AngleAxis(90, Vector3.up) * dir;
+            Vector3 superRight = Quaternion.AngleAxis(-90, Vector3.up) * dir;
+            float leftDist = NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), npc.getPos() + superLeft * viewDist);
+            float rightDist = NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), npc.getPos() + superRight * viewDist);
+            return (leftDist >= rightDist) ? left : right;
+        }
+        return Vector3.zero;
+    }
+
+    private Vector3 avoidPlayers(NPCWorldView.GameCharacter npc) {
+        var players = NPCWorldView.getPlayers();
+        NPCWorldView.GameCharacter closestPlayer = null;
+        float closestDist = float.MaxValue;
+        foreach (var player in players.Values) {
+            float dist = Vector3.Distance(npc.getPos(), player.getPos());
+            if (dist < closestDist) {
+                closestDist = dist;
+                closestPlayer = player;
+            }
+        }
+
+        if (closestDist < 20) {
+            float a = angle(npc.getDir(), closestPlayer.getPos() - npc.getPos());
+            if (a < 75) { // In field of view?
+                if (NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), closestPlayer.getPos()) == float.MaxValue) { // in line of sight?
+                    Vector3 flee = npc.getPos() - closestPlayer.getPos();
+                    flee.y = 0;
+                    return flee.normalized;
+                }
+            }
+        }
+        return Vector3.zero;
+    }
+
+    private Vector3 randomDir(NPCWorldView.GameCharacter npc) {
+        if (this._rng.NextDouble() < 0.05f) {
+            Vector3 dir = npc.getDir();
+            if (this._rng.NextDouble() > 0.5f)
+                return Quaternion.AngleAxis(10, Vector3.up) * dir;
+            else
+                return Quaternion.AngleAxis(-10, Vector3.up) * dir;
+        }
+        return Vector3.zero;
+    }
+
+    float angle(Vector3 a3, Vector3 b3) {
+        Vector2 a2 = new Vector2(a3.x, a3.z);
+        Vector2 b2 = new Vector2(b3.x, b3.z);
+        return Vector2.Angle(a2, b2); 
     }
 }
+

@@ -15949,6 +15949,7 @@ GameObject:
   - component: {fileID: 1416740660}
   - component: {fileID: 1416740659}
   - component: {fileID: 1416740661}
+  - component: {fileID: 1416740662}
   m_Layer: 0
   m_Name: NPCManager
   m_TagString: Untagged
@@ -15967,7 +15968,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1696758b75d90d4419b0e3e96fc5fb9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  debugRender: 0
 --- !u!4 &1416740660
 Transform:
   m_ObjectHideFlags: 0
@@ -15977,7 +15977,10 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 1544903129}
+  - {fileID: 2119927145}
+  - {fileID: 1804566619}
   m_Father: {fileID: 0}
   m_RootOrder: 14
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -16013,6 +16016,23 @@ MonoBehaviour:
     i15: 0
   m_ServerOnly: 0
   m_LocalPlayerAuthority: 0
+--- !u!114 &1416740662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1416740658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 061a4f0739a459d449c9c5f6a084bcc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  debugRenderLand: 0
+  debugRenderWater: 0
+  waterBodies:
+  - {fileID: 1804566619}
+  - {fileID: 1544903129}
+  - {fileID: 2119927145}
 --- !u!1 &1421449052
 GameObject:
   m_ObjectHideFlags: 0
@@ -16979,6 +16999,34 @@ Transform:
   m_Father: {fileID: 1487640077}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1544903128
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 1544903129}
+  m_Layer: 0
+  m_Name: LakePos
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1544903129
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1544903128}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -57.41, y: -18.84, z: 12.95}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1416740660}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1548456154
 GameObject:
   m_ObjectHideFlags: 0
@@ -17372,7 +17420,7 @@ Camera:
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294955263
+    m_Bits: 4294938879
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 9858d8e2b5af0e74eaec6ebec11e7e8a, type: 2}
   m_TargetDisplay: 1
@@ -19217,6 +19265,34 @@ Transform:
   m_PrefabParentObject: {fileID: 4859065738777746, guid: 759359c6626f7443786cbfe68f1b25f9,
     type: 2}
   m_PrefabInternal: {fileID: 1799413650}
+--- !u!1 &1804566618
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 1804566619}
+  m_Layer: 0
+  m_Name: OceanPos
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1804566619
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1804566618}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -122.44, y: -18.67, z: -114.14}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1416740660}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1809991305
 GameObject:
   m_ObjectHideFlags: 0
@@ -21885,6 +21961,34 @@ MeshFilter:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2106893303}
   m_Mesh: {fileID: 4300048, guid: 7a8346f3f88ac284e905d341cf04145c, type: 3}
+--- !u!1 &2119927144
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 2119927145}
+  m_Layer: 0
+  m_Name: RiverPos
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2119927145
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2119927144}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 56.23, y: -18.86, z: -78.8}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1416740660}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2122040641
 GameObject:
   m_ObjectHideFlags: 0

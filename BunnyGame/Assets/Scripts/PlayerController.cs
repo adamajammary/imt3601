@@ -183,8 +183,26 @@ public class PlayerController : NetworkBehaviour {
 
     private void OnCollisionEnter(Collision other) {
         if (other.gameObject.tag == "projectile") {
-            this.GetComponent<PlayerHealth>().TakeDamage(other.gameObject.GetComponent<BunnyPoop>().GetDamage());
-            Destroy(other.gameObject);
+            PlayerHealth healthScript = this.GetComponent<PlayerHealth>();
+            BunnyPoop    poopScript   = other.gameObject.GetComponent<BunnyPoop>();
+
+            // Apply damage only if the enemy is still alive.
+            if ((healthScript != null) && (poopScript != null)) {// && !healthScript.IsDead()) {
+                if (this.isLocalPlayer) {
+                    healthScript.TakeDamage(poopScript.GetDamage());
+                    Destroy(other.gameObject);
+                }
+
+                //// Increase kill counter if enemy died after taking damage.
+                //if ((!this.isLocalPlayer && this.isServer && this.isClient) ||  // SERVER/HOST
+                //    (this.isLocalPlayer  && this.isServer && this.isClient))    // CLIENT
+                //{
+                //    //print("healthScript.IsDead(): " + healthScript.IsDead());
+
+                //    if (healthScript.IsDead())
+                //        poopScript.AddKill();
+                //}
+            }
         }
     }
 
@@ -201,6 +219,9 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private void OnTriggerExit(Collider other) {
+        if (!this.isLocalPlayer)
+            return;
+
         if (other.gameObject.name == "Water") {
             this._fallDamageImmune = false;
         }

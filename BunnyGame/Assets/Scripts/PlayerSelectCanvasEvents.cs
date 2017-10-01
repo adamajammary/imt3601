@@ -4,11 +4,9 @@ using UnityEngine.UI;
 
 public class PlayerSelectCanvasEvents : NetworkBehaviour {
 
-    private Button[]      _buttons;
-    private NetworkClient _client = null;
+    private Button[] _buttons;
 
     private void Start() {
-        this._client  = NetworkClient.allClients[0];
         this._buttons = this.GetComponentsInChildren<Button>();
 
         // http://answers.unity3d.com/questions/908847/passing-a-temporary-variable-to-add-listener.html
@@ -40,9 +38,8 @@ public class PlayerSelectCanvasEvents : NetworkBehaviour {
     private void onClick(int model) {
         if ((model < 0) || (model >= this._buttons.Length)) { return; }
 
-        for (int i = 0; i < this._buttons.Length; i++) {
+        for (int i = 0; i < this._buttons.Length; i++)
             this._buttons[i].GetComponent<Image>().color = (i == model ? Color.yellow : Color.white);
-        }
 
         this.SendPlayerSelectMessage(this.getClientID(), model);
     }
@@ -54,16 +51,16 @@ public class PlayerSelectCanvasEvents : NetworkBehaviour {
         message.clientID      = clientID;
         message.selectedModel = model;
 
-        this.SendNetworkMessage(MetworkMessageType.MSG_PLAYERSELECT, message);
+        this.SendNetworkMessage(NetworkMessageType.MSG_PLAYERSELECT, message);
     }
 
     // Send the network message to the server.
-    private void SendNetworkMessage(short messageType, MessageBase message) {
-        if (this._client == null) { return; }
+    private void SendNetworkMessage(NetworkMessageType messageType, MessageBase message) {
+        if (NetworkClient.allClients.Count < 1) { return; }
 
         switch (messageType) {
-            case MetworkMessageType.MSG_PLAYERSELECT:
-                this._client.Send(messageType, message);
+            case NetworkMessageType.MSG_PLAYERSELECT:
+                NetworkClient.allClients[0].Send((short)messageType, message);
                 break;
             default:
                 Debug.Log("ERROR! Unknown message type: " + messageType);

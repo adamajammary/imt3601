@@ -16,7 +16,7 @@ public class Stealth : SpecialAbility {
 
     public void init(int modelChildNumb,float transparency)
     {
-        base.init("Textures/AbilityIcons/test");
+        base.init("Textures/AbilityIcons/SuperStealth");
         base.abilityName = "Stealth";
         this._transparency = transparency;
         this._modelChildNum = modelChildNumb;

@@ -9,8 +9,8 @@ public class BunnyPoop : NetworkBehaviour {
 
     private int       _timeToLive = 3;
     private float     _timeAlive = 0;
-    private float     _speed = 20.0f;
-    private float     _antiGravity = 1.0f;
+    private float     _speed = 30.0f;
+    private float     _antiGravity = 5.0f;
     private Rigidbody _rb;
     private int       _damage = 10;
     private int       _connectionID = -1;

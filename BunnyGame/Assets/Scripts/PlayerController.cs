@@ -15,8 +15,8 @@ public class PlayerController : NetworkBehaviour {
     [Range(0, 1)]
     public float airControlPercent;
 
-    public float turnSmoothTime = 0.0f;
-    public float speedSmoothTime = 0.0f;
+    public float turnSmoothTime = 0.2f;
+    public float speedSmoothTime = 0.2f;
 
     public bool insideWall;
 

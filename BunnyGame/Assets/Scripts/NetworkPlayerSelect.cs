@@ -140,4 +140,14 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         else
             this._selections[clientID] = model;
     }
+
+    public virtual void OnServerDisconnect(NetworkConnection conn) {
+        NetworkServer.DestroyPlayersForConnection(conn);
+        if (conn.lastError != NetworkError.Ok) {
+            if (LogFilter.logError) {
+                Debug.LogError("ServerDisconnected due to error: " + conn.lastError);
+            }
+        }
+    }
+
 }

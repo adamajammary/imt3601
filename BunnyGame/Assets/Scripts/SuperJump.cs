@@ -12,7 +12,7 @@ public class SuperJump : SpecialAbility {
     private float _jumpHeight;
 
     public void init(float jumpHeight) {
-        base.init("Textures/AbilityIcons/test");
+        base.init("Textures/AbilityIcons/jumphigh");
         _jumpHeight = jumpHeight;
         base.abilityName = "Super Jump";
     }

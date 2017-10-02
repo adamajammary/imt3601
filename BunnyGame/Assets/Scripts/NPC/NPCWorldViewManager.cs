@@ -13,6 +13,7 @@ public class NPCWorldViewManager : MonoBehaviour {
 
     // Use this for initialization
     void Start() {
+        NPCWorldView.init();
         _cellSize = NPCWorldView.cellSize;
         _cellCount = NPCWorldView.cellCount;
         if (!NPCWorldView.readFromFile()) {

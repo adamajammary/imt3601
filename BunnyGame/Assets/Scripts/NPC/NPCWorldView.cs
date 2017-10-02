@@ -136,6 +136,9 @@ public static class NPCWorldView {
     private static bool _ready;
     //===============================================================================
     static NPCWorldView() {
+        init();
+    }
+    public static void init() {
         _runNPCThread = true;
         _ready = false;
 

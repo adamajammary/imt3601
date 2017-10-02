@@ -17,17 +17,22 @@ public class NPCManager : NetworkBehaviour {
 
     // Use this for initialization
     void Start() {
-        if (this.isServer) {
-            _cellSize = NPCWorldView.cellSize;
-            _cellCount = NPCWorldView.cellCount;            
+        _cellSize = NPCWorldView.cellSize;
+        _cellCount = NPCWorldView.cellCount;            
 
-            this._players = new Dictionary<int, GameObject>();
-            this._npcs = new Dictionary<int, GameObject>();
-            this._deadPlayers = new List<int>();
-            this._deadNpcs = new List<int>();
-            this._ready = false;
-            StartCoroutine(lateStart());
+        this._players = new Dictionary<int, GameObject>();
+        this._npcs = new Dictionary<int, GameObject>();
+        this._deadPlayers = new List<int>();
+        this._deadNpcs = new List<int>();
+        this._ready = false;
+
+        if (this.isServer) {
+            GameObject turtle = Resources.Load<GameObject>("Prefabs/TurtleNPC");
+            for (int i = 0; i < 100; i++)  // Spawn turtles            
+                this.CmdSpawnNPC(turtle);
         }
+
+        StartCoroutine(lateStart());
     }
 
     //This is how i deal with networking until i learn more about it
@@ -43,11 +48,12 @@ public class NPCManager : NetworkBehaviour {
         var players = NPCWorldView.getPlayers();
         for (int i = 0; i < this._players.Count; i++)
             players.Add(i, new NPCWorldView.GameCharacter(i));
-
-        //spawn npcs and gather npc data for the NPCs
-        GameObject turtle = Resources.Load<GameObject>("Prefabs/TurtleNPC");
-        for (int i = 0; i < 100; i++)  // Spawn turtles            
-            this.CmdSpawnNPC(turtle, i);
+      
+        GameObject[] turtles = GameObject.FindGameObjectsWithTag("npc");
+        for (int i = 0; i < turtles.Length; i++) {
+            this._npcs.Add(i, turtles[i]);
+            NPCWorldView.getNpcs().Add(i, new NPCWorldView.GameCharacter(i));
+        }
         
         this._instructions = new BlockingQueue<NPCThread.instruction>();
         this._npcThread = new NPCThread(this._instructions);
@@ -58,77 +64,75 @@ public class NPCManager : NetworkBehaviour {
     private IEnumerator ASyncUpdate() {
         //Update data about gamecharacters in NPCWorldView
         int updateCount = 0; //How many objects have been updated this far
-        int updatesPerFrame = 30; //How many objects to update per frame
+        int updatesPerFrame = 50; //How many objects to update per frame
         while (NPCWorldView.getRunNPCThread()) {
-            //Update Players
-            var players = NPCWorldView.getPlayers();
-            for (int i = 0; i < this._players.Count; i++) {
-                if (this._players[i] != null) {
-                    players[i].update(this._players[i].transform.position, this._players[i].transform.forward);
-                    updateCount++;
-                } else
-                    this._deadPlayers.Add(players[i].getId());
-                
-                if (updateCount > updatesPerFrame) {
-                    updateCount = 0;
-                    yield return 0;
-                }
-            }
             //Update NPCS
             var npcs = NPCWorldView.getNpcs();
-            for (int i = 0; i < this._npcs.Count; i++) {
-                if (this._npcs[i] != null) {
-                    npcs[i].update(this._npcs[i].transform.position, this._npcs[i].transform.forward);
+            foreach (var npc in this._npcs) {
+                if (npc.Value != null) {
+                    npcs[npc.Key].update(npc.Value.transform.position, npc.Value.transform.forward);
                     updateCount++;
                 } else
-                    this._deadNpcs.Add(npcs[i].getId());
+                    this._deadNpcs.Add(npc.Key);
+
                 if (updateCount > updatesPerFrame) {
                     updateCount = 0;
-                    yield return 0;
+                    yield return 0;       
+
+                    //Update Players, put it here so that players get updated every frame
+                    var players = NPCWorldView.getPlayers();
+                    foreach (var player in this._players) {
+                        if (player.Value != null) {
+                            players[player.Key].update(player.Value.transform.position, player.Value.transform.forward);
+                            updateCount++;
+                        } else
+                            this._deadPlayers.Add(player.Key);
+                    }
                 }
             }
+            this.removeDeadStuff();
         }
     }
 
     // Update is called once per frame
     void Update () {
         if (this._ready) {
-            if (this._deadNpcs.Count > 0 || this._deadNpcs.Count > 0) {
-                while (this._npcThread.isUpdating) { /*Wait for npc thread to catch up */}
-                this.removeDeadStuff();
-                this.handleInstructions(true);
-            } else
-                this.handleInstructions(false);
+            this.handleInstructions();
         }
     }
 
     void removeDeadStuff() {
-        var players = NPCWorldView.getPlayers();
-        foreach (int dead in this._deadPlayers) {
-            this._players.Remove(dead);
-            players.Remove(dead);
-        }
-        var npcs = NPCWorldView.getNpcs();
-        foreach (int dead in this._deadNpcs) {
-            this._npcs.Remove(dead);
-            npcs.Remove(dead);
+        if (this._deadNpcs.Count > 0 || this._deadNpcs.Count > 0) {
+            while (this._npcThread.isUpdating) { /*Wait for npc thread to catch up */}
+
+
+            var players = NPCWorldView.getPlayers();
+            foreach (int dead in this._deadPlayers) {
+                this._players.Remove(dead);
+                players.Remove(dead);
+            }
+            var npcs = NPCWorldView.getNpcs();
+            foreach (int dead in this._deadNpcs) {
+                this._npcs.Remove(dead);
+                npcs.Remove(dead);
+            }
+            this._deadNpcs.Clear();
+            this._deadPlayers.Clear();
         }
     }
 
-    void handleInstructions(bool filter) {
+    void handleInstructions() {
         while (!this._instructions.isEmpty()) {
-            var instruction = this._instructions.Dequeue();
-            if (filter) {
-                if (this._npcs.ContainsKey(instruction.id)) // Filter param so that this test won't be done when not necessary
-                    this._npcs[instruction.id].GetComponent<NPC>().setMoveDir(instruction.moveDir);
-            } else
+            var instruction = this._instructions.Dequeue();            
+            if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null) // Filter param so that this test won't be done when not necessary
                 this._npcs[instruction.id].GetComponent<NPC>().setMoveDir(instruction.moveDir);
+            
         }
     }
 
     //Spawns a NPC with a random direction
     [Command]
-    private void CmdSpawnNPC(GameObject npc, int id) {
+    private void CmdSpawnNPC(GameObject npc) {
         var turtle = Instantiate(npc);
         NPCWorldView.worldCellData landCell;
         NPCWorldView.worldCellData waterCell;
@@ -138,13 +142,11 @@ public class NPCManager : NetworkBehaviour {
             landCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.LAND, x, y);
             waterCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.WATER, x, y);            
         } while (landCell.blocked || !waterCell.blocked);
-        turtle.GetComponent<NPC>().setSpawnPos(landCell.pos);
+        turtle.GetComponent<NPC>().setSpawnPos(landCell.pos);        
         //Angle is used to generate a direction
         float angle = Random.Range(0, Mathf.PI * 2);
-        turtle.GetComponent<NPC>().setMoveDir(new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)));
-        this._npcs.Add(id, turtle);
+        turtle.GetComponent<NPC>().setSpawnRot(Quaternion.Euler(Mathf.Cos(angle), 0, Mathf.Sin(angle)));
         //Add a datastructure for the NPC in the NPCWorldView class
-        NPCWorldView.getNpcs().Add(id, new NPCWorldView.GameCharacter(id));
         NetworkServer.Spawn(turtle);
     }
 

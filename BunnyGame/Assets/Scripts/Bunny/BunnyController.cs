@@ -7,9 +7,9 @@ public class BunnyController : NetworkBehaviour {
 
     private float _timer;
     private float _fireRate;
-
     private CharacterController _controller;
     private GameObject bunnyPoop;
+    private int _connectionID = -1;
 
     void Start () {
         bunnyPoop = Resources.Load<GameObject>("Prefabs/poop");
@@ -29,12 +29,12 @@ public class BunnyController : NetworkBehaviour {
         SuperJump sj = gameObject.AddComponent<SuperJump>();
         sj.init(10);
         playerController.abilities.Add(sj);
-		Stealth st = gameObject.AddComponent<Stealth>();
-		st.init(1, 0.1f);
-		playerController.abilities.Add(st);
-		GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
+        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
 
+        NetworkClient client = NetworkClient.allClients[0];
 
+        if (client != null)
+            this._connectionID = client.connection.connectionId;
     }
 
     void Update () {
@@ -44,7 +44,6 @@ public class BunnyController : NetworkBehaviour {
         if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1))
             this.shoot();
     }
-
 
     private void shoot() {
         if (this.GetComponent<PlayerHealth>().IsDead())
@@ -61,26 +60,30 @@ public class BunnyController : NetworkBehaviour {
             {
                 Vector3 direction = hit.point - this.transform.position;
                 Vector3 dirNorm = direction.normalized;
-                this.CmdShootPoop(dirNorm, this._controller.velocity);
+                this.CmdShootPoop(dirNorm, this._controller.velocity, this._connectionID);
             }
             else
             {
                 Vector3 direction = ray.GetPoint(50.0f) - this.transform.position;
                 Vector3 dirNorm = direction.normalized;
-                this.CmdShootPoop(dirNorm, this._controller.velocity);
+                this.CmdShootPoop(dirNorm, this._controller.velocity, this._connectionID);
             }
             this._timer = 0;
         }
     }
 
     [Command]
-    public void CmdShootPoop(Vector3 dir, Vector3 startVel)
+    public void CmdShootPoop(Vector3 dir, Vector3 startVel, int id)
     {
-        GameObject poop = Instantiate(bunnyPoop);
+        GameObject poop       = Instantiate(bunnyPoop);
+        BunnyPoop  poopScript = poop.GetComponent<BunnyPoop>();
+
+        // Assign the player connection ID to the projectile.
+        poopScript.SetConnectionID(id);
 
         Vector3 pos = transform.position;
         pos += dir * 4.0f;
-        poop.GetComponent<BunnyPoop>().shoot(dir, pos, startVel);
+        poopScript.shoot(dir, pos, startVel);
 
         NetworkServer.Spawn(poop);
     }

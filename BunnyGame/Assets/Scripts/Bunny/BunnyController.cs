@@ -60,13 +60,13 @@ public class BunnyController : NetworkBehaviour {
             {
                 Vector3 direction = hit.point - this.transform.position;
                 Vector3 dirNorm = direction.normalized;
-                this.CmdShootPoop(dirNorm, this._controller.velocity, this._connectionID);
+                this.CmdShootPoop2(dirNorm, this._controller.velocity, this._connectionID);
             }
             else
             {
                 Vector3 direction = ray.GetPoint(50.0f) - this.transform.position;
                 Vector3 dirNorm = direction.normalized;
-                this.CmdShootPoop(dirNorm, this._controller.velocity, this._connectionID);
+                this.CmdShootPoop2(dirNorm, this._controller.velocity, this._connectionID);
             }
             this._timer = 0;
         }
@@ -86,5 +86,25 @@ public class BunnyController : NetworkBehaviour {
         poopScript.shoot(dir, pos, startVel);
 
         NetworkServer.Spawn(poop);
+    }
+
+    [Command]
+    public void CmdShootPoop2(Vector3 dir, Vector3 startVel, int id)
+    {
+        RpcShootPoop(dir, startVel, id);
+    }
+
+    [ClientRpc]
+    public void RpcShootPoop(Vector3 dir, Vector3 startVel, int id)
+    {
+        GameObject poop = Instantiate(bunnyPoop);
+        BunnyPoop poopScript = poop.GetComponent<BunnyPoop>();
+
+        // Assign the player connection ID to the projectile.
+        poopScript.SetConnectionID(id);
+
+        Vector3 pos = transform.position;
+        pos += dir * 4.0f;
+        poopScript.shoot(dir, pos, startVel);
     }
 }

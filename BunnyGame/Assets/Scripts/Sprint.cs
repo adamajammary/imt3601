@@ -21,7 +21,9 @@ public class Sprint : SpecialAbility {
     private float _time;
 
     public void init(float speed, float time) {
+
         base.init("Textures/AbilityIcons/runfast");
+
         base.abilityName = "Sprint";
         _speed = speed;
         _time = time;

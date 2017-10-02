@@ -7,7 +7,7 @@ public class ThirdPersonCamera : MonoBehaviour {
     private float       _mouseSensitivity = 10;    
     private float       _distanceFromTarget = 6;
     private Vector2     _pitchMinMax = new Vector2(-5, 85);
-    private float       _rotationSmoothTime = 0.1f;
+    private float       _rotationSmoothTime = 0.0f;
 
     private GameObject  _crosshair;
     private Transform   _target;

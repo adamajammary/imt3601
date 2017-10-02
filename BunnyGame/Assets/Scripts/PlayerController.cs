@@ -119,30 +119,21 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
-    public void Move(Vector2 inputDir) {
-        bool isFPP = Input.GetKey(KeyCode.Mouse1); // FPP: First Person Perspective
-
-
-        if (inputDir != Vector2.zero || isFPP) {
-            float angle = isFPP ? 0 : Mathf.Atan2(inputDir.x, inputDir.y); // We don't care about what direction you're moving in when in FPP, as your camera alone decides the direction
-            float targetRotation = angle * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
-            transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation,
-                                                        ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
-        }
+    public void Move(Vector2 inputDir) {     
+        float targetRotation = _cameraTransform.eulerAngles.y;
+        transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation,
+                                                    ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
+        
 
         float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
         this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
 
         this._velocityY += Time.deltaTime * gravity;
 
-        Vector3 moveDir = transform.forward;
 
-        // Set moveDir relative to the cameras direction
-        if (isFPP) {
-            moveDir = _cameraTransform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
-            moveDir.y = 0;
-        }
-
+		Vector3 moveDir = _cameraTransform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
+        moveDir.y = 0;
+        
         Vector3 velocity = moveDir * currentSpeed + Vector3.up * _velocityY;
 
         this.controller.Move(velocity * Time.deltaTime);

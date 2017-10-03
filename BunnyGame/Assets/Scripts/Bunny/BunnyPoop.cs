@@ -2,6 +2,8 @@
 using UnityEngine.Networking;
 
 public class BunnyPoop : NetworkBehaviour {
+    [SyncVar]
+    public GameObject owner; //The gameobject which owns this 
 
     private int       _timeToLive = 3;
     private float     _timeAlive = 0;

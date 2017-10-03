@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using System.Diagnostics;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -34,8 +35,7 @@ public class NPCThread {
     private bool _isUpdating;
     private BlockingQueue<instruction> _instructions;
     private Dictionary<int, NPCState> _npcStates;
-    System.Random _rng;
-    
+    System.Random _rng;    
 
 	// Use this for initialization
 	public NPCThread (BlockingQueue<instruction> i) {
@@ -49,7 +49,7 @@ public class NPCThread {
             this._npcStates.Add(npc.getId(), new NPCState(npc.getId()));
         }
 
-            this._thread.Start();
+        this._thread.Start();
 	}
 	
     public bool isUpdating { get { return this._isUpdating; } }

@@ -141,11 +141,11 @@ public class NPCManager : NetworkBehaviour {
             int y = Random.Range(0, this._cellCount);
             landCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.LAND, x, y);
             waterCell = NPCWorldView.getCell(NPCWorldView.WorldPlane.WATER, x, y);            
-        } while (landCell.blocked || !waterCell.blocked);
-        turtle.GetComponent<NPC>().setSpawnPos(landCell.pos);        
+        } while (landCell.blocked || !waterCell.blocked);    
         //Angle is used to generate a direction
         float angle = Random.Range(0, Mathf.PI * 2);
-        turtle.GetComponent<NPC>().setSpawnRot(Quaternion.Euler(Mathf.Cos(angle), 0, Mathf.Sin(angle)));
+        turtle.GetComponent<NPC>().spawn(landCell.pos, Quaternion.Euler(Mathf.Cos(angle), 0, Mathf.Sin(angle)));
+
         //Add a datastructure for the NPC in the NPCWorldView class
         NetworkServer.Spawn(turtle);
     }

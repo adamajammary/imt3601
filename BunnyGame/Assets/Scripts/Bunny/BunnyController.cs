@@ -41,7 +41,7 @@ public class BunnyController : NetworkBehaviour {
         if (!this.isLocalPlayer)
             return;
 
-        if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1))
+        if (Input.GetAxisRaw("Fire1") > 0)
             this.shoot();
     }
 
@@ -105,6 +105,9 @@ public class BunnyController : NetworkBehaviour {
 
         Vector3 pos = transform.position;
         pos += dir * 4.0f;
+
+        if (this._connectionID == id) poop.GetComponent<BunnyPoop>().owner = this.gameObject;
+
         poopScript.shoot(dir, pos, startVel);
     }
 }

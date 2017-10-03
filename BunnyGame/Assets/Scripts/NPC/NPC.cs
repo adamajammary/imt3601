@@ -70,17 +70,17 @@ public class NPC : NetworkBehaviour {
     private void OnCollisionEnter(Collision other) {
         if (other.gameObject.tag == "projectile") {
             CmdBloodParticle(other.gameObject.transform.position);
+            var owner = other.gameObject.GetComponent<BunnyPoop>().owner;
+            if (owner != null) owner.GetComponent<PlayerHealth>().TakeDamage(-10);
             Destroy(other.gameObject);
             Destroy(this.gameObject);
         }
     }
 
     private void OnTriggerEnter(Collider other) {
-        if (!this.isServer)
-            return;
-        //if (other.gameObject.tag == "foxbite" && other.transform.parent != transform) {
         if ((other.gameObject.tag == "foxbite")) {
             CmdBloodParticle(other.GetComponentInParent<FoxController>().biteInpact());
+            other.transform.parent.gameObject.GetComponent<PlayerHealth>().TakeDamage(-10);
             Destroy(this.gameObject);
         }
     }

@@ -6,6 +6,7 @@ using UnityEngine.Networking.NetworkSystem;
 
 //public class BunnyPoop : MonoBehaviour {
 public class BunnyPoop : NetworkBehaviour {
+    public GameObject owner; //The gameobject which owns this 
 
     private int       _timeToLive = 3;
     private float     _timeAlive = 0;

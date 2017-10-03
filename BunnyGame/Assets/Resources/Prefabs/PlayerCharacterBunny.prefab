@@ -315,6 +315,7 @@ GameObject:
   - component: {fileID: 114900676238164442}
   - component: {fileID: 114222918294070388}
   - component: {fileID: 114039551738387226}
+  - component: {fileID: 65420324126832974}
   m_Layer: 0
   m_Name: PlayerCharacterBunny
   m_TagString: Player
@@ -329,7 +330,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1987588776468962}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 25.353794, y: -13.904185, z: -61.465572}
+  m_LocalPosition: {x: -123.58947, y: -20.722445, z: -42.78639}
   m_LocalScale: {x: 1.7394154, y: 1.7394158, z: 1.7394158}
   m_Children:
   - {fileID: 4764288285337480}
@@ -1197,6 +1198,18 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1112921559236994}
   m_Mesh: {fileID: 4300026, guid: 46a901cb08ea62f42a487ead58a0ca8e, type: 3}
+--- !u!65 &65420324126832974
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1987588776468962}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.94, y: 1.23, z: 1.26}
+  m_Center: {x: 0, y: 0.14, z: -0.26}
 --- !u!114 &114039551738387226
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1219,6 +1232,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e83ba2c5afccf854589d2aa006aae7c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ConnectionID: -1
 --- !u!114 &114379717305684410
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1346,4 +1360,4 @@ CharacterController:
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0.07, z: -0.09}
+  m_Center: {x: 0, y: 0.07, z: -0.37}

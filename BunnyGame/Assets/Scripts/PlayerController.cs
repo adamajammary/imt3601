@@ -191,23 +191,6 @@ public class PlayerController : NetworkBehaviour {
         this._damageTimer += Time.deltaTime;
     }
 
-    private void OnCollisionEnter(Collision other) {
-        if (!this.isLocalPlayer)
-            return;
-
-        if (other.gameObject.tag == "projectile") {
-            PlayerHealth healthScript = this.GetComponent<PlayerHealth>();
-            BunnyPoop    poopScript   = other.gameObject.GetComponent<BunnyPoop>();
-
-            if ((healthScript != null) && (poopScript != null) && !healthScript.IsDead()) {
-                this.CmdBloodParticle(other.gameObject.transform.position);
-                healthScript.TakeDamage(poopScript.GetDamage(), poopScript.ConnectionID);
-            }
-            
-            Destroy(other.gameObject);
-        }
-    }
-
     private void OnTriggerEnter(Collider other) {
         if (!this.isLocalPlayer)
             return;
@@ -221,6 +204,16 @@ public class PlayerController : NetworkBehaviour {
                 this.CmdBloodParticle(foxScript.biteImpact());
                 healthScript.TakeDamage(foxScript.GetDamage(), foxScript.ConnectionID);
             }
+        } else if (other.gameObject.tag == "projectile") {
+            PlayerHealth healthScript = this.GetComponent<PlayerHealth>();
+            BunnyPoop poopScript = other.gameObject.GetComponent<BunnyPoop>();
+
+            if ((healthScript != null) && (poopScript != null) && !healthScript.IsDead()) {
+                this.CmdBloodParticle(other.gameObject.transform.position);
+                healthScript.TakeDamage(poopScript.GetDamage(), poopScript.ConnectionID);
+            }
+
+            Destroy(other.gameObject);
         } else if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
         }

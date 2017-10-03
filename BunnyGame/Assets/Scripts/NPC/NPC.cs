@@ -5,20 +5,26 @@ using UnityEngine.Networking;
 
 // All of the logic for the NPC will be handeled by NPCThread
 public class NPC : NetworkBehaviour {
-    [SyncVar(hook = "spawnPos")]
-    private Vector3 _spawnPos;
-    [SyncVar(hook = "spawnRot")]
-    private Quaternion _spawnRot;
+    [SyncVar(hook = "updateMasterPos")]
+    private Vector3 _masterPos;
+    [SyncVar(hook = "updateMasterDir")]
+    private Vector3 _masterDir;
+
+    private const float _gravity = -12;
+    private const float _syncRate = 1; //How many times to sync per second
+
+    private float _syncTimer;
     private Vector3 _moveDir;
     private CharacterController _cc;
     private GameObject _blood;
-    private const float _gravity = -12;
     private float _yVel;
     // Use this for initialization
     void Start () {
         this._cc = GetComponent<CharacterController>();
         this._blood = Resources.Load<GameObject>("Prefabs/Blood");
         this._yVel = 0;
+
+        if (this.isServer) this._syncTimer = 0;
 	}
 	
 	// Update is called once per frame
@@ -28,27 +34,37 @@ public class NPC : NetworkBehaviour {
             _yVel = 0;
         this._cc.Move(_moveDir * Time.deltaTime + new Vector3(0, this._yVel, 0));
         this.transform.LookAt(transform.position + this._moveDir);
+
+        if (this.isServer) {
+            this._syncTimer += Time.deltaTime;
+            if (this._syncTimer > _syncRate) {
+                this.syncClients();
+                this._syncTimer = 0;
+            }
+        }
 	}
 
-    public void spawnPos(Vector3 _spawnPos) {
-        transform.position = _spawnPos;
+    public void updateMasterPos(Vector3 masterPos) {
+        transform.position = masterPos;
     }
 
-    public void spawnRot(Quaternion _spawnRot) {
-        transform.rotation = _spawnRot;
-    }
-
-    public void setSpawnPos(Vector3 spawnPos) {
-        this._spawnPos = spawnPos;
-        this._moveDir = this.transform.forward;
-    }
-
-    public void setSpawnRot(Quaternion spawnRot) {
-        this._spawnRot = spawnRot;
+    public void updateMasterDir(Vector3 masterDir) {
+        this._moveDir = masterDir;
     }
 
     public void setMoveDir(Vector3 moveDir) {
         this._moveDir = moveDir;
+    }
+
+    public void spawn(Vector3 pos, Quaternion rot) {
+        this.transform.position = pos;
+        this.transform.rotation = rot;
+        this._moveDir = transform.forward;
+    }
+
+    public void syncClients() {
+        this._masterPos = transform.position;
+        this._masterDir = this._moveDir;
     }
 
     private void OnCollisionEnter(Collision other) {

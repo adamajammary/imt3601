@@ -64,7 +64,7 @@ public class NPC : NetworkBehaviour {
             return;
         //if (other.gameObject.tag == "foxbite" && other.transform.parent != transform) {
         if ((other.gameObject.tag == "foxbite")) {
-            CmdBloodParticle(other.GetComponentInParent<FoxController>().biteInpact());
+            CmdBloodParticle(other.GetComponentInParent<FoxController>().biteImpact());
             Destroy(this.gameObject);
         }
     }

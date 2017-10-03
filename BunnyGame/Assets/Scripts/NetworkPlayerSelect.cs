@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 
 public enum NetworkMessageType {
-    MSG_PLAYERSELECT = 1000, MSG_PLAYERCOUNT, MSG_PLAYERDIED, MSG_PLAYERWON, MSG_PLAYERKILLED
+    MSG_PLAYERSELECT = 1000, MSG_PLAYERCOUNT, MSG_PLAYERDIED, MSG_PLAYERWON, MSG_PLAYERKILL
 }
 
 public class PlayerSelectMessage : MessageBase {
@@ -40,7 +40,6 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERSELECT, this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERCOUNT,  this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERDIED,   this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERKILLED, this.recieveNetworkMessage);
 
         this._players = 0;
         this._isDead.Clear();
@@ -57,17 +56,50 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     // NB! Prefabs for this has to be stored in "Assets/Resources/Prefabs/".
     //
     public override GameObject OnLobbyServerCreateGamePlayer(NetworkConnection conn, short playerControllerId) {
-        NetworkStartPosition[] spawnPoints    = Object.FindObjectsOfType<NetworkStartPosition>();
+        NetworkStartPosition[] spawnPoints    = FindObjectsOfType<NetworkStartPosition>();
         Vector3                position       = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
         int                    selectedModel  = this.getSelectedModel(this.getClientID(conn));
         GameObject             playerPrefab   = Resources.Load<GameObject>("Prefabs/" + this._models[selectedModel]);
         GameObject             playerInstance = Instantiate(playerPrefab, position, playerPrefab.transform.rotation);
+        BunnyController        bunnyScript    = playerInstance.GetComponent<BunnyController>();
+        FoxController          foxScript      = playerInstance.GetComponent<FoxController>();
+
+        if (foxScript != null)
+            foxScript.ConnectionID = conn.connectionId;
+
+        if (bunnyScript != null)
+            bunnyScript.ConnectionID = conn.connectionId;
 
         this._isDead.Add(conn.connectionId, false);
         this._kills.Add(conn.connectionId,  0);
         this._players++;
 
         return playerInstance;
+    }
+
+    // This is called on the server when a client disconnects.
+    public override void OnLobbyServerDisconnect(NetworkConnection conn) {
+        this._isDead[conn.connectionId] = true;
+        this._players--;
+
+        // Tell all the other players how many players are left.
+        foreach (var connection in NetworkServer.connections) {
+            if ((connection == null) || (connection.connectionId == conn.connectionId))
+                continue;
+
+            int cID = connection.connectionId;
+
+            this.sendPlayerCountMessage(cID);
+
+            // If there is only one player left, tell them that they won.
+            if ((this._players <= 1) && this._isDead.ContainsKey(cID) && !this._isDead[cID])
+                this.sendPlayerWonMessage(cID);
+        }
+
+        if ((conn.lastError != NetworkError.Ok) && LogFilter.logError)
+            Debug.LogError("ERROR! Client disconnected from server due to error: " + conn.lastError);
+
+        NetworkServer.DestroyPlayersForConnection(conn);
     }
 
     // Recieve and handle the network message.
@@ -80,10 +112,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
                 this.recievePlayerCountMessage(message.conn.connectionId);
                 break;
             case (short)NetworkMessageType.MSG_PLAYERDIED:
-                this.recievePlayerDiedMessage(message.conn.connectionId);
-                break;
-            case (short)NetworkMessageType.MSG_PLAYERKILLED:
-                this.recievePlayerKilledMessage(message.ReadMessage<IntegerMessage>().value);
+                this.recievePlayerDiedMessage(message.conn.connectionId, message.ReadMessage<IntegerMessage>().value);
                 break;
             default:
                 Debug.Log("ERROR! Unknown message type: " + message.msgType);
@@ -93,44 +122,58 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
     // Return the number of players still alive.
     private void recievePlayerCountMessage(int id) {
-        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_PLAYERCOUNT, new IntegerMessage(this._players));
+        this.sendPlayerCountMessage(id);
     }
 
     // Update the clients when a player dies.
-    private void recievePlayerDiedMessage(int id) {
+    private void recievePlayerDiedMessage(int id, int killerID) {
         this._isDead[id] = true;
 
-        // Tell the player who died what their ranking is.
-        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_PLAYERDIED, new IntegerMessage(this._players));
+        if (killerID >= 0) {
+            this._kills[killerID]++;
+            this.sendPlayerKillMessage(killerID);
+        }
 
-        // Decrease the number of players still alive.
+        // Tell the player who died what their ranking is.
+        this.sendPlayerDiedMessage(id);
+
         this._players--;
 
         // Tell all the players how many players are left.
         foreach (var connection in NetworkServer.connections) {
             int cID = connection.connectionId;
 
-            this.recievePlayerCountMessage(cID);
+            this.sendPlayerCountMessage(cID);
 
             // If there is only one player left, tell them that they won.
-            if ((this._players <= 1) && this._isDead.ContainsKey(cID) && !this._isDead[cID]) {
-                NetworkServer.SendToClient(cID, (short)NetworkMessageType.MSG_PLAYERWON, new IntegerMessage(this._players));
-            }
+            if ((this._players <= 1) && this._isDead.ContainsKey(cID) && !this._isDead[cID])
+                this.sendPlayerWonMessage(cID);
         }
-    }
-
-    // Increase the player kill count.
-    private void recievePlayerKilledMessage(int connectionID) {
-        //print("recievePlayerKilledMessage: " + connectionID);
-
-        this._kills[connectionID]++;
-
-        //print("recievePlayerKilledMessage::kills: " + this._kills[connectionID]);
     }
 
     // Parse the player select message, and select the player model.
     private void recievePlayerSelectMessage(PlayerSelectMessage message) {
         this.selectModel(message.clientID, message.selectedModel);
+    }
+
+    // Send the number of players still alive to the client.
+    private void sendPlayerCountMessage(int id) {
+        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_PLAYERCOUNT, new IntegerMessage(this._players));
+    }
+
+    // Tell the player who died what their ranking is.
+    private void sendPlayerDiedMessage(int id) {
+        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_PLAYERDIED, new IntegerMessage(this._players));
+    }
+
+    // Tell the player how many kills they have.
+    private void sendPlayerKillMessage(int id) {
+        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_PLAYERKILL, new IntegerMessage(this._kills[id]));
+    }
+
+    // Tell the player that they won.
+    private void sendPlayerWonMessage(int id) {
+        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_PLAYERWON, new IntegerMessage(this._players));
     }
 
     // Save the model selection made by the user.
@@ -140,14 +183,4 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         else
             this._selections[clientID] = model;
     }
-
-    public virtual void OnServerDisconnect(NetworkConnection conn) {
-        NetworkServer.DestroyPlayersForConnection(conn);
-        if (conn.lastError != NetworkError.Ok) {
-            if (LogFilter.logError) {
-                Debug.LogError("ServerDisconnected due to error: " + conn.lastError);
-            }
-        }
-    }
-
 }

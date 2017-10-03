@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -44,15 +43,14 @@ public class PlayerController : NetworkBehaviour {
         this._velocityY += waterForce * Time.deltaTime;
     }
 
-
     void Start() {
 		CorrectRenderingMode(); // Calling this here to fix the rendering order of the model, because materials have rendering mode fade
         this._blood = Resources.Load<GameObject>("Prefabs/Blood");
+
         if (!this.isLocalPlayer)
             return;
-
         
-        if(this._blood == null)
+        if (this._blood == null)
             Debug.Log("finnes ikke");
 
         this._cameraTransform = Camera.main.transform;
@@ -77,9 +75,7 @@ public class PlayerController : NetworkBehaviour {
         Vector2 inputDir = input.normalized;
         running = Input.GetKey(KeyCode.LeftShift);
 
-
         handleSpecialAbilities();
-
         Move(inputDir);
 
         if (Input.GetAxisRaw("Jump") > 0)
@@ -88,7 +84,6 @@ public class PlayerController : NetworkBehaviour {
         handleFallDamage();
         HandleAiming();
         handleMouse();
-
     }
 
     // Turn off and on MeshRenderer so FPS camera works
@@ -123,13 +118,11 @@ public class PlayerController : NetworkBehaviour {
         float targetRotation = _cameraTransform.eulerAngles.y;
         transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation,
                                                     ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
-        
 
         float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
         this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
 
         this._velocityY += Time.deltaTime * gravity;
-
 
 		Vector3 moveDir = _cameraTransform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
         moveDir.y = 0;
@@ -156,7 +149,7 @@ public class PlayerController : NetworkBehaviour {
         else if (-this._velocityY > _maxFallSpeed && !_dealFallDamageOnCollision)
             _dealFallDamageOnCollision = true;
         else if (-this._velocityY < 1 && _dealFallDamageOnCollision) {
-            this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage);
+            this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage, -1);
             _dealFallDamageOnCollision = false;
         }
     }
@@ -192,39 +185,26 @@ public class PlayerController : NetworkBehaviour {
 
     private void wallDamage() {
         if (this._damageTimer > _damageRate) {
-            this.GetComponent<PlayerHealth>().TakeDamage(1);
+            this.GetComponent<PlayerHealth>().TakeDamage(1, -1);
             this._damageTimer = 0;
         }   
         this._damageTimer += Time.deltaTime;
     }
 
     private void OnCollisionEnter(Collision other) {
-        if (other.gameObject.tag == "projectile") {
-            //this.GetComponent<PlayerHealth>().TakeDamage(other.gameObject.GetComponent<BunnyPoop>().GetDamage());
-            //CmdBloodParticle(other.gameObject.transform.position);
-            //Destroy(other.gameObject);
+        if (!this.isLocalPlayer)
+            return;
 
+        if (other.gameObject.tag == "projectile") {
             PlayerHealth healthScript = this.GetComponent<PlayerHealth>();
             BunnyPoop    poopScript   = other.gameObject.GetComponent<BunnyPoop>();
 
-            // Apply damage only if the enemy is still alive.
-            if ((healthScript != null) && (poopScript != null)) {// && !healthScript.IsDead()) {
-                if (this.isLocalPlayer) {
-                    healthScript.TakeDamage(poopScript.GetDamage());
-					CmdBloodParticle(other.gameObject.transform.position);
-                    Destroy(other.gameObject);
-                }
-
-                //// Increase kill counter if enemy died after taking damage.
-                //if ((!this.isLocalPlayer && this.isServer && this.isClient) ||  // SERVER/HOST
-                //    (this.isLocalPlayer  && this.isServer && this.isClient))    // CLIENT
-                //{
-                //    //print("healthScript.IsDead(): " + healthScript.IsDead());
-
-                //    if (healthScript.IsDead())
-                //        poopScript.AddKill();
-                //}
+            if ((healthScript != null) && (poopScript != null) && !healthScript.IsDead()) {
+                this.CmdBloodParticle(other.gameObject.transform.position);
+                healthScript.TakeDamage(poopScript.GetDamage(), poopScript.ConnectionID);
             }
+            
+            Destroy(other.gameObject);
         }
     }
 
@@ -234,8 +214,13 @@ public class PlayerController : NetworkBehaviour {
 
         //if (other.gameObject.tag == "foxbite" && other.transform.parent != transform) {
         if ((other.gameObject.tag == "foxbite") && (other.gameObject.transform.parent.gameObject.tag == "Enemy")) {
-            CmdBloodParticle(other.GetComponentInParent<FoxController>().biteInpact());
-            this.GetComponent<PlayerHealth>().TakeDamage(other.GetComponentInParent<FoxController>().GetDamage());
+            PlayerHealth  healthScript = this.GetComponent<PlayerHealth>();
+            FoxController foxScript    = other.GetComponentInParent<FoxController>();
+
+            if ((healthScript != null) && (foxScript != null) && !healthScript.IsDead()) {
+                this.CmdBloodParticle(foxScript.biteImpact());
+                healthScript.TakeDamage(foxScript.GetDamage(), foxScript.ConnectionID);
+            }
         } else if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
         }
@@ -245,9 +230,8 @@ public class PlayerController : NetworkBehaviour {
         if (!this.isLocalPlayer)
             return;
 
-        if (other.gameObject.name == "Water") {
+        if (other.gameObject.name == "Water")
             this._fallDamageImmune = false;
-        }
     }
 
 	public void CorrectRenderingMode() {
@@ -260,15 +244,14 @@ public class PlayerController : NetworkBehaviour {
 				materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
 			else
 				continue;
-			foreach (Material mat in materials) {
+
+			foreach (Material mat in materials)
 				mat.SetInt("_ZWrite", 1);
-			}
 		}
 	}
 
     [Command]
-    public void CmdBloodParticle(Vector3 hitPosition)
-    {
+    public void CmdBloodParticle(Vector3 hitPosition) {
         GameObject blood = Instantiate(this._blood);
 
         blood.transform.position = hitPosition;

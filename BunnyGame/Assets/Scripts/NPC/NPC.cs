@@ -69,20 +69,25 @@ public class NPC : NetworkBehaviour {
 
     private void OnCollisionEnter(Collision other) {
         if (other.gameObject.tag == "projectile") {
-            CmdBloodParticle(other.gameObject.transform.position);
-            var owner = other.gameObject.GetComponent<BunnyPoop>().owner;
-            if (owner != null) owner.GetComponent<PlayerHealth>().TakeDamage(-10);
-            Destroy(other.gameObject);
+            BunnyPoop poopScript = other.gameObject.GetComponent<BunnyPoop>();
+            PlayerHealth healthScript = poopScript.owner.GetComponent<PlayerHealth>();
+
+            this.CmdBloodParticle(other.gameObject.transform.position);
+            healthScript.TakeDamage(-10, poopScript.ConnectionID);
+
             Destroy(this.gameObject);
         }
     }
 
     private void OnTriggerEnter(Collider other) {
         if ((other.gameObject.tag == "foxbite")) {
-            CmdBloodParticle(other.GetComponentInParent<FoxController>().biteInpact());
-            other.transform.parent.gameObject.GetComponent<PlayerHealth>().TakeDamage(-10);
+            PlayerHealth healthScript = other.transform.parent.GetComponent<PlayerHealth>();
+            FoxController foxScript = other.GetComponentInParent<FoxController>();
+  
+            this.CmdBloodParticle(foxScript.biteImpact());
+            healthScript.TakeDamage(-10, foxScript.ConnectionID);
             Destroy(this.gameObject);
-        }
+        } 
     }
 
     [Command]

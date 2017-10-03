@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 
 public class BunnyController : NetworkBehaviour {
@@ -9,7 +7,9 @@ public class BunnyController : NetworkBehaviour {
     private float _fireRate;
     private CharacterController _controller;
     private GameObject bunnyPoop;
-    private int _connectionID = -1;
+
+    [SyncVar]
+    public int ConnectionID = -1;
 
     void Start () {
         bunnyPoop = Resources.Load<GameObject>("Prefabs/poop");
@@ -29,12 +29,8 @@ public class BunnyController : NetworkBehaviour {
         SuperJump sj = gameObject.AddComponent<SuperJump>();
         sj.init(10);
         playerController.abilities.Add(sj);
+
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
-
-        NetworkClient client = NetworkClient.allClients[0];
-
-        if (client != null)
-            this._connectionID = client.connection.connectionId;
     }
 
     void Update () {
@@ -50,64 +46,35 @@ public class BunnyController : NetworkBehaviour {
             return;
 
         this._timer += Time.deltaTime;
-        if (this._timer > this._fireRate)
-        {
 
+        if (this._timer > this._fireRate) {
             Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
             RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit, 100))
-            {
+            if (Physics.Raycast(ray, out hit, 100)) {
                 Vector3 direction = hit.point - this.transform.position;
                 Vector3 dirNorm = direction.normalized;
-                this.CmdShootPoop2(dirNorm, this._controller.velocity, this._connectionID);
-            }
-            else
-            {
+                this.CmdShootPoop(dirNorm, this._controller.velocity, this.ConnectionID);
+            } else {
                 Vector3 direction = ray.GetPoint(50.0f) - this.transform.position;
                 Vector3 dirNorm = direction.normalized;
-                this.CmdShootPoop2(dirNorm, this._controller.velocity, this._connectionID);
+                this.CmdShootPoop(dirNorm, this._controller.velocity, this.ConnectionID);
             }
+
             this._timer = 0;
         }
     }
 
     [Command]
-    public void CmdShootPoop(Vector3 dir, Vector3 startVel, int id)
-    {
+    public void CmdShootPoop(Vector3 direction, Vector3 startVel, int id) {
         GameObject poop       = Instantiate(bunnyPoop);
         BunnyPoop  poopScript = poop.GetComponent<BunnyPoop>();
+        Vector3    position   = (transform.position + direction * 4.0f);
 
-        // Assign the player connection ID to the projectile.
-        poopScript.SetConnectionID(id);
-
-        Vector3 pos = transform.position;
-        pos += dir * 4.0f;
-        poopScript.shoot(dir, pos, startVel);
+        poopScript.ConnectionID = id;   // Assign the player connection ID to the projectile.
+        poopScript.shoot(direction, position, startVel);
+        poopScript.owner = this.gameObject;
 
         NetworkServer.Spawn(poop);
-    }
-
-    [Command]
-    public void CmdShootPoop2(Vector3 dir, Vector3 startVel, int id)
-    {
-        RpcShootPoop(dir, startVel, id);
-    }
-
-    [ClientRpc]
-    public void RpcShootPoop(Vector3 dir, Vector3 startVel, int id)
-    {
-        GameObject poop = Instantiate(bunnyPoop);
-        BunnyPoop poopScript = poop.GetComponent<BunnyPoop>();
-
-        // Assign the player connection ID to the projectile.
-        poopScript.SetConnectionID(id);
-
-        Vector3 pos = transform.position;
-        pos += dir * 4.0f;
-
-        if (this._connectionID == id) poop.GetComponent<BunnyPoop>().owner = this.gameObject;
-
-        poopScript.shoot(dir, pos, startVel);
     }
 }

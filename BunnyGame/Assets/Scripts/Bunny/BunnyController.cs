@@ -37,7 +37,7 @@ public class BunnyController : NetworkBehaviour {
         if (!this.isLocalPlayer)
             return;
 
-        if (Input.GetAxisRaw("Fire1") > 0)
+        if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1))
             this.shoot();
     }
 

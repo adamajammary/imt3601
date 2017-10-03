@@ -1,22 +1,19 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-
 public class FoxController : NetworkBehaviour {
 
-    GameObject biteArea;
+    private GameObject biteArea;
+    private int _biteDamage = 15;
 
-    private int  _biteDamage = 15;
-    private PlayerHealth _playerHealth;
+    [SyncVar]
+    public int ConnectionID = -1;
 
-
-
-    public override void PreStartClient()
-    {
+    public override void PreStartClient() {
         base.PreStartClient();
         NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
+
         for (int i = 0; i < GetComponent<Animator>().parameterCount; i++)
             netAnimator.SetParameterAutoSend(i, true);
     }
@@ -24,15 +21,14 @@ public class FoxController : NetworkBehaviour {
     // Use this for initialization
     void Start() {
         NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
+
         for (int i = 0; i < netAnimator.animator.parameterCount; i++)
             netAnimator.SetParameterAutoSend(i, true);
 
-
         biteArea = transform.GetChild(2).gameObject;
-        this._playerHealth = this.GetComponent<PlayerHealth>();
+
         if (!this.isLocalPlayer)
             return;
-
 
         // Set custom attributes for class:
         PlayerController playerController = GetComponent<PlayerController>();
@@ -42,9 +38,11 @@ public class FoxController : NetworkBehaviour {
         Sprint sp = gameObject.AddComponent<Sprint>();
         sp.init(50, 1);
         playerController.abilities.Add(sp);
+
         Stealth st = gameObject.AddComponent<Stealth>();
         st.init(1, 0.1f);
         playerController.abilities.Add(st);
+
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
     }
 
@@ -55,22 +53,18 @@ public class FoxController : NetworkBehaviour {
 
         updateAnimator();
 
-        if (Input.GetKeyDown(KeyCode.Mouse0)) {
+        if (Input.GetKeyDown(KeyCode.Mouse0))
             this.bite();
-        }
-
     }
-
 
     private void bite() {
         if (this.GetComponent<PlayerHealth>().IsDead())
             return;
 
-        if (this.isClient)
-            this.CmdBite();
-        else if (this.isServer)
+        if (this.isServer)
             this.RpcBite();
-
+        else if (this.isClient)
+            this.CmdBite();
     }
 
     [Command]
@@ -94,15 +88,15 @@ public class FoxController : NetworkBehaviour {
         return this._biteDamage;
     }
 
-    // Updata the animator with current state
+    // Update the animator with current state
     public void updateAnimator() {
         Animator animator = GetComponent<Animator>();
-        if(animator != null)
+
+        if (animator != null)
             animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
     }
 
-    public Vector3 biteInpact()
-    {
+    public Vector3 biteImpact() {
         return this.biteArea.transform.position;
     }
 }

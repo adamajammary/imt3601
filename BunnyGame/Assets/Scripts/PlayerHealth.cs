@@ -16,8 +16,9 @@ public class PlayerHealth : NetworkBehaviour {
     private Image         _spectateImage;
     private Text          _spectateText;
 
-    [SyncVar(hook = "showGameOverScreen")] private int _rank          = -1;
-    [SyncVar(hook = "updateAliveText")]    private int _playersAlive  = -2;
+    [SyncVar]                              private int _kills         = 0;
+    [SyncVar(hook = "showGameOverScreen")] private int _rank          = 0;
+    [SyncVar(hook = "updateAliveText")]    private int _playersAlive  = 0;
     [SyncVar(hook = "updateDamageScreen")] private int _currentHealth = MAX_HEALTH;
 
     void Start() {
@@ -35,6 +36,7 @@ public class PlayerHealth : NetworkBehaviour {
         if (this._client != null) {
             this._client.RegisterHandler((short)NetworkMessageType.MSG_PLAYERCOUNT, this.recieveNetworkMessage);
             this._client.RegisterHandler((short)NetworkMessageType.MSG_PLAYERDIED,  this.recieveNetworkMessage);
+            this._client.RegisterHandler((short)NetworkMessageType.MSG_PLAYERKILL,  this.recieveNetworkMessage);
             this._client.RegisterHandler((short)NetworkMessageType.MSG_PLAYERWON,   this.recieveNetworkMessage);
         }
 
@@ -51,6 +53,11 @@ public class PlayerHealth : NetworkBehaviour {
         this._damageImmune = false;
     }
 
+    // Check if the player is dead.
+    public bool IsDead() {
+        return this._isDead;
+    }
+
     // TODO: Implement spectating
     private void spectate() {
         Debug.Log("TODO: Implement spectating");
@@ -60,78 +67,49 @@ public class PlayerHealth : NetworkBehaviour {
     // Networked methods, runs on the server or client appropriately.
     //
 
-    // Check if player is dead.
-    public bool IsDead() {
-        //if (this.isServer && this.isClient)
-        //    this.isDead2();
-        //if (this.isServer)
-        //    this.RpcIsDead();
-        //else if (this.isClient)
-        //    this.CmdIsDead();
-
-        return (!this.gameObject.transform.GetChild(1).gameObject.activeSelf && !this.gameObject.transform.GetChild(1).gameObject.activeInHierarchy);
-        //return this._isDead;
-    }
-
-    //private void isDead2() {
-    //    //print("isDead2_1: " + this._isDead);
-    //    //this._isDead = (this._currentHealth <= 0);
-    //    this._isDead = (!this.gameObject.transform.GetChild(1).gameObject.activeSelf && !this.gameObject.transform.GetChild(1).gameObject.activeInHierarchy);
-    //    //print("isDead2_2: " + this._isDead);
-    //}
-
-    //[ClientRpc]
-    //private void RpcIsDead() {
-    //    //this._isDead = (this._currentHealth <= 0);
-    //    this._isDead = (!this.gameObject.transform.GetChild(1).gameObject.activeSelf && !this.gameObject.transform.GetChild(1).gameObject.activeInHierarchy);
-    //    //this.isDead2();
-    //}
-
-    //[Command]
-    //private void CmdIsDead() {
-    //    this.RpcIsDead();
-    //}
-
     // Take damage when hit, and respawn the player if dead.
-    public void TakeDamage(int amount) {
-        if (!this.isLocalPlayer || this._damageImmune || this.IsDead())
+    public void TakeDamage(int amount, int connectionID) {
+        if (!this.isLocalPlayer || this._damageImmune)
             return;
 
         if (this.isServer && this.isClient)
-            this.takeDamage2(amount);
+            this.takeDamage2(amount, connectionID);
         else if (this.isServer)
-            this.RpcTakeDamage(amount);
+            this.RpcTakeDamage(amount, connectionID);
         else if (this.isClient)
-            this.CmdTakeDamage(amount);
+            this.CmdTakeDamage(amount, connectionID);
     }
 
-    private void takeDamage2(int amount) {
+    private void takeDamage2(int amount, int connectionID) {
+        if (this._currentHealth <= 0)
+            return;
+
         this._currentHealth -= amount;
         this._isDead         = (this._currentHealth <= 0);
 
         if (this._isDead)
-            this.Die();
+            this.Die(connectionID);
     }
 
     [ClientRpc]
-    private void RpcTakeDamage(int amount) {
-        this.takeDamage2(amount);
+    private void RpcTakeDamage(int amount, int connectionID) {
+        this.takeDamage2(amount, connectionID);
     }
 
     [Command]
-    private void CmdTakeDamage(int amount) {
-        this.RpcTakeDamage(amount);
+    private void CmdTakeDamage(int amount, int connectionID) {
+        this.RpcTakeDamage(amount, connectionID);
     }
 
     // Respawn the player in a new random position.
-    private void Die() {
+    private void Die(int connectionID) {
         if (this.isServer)
             this.RpcDie();
         else if (this.isClient)
             this.CmdDie();
 
         if (this._client != null)
-            this._client.Send((short)NetworkMessageType.MSG_PLAYERDIED, new IntegerMessage());
+            this._client.Send((short)NetworkMessageType.MSG_PLAYERDIED, new IntegerMessage(connectionID));
     }
 
     [ClientRpc]
@@ -167,10 +145,38 @@ public class PlayerHealth : NetworkBehaviour {
             case (short)NetworkMessageType.MSG_PLAYERWON:
                 this.updateRanking(message.ReadMessage<IntegerMessage>().value);
                 break;
+            case (short)NetworkMessageType.MSG_PLAYERKILL:
+                this.updateKillCounter(message.ReadMessage<IntegerMessage>().value);
+                break;
             default:
                 Debug.Log("ERROR! Unknown message type: " + message.msgType);
                 break;
         }
+    }
+
+    // Update the number of kills the player have made.
+    private void updateKillCounter(int kills) {
+        if (this.isServer && this.isClient)
+            this.updateKillCounter2(kills);
+        else if (this.isServer)
+            this.RpcUpdateKillCounter(kills);
+        else if (this.isClient)
+            this.CmdUpdateKillCounter(kills);
+    }
+
+    private void updateKillCounter2(int kills) {
+        if (kills >= 0)
+            this._kills = kills;
+    }
+
+    [ClientRpc]
+    private void RpcUpdateKillCounter(int kills) {
+        this.updateKillCounter2(kills);
+    }
+
+    [Command]
+    private void CmdUpdateKillCounter(int kills) {
+        this.RpcUpdateKillCounter(kills);
     }
 
     // Update the number of players still alive.
@@ -184,7 +190,8 @@ public class PlayerHealth : NetworkBehaviour {
     }
 
     private void updateAliveCounter2(int players) {
-        this._playersAlive = players;
+        if (players > 0)
+            this._playersAlive = players;
     }
 
     [ClientRpc]
@@ -208,7 +215,8 @@ public class PlayerHealth : NetworkBehaviour {
     }
 
     private void updateRanking2(int rank) {
-        this._rank = rank;
+        if (rank > 0)
+            this._rank = rank;
     }
 
     [ClientRpc]
@@ -229,19 +237,17 @@ public class PlayerHealth : NetworkBehaviour {
     private void showGameOverScreen(int rank) {
         if (rank > 1)
             this.showDeathScreen(rank);
-        else
+        else if (rank == 1)
             this.showWinScreen(rank);
     }
 
     // Show the death screen.
     private void showDeathScreen(int rank) {
-		if ((this._gameOverText == null) || (this._spectateImage == null) || (this._spectateText == null))
+		if ((this._gameOverText == null) || (this._spectateImage == null) || (this._spectateText == null) || (rank < 1))
             return;
 
-        int kills = 0;
-
         this._rank                = rank;
-        this._gameOverText.text   = string.Format("YOU'RE DEAD\nKills: {0}   Rank: #{1}", kills, this._rank);
+        this._gameOverText.text   = string.Format("YOU'RE DEAD\nKills: {0}   Rank: #{1}", this._kills, this._rank);
         this._gameOverText.color  = new Color(this._gameOverText.color.r,  this._gameOverText.color.g,  this._gameOverText.color.b,  1.0f);
         this._spectateImage.color = new Color(this._spectateImage.color.r, this._spectateImage.color.g, this._spectateImage.color.b, 1.0f);
         this._spectateText.color  = new Color(this._spectateText.color.r,  this._spectateText.color.g,  this._spectateText.color.b,  1.0f);
@@ -251,13 +257,11 @@ public class PlayerHealth : NetworkBehaviour {
 
     // Show the win screen.
     private void showWinScreen(int rank) {
-		if (this._gameOverText == null)
+		if ((this._gameOverText == null) || (rank < 1))
             return;
 
-        int kills = 0;
-
         this._rank               = rank;
-        this._gameOverText.text  = string.Format("YOU WON\nKills: {0}   Rank: #{1}", kills, this._rank);
+        this._gameOverText.text  = string.Format("YOU WON\nKills: {0}   Rank: #{1}", this._kills, this._rank);
         this._gameOverText.color = new Color(this._gameOverText.color.r, this._gameOverText.color.g, this._gameOverText.color.b, 1.0f);
     }
 
@@ -265,7 +269,7 @@ public class PlayerHealth : NetworkBehaviour {
     private void updateAliveText(int playersAlive) {
         Text aliveText = GameObject.Find("Canvas/PlayersAliveText").GetComponent<Text>();
 
-        if (aliveText != null) {
+        if ((aliveText != null) && (playersAlive > 0)) {
             this._playersAlive = playersAlive;
             aliveText.text     = string.Format("{0} ALIVE", this._playersAlive);
         }
@@ -273,7 +277,7 @@ public class PlayerHealth : NetworkBehaviour {
 
     // Update the health/damage screen overlay.
     private void updateDamageScreen(int health) {
-        if (!this.isLocalPlayer || (this._damageImage == null) || (this._damageImage.color.a >= 1.0f))
+        if (!this.isLocalPlayer || (this._damageImage == null) || (this._damageImage.color.a >= 1.0f) || (health < 0))
             return;
 
         float alpha             = (1.0f - (float)health / (float)MAX_HEALTH);

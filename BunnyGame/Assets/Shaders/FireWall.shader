@@ -5,7 +5,7 @@
 	SubShader {
 		AlphaToMask On
 		Cull Off
-		Tags {"Queue" = "Transparent" "RenderType"= "Transparent"}
+		Tags {"Queue" = "Transparent-5" "RenderType"= "Transparent"}
 		LOD 100
 
 		Pass {

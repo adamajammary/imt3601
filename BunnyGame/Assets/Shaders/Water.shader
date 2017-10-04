@@ -6,7 +6,10 @@
 		_Metallic ("Metallic", Range(0,1)) = 0.0
 	}
 	SubShader {
-		Tags { "RenderType"="Opaque" }
+		Tags { 
+			"RenderType" = "Fade" 
+			"Queue" = "Transparent"
+		}
 		LOD 200
 		Blend SrcAlpha OneMinusSrcAlpha
 		AlphaToMask On
@@ -34,6 +37,9 @@
 		UNITY_INSTANCING_CBUFFER_START(Props)
 			// put more per-instance properties here
 		UNITY_INSTANCING_CBUFFER_END
+
+
+
 
 		void surf (Input IN, inout SurfaceOutputStandard o) {
 			// Albedo comes from a texture tinted by color

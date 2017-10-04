@@ -64,6 +64,8 @@ public class AbilityNetwork : NetworkBehaviour {
 				alfa = mat.color;
                 alfa.a = transparancy;
                 materials[count++].SetColor("_Color", alfa);
+
+                mat.renderQueue = 3100;
             }
         }
     }
@@ -86,6 +88,7 @@ public class AbilityNetwork : NetworkBehaviour {
             foreach (Material mat in materials) {
 				alfa = mat.color;
                 alfa.a = orginal;
+                mat.renderQueue = 2000;
                 materials[count++].SetColor("_Color", alfa);
 			}
         }

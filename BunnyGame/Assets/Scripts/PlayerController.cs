@@ -230,18 +230,20 @@ public class PlayerController : NetworkBehaviour {
 	public void CorrectRenderingMode() {
 		Material[] materials;
 
-		foreach (Transform child in this.transform.GetChild(1)) {
-			if (child.gameObject.GetComponent<Renderer>() != null)
-				materials = child.gameObject.GetComponent<Renderer>().materials;
-			else if (child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
-				materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
-			else
-				continue;
+        foreach (Transform child in this.transform.GetChild(1)) {
+            if (child.gameObject.GetComponent<Renderer>() != null)
+                materials = child.gameObject.GetComponent<Renderer>().materials;
+            else if (child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+                materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
+            else
+                continue;
 
-			foreach (Material mat in materials)
-				mat.SetInt("_ZWrite", 1);
-		}
-	}
+            foreach (Material mat in materials) {
+                mat.SetInt("_ZWrite", 1);
+                mat.renderQueue = 2000;
+            }
+        }
+    }
 
     [Command]
     public void CmdBloodParticle(Vector3 hitPosition) {

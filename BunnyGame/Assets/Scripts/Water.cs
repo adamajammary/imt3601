@@ -11,6 +11,11 @@ public class Water : MonoBehaviour {
 
     private void Start() {
         this._waterSurfaceHeight = transform.position.y + transform.localScale.y / 2;
+
+        Material mat = GetComponent<Renderer>().material;
+        mat.SetInt("_ZWrite", 1);
+        mat.renderQueue = 3000;
+
     }
 
     void OnTriggerStay(Collider other) { 

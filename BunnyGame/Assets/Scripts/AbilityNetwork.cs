@@ -65,7 +65,7 @@ public class AbilityNetwork : NetworkBehaviour {
                 alfa.a = transparancy;
                 materials[count++].SetColor("_Color", alfa);
 
-                mat.renderQueue = 4000; // 3000 = "floating", <2500 = drugs
+                mat.renderQueue = 3100;
             }
         }
     }

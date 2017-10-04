@@ -13,7 +13,7 @@ public class Water : MonoBehaviour {
         this._waterSurfaceHeight = transform.position.y + transform.localScale.y / 2;
 
         Material mat = GetComponent<Renderer>().material;
-        mat.SetInt("_ZWrite", 1);
+        //mat.SetInt("_ZWrite", 1);
         mat.renderQueue = 3000;
 
     }

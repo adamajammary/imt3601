@@ -14,7 +14,7 @@ public class GrenadePoop : SpecialAbility {
         bc = GetComponent<BunnyController>(); //ID should be in PlayerController IMO
         base.init("Textures/AbilityIcons/bombIcon");
         base.abilityName = "Poop Grenade";
-        base._cooldownTimeInSeconds = 0.1f;
+        base._cooldownTimeInSeconds = 15f;
     }
 
     override public IEnumerator useAbility() {

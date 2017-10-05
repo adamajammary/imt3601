@@ -71,7 +71,7 @@ public class PlayerEffects : NetworkBehaviour {
             }
         } else if (other.gameObject.tag == "projectile") {
             BunnyPoop poopScript = other.gameObject.GetComponent<BunnyPoop>();
-            PlayerInformation otherInfo = other.GetComponent<PlayerInformation>();
+            PlayerInformation otherInfo = poopScript.owner.GetComponent<PlayerInformation>();
             if ((this._health != null) && (poopScript != null) && !this._health.IsDead()) {
                 this.CmdBloodParticle(other.gameObject.transform.position);
                 this._health.TakeDamage(poopScript.GetDamage(), otherInfo.ConnectionID);

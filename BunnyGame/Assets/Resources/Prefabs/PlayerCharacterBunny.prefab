@@ -316,7 +316,8 @@ GameObject:
   - component: {fileID: 114222918294070388}
   - component: {fileID: 114039551738387226}
   - component: {fileID: 65420324126832974}
-  m_Layer: 0
+  - component: {fileID: 114468582047845414}
+  m_Layer: 8
   m_Name: PlayerCharacterBunny
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -1254,6 +1255,18 @@ MonoBehaviour:
   m_SnapThreshold: 5
   m_InterpolateRotation: 1
   m_InterpolateMovement: 1
+--- !u!114 &114468582047845414
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1987588776468962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aed8cb43cd4969d4484f09ab9629f6fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  insideWall: 0
 --- !u!114 &114487385630805722
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1284,8 +1297,8 @@ MonoBehaviour:
   airControlPercent: 0
   turnSmoothTime: 0.2
   speedSmoothTime: 0.2
-  insideWall: 0
   currentSpeed: 0
+  velocityY: 0
   controller: {fileID: 0}
   running: 0
 --- !u!114 &114893125111181148

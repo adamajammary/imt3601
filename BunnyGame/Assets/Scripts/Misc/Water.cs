@@ -22,7 +22,7 @@ public class Water : MonoBehaviour {
         if (other.tag == "Player" || other.tag == "Enemy") {
             float waterForce = (this._waterSurfaceHeight - other.transform.position.y + 0.5f) * this._waterForceStrength;
             //Debug.Log(waterForce);
-            other.GetComponent<PlayerController>().onWaterStay(waterForce);
+            other.GetComponent<PlayerEffects>().onWaterStay(waterForce);
         }
 
         if (other.tag == "Player")

@@ -28,7 +28,11 @@ public class BunnyController : NetworkBehaviour {
         // Add abilities to class:
         SuperJump sj = gameObject.AddComponent<SuperJump>();
         sj.init(10);
+        GrenadePoop gp = gameObject.AddComponent<GrenadePoop>();
+        gp.init();
         playerController.abilities.Add(sj);
+        playerController.abilities.Add(gp);
+
 
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
     }

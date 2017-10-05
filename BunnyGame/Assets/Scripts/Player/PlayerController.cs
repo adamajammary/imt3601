@@ -17,59 +17,35 @@ public class PlayerController : NetworkBehaviour {
     public float turnSmoothTime = 0.2f;
     public float speedSmoothTime = 0.2f;
 
-    public bool insideWall;
-
-    private const float _damageRate = 0.25f;    //How often to damage player outside wall
-    private float _damageTimer;                 //Timer used to find out when to damage player    
+    public float currentSpeed;
+    public float velocityY;
 
     private float _turnSmoothVelocity;
     private float _speedSmoothVelocity;
-    public float currentSpeed;
-    private float _velocityY;
 
-    private float _maxFallSpeed = 20; // How fast you can fall before starting to take fall damage
-    private int _fallDamage = 40;
-    private bool _dealFallDamageOnCollision = false;
-    private bool _fallDamageImmune = false;
 
-    private GameObject _blood;
     private Transform _cameraTransform;
     public CharacterController controller;
 
     bool lockCursor = false;
     public bool running = false;
 
-    public void onWaterStay(float waterForce) {
-        this._velocityY += waterForce * Time.deltaTime;
-    }
-
     void Start() {
 		CorrectRenderingMode(); // Calling this here to fix the rendering order of the model, because materials have rendering mode fade
-        this._blood = Resources.Load<GameObject>("Prefabs/Blood");
+
 
         if (!this.isLocalPlayer)
             return;
-        
-        if (this._blood == null)
-            Debug.Log("finnes ikke");
 
         this._cameraTransform = Camera.main.transform;
         this.controller = this.GetComponent<CharacterController>();
 
         this.airControlPercent = 1;
-
-        this._damageTimer = 0;
-        this.insideWall = true;
 	}
 
     void Update() {
         if (!this.isLocalPlayer) // NB! wallDamage should now work on clients
             return;
-
-        if (!this.insideWall) // Feels hacky, but when TakeDamage only works on the server its got to be this way
-            wallDamage();
-
-        //if (!this.isLocalPlayer) { return; }
 
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         Vector2 inputDir = input.normalized;
@@ -81,7 +57,6 @@ public class PlayerController : NetworkBehaviour {
         if (Input.GetAxisRaw("Jump") > 0)
             this.jump();
 
-        handleFallDamage();
         HandleAiming();
         handleMouse();
     }
@@ -122,35 +97,23 @@ public class PlayerController : NetworkBehaviour {
         float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
         this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
 
-        this._velocityY += Time.deltaTime * gravity;
+        this.velocityY += Time.deltaTime * gravity;
 
 		Vector3 moveDir = _cameraTransform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
         moveDir.y = 0;
         
-        Vector3 velocity = moveDir * currentSpeed + Vector3.up * _velocityY;
+        Vector3 velocity = moveDir * currentSpeed + Vector3.up * velocityY;
 
         this.controller.Move(velocity * Time.deltaTime);
 
         if (controller.isGrounded)
-            _velocityY = 0;
+            velocityY = 0;
     }
 
     public void jump() {
         if (controller.isGrounded) {
             float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight); 
-            this._velocityY = jumpVelocity;
-        }
-    }
-
-    private void handleFallDamage() {
-        if (_fallDamageImmune) { // Cannot take damage while immune
-            _dealFallDamageOnCollision = false;
-        }
-        else if (-this._velocityY > _maxFallSpeed && !_dealFallDamageOnCollision)
-            _dealFallDamageOnCollision = true;
-        else if (-this._velocityY < 1 && _dealFallDamageOnCollision) {
-            this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage, -1);
-            _dealFallDamageOnCollision = false;
+            this.velocityY = jumpVelocity;
         }
     }
 
@@ -183,50 +146,6 @@ public class PlayerController : NetworkBehaviour {
         Cursor.visible = true;
     }
 
-    private void wallDamage() {
-        if (this._damageTimer > _damageRate) {
-            this.GetComponent<PlayerHealth>().TakeDamage(1, -1);
-            this._damageTimer = 0;
-        }   
-        this._damageTimer += Time.deltaTime;
-    }
-
-    private void OnTriggerEnter(Collider other) {
-        if (!this.isLocalPlayer)
-            return;
-
-        //if (other.gameObject.tag == "foxbite" && other.transform.parent != transform) {
-        if ((other.gameObject.tag == "foxbite") && (other.gameObject.transform.parent.gameObject.tag == "Enemy")) {
-            PlayerHealth  healthScript = this.GetComponent<PlayerHealth>();
-            FoxController foxScript    = other.GetComponentInParent<FoxController>();
-
-            if ((healthScript != null) && (foxScript != null) && !healthScript.IsDead()) {
-                this.CmdBloodParticle(foxScript.biteImpact());
-                healthScript.TakeDamage(foxScript.GetDamage(), foxScript.ConnectionID);
-            }
-        } else if (other.gameObject.tag == "projectile") {
-            PlayerHealth healthScript = this.GetComponent<PlayerHealth>();
-            BunnyPoop poopScript = other.gameObject.GetComponent<BunnyPoop>();
-
-            if ((healthScript != null) && (poopScript != null) && !healthScript.IsDead()) {
-                this.CmdBloodParticle(other.gameObject.transform.position);
-                healthScript.TakeDamage(poopScript.GetDamage(), poopScript.ConnectionID);
-            }
-
-            Destroy(other.gameObject);
-        } else if (other.gameObject.name == "Water") {
-            this._fallDamageImmune = true; // Immune from falldamage when in water
-        }
-    }
-
-    private void OnTriggerExit(Collider other) {
-        if (!this.isLocalPlayer)
-            return;
-
-        if (other.gameObject.name == "Water")
-            this._fallDamageImmune = false;
-    }
-
 	public void CorrectRenderingMode() {
 		Material[] materials;
 
@@ -245,13 +164,5 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
-    [Command]
-    public void CmdBloodParticle(Vector3 hitPosition) {
-        GameObject blood = Instantiate(this._blood);
 
-        blood.transform.position = hitPosition;
-      
-        NetworkServer.Spawn(blood);
-        Destroy(blood, 5.0f);
-    }
 }

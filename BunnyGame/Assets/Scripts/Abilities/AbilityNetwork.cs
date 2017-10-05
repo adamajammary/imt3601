@@ -15,11 +15,13 @@ public class AbilityNetwork : NetworkBehaviour {
 
     private int modelChildNum = 1;
 
+    private GameObject _poopGrenade;
+    private GameObject _explosion;
 
-
-
-
-
+    void Start() {
+        this._poopGrenade = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopGrenade");
+        this._explosion = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopExplosion");
+    }
   
 
     ///////////// Functions for Stealth ability /////////////////
@@ -92,6 +94,31 @@ public class AbilityNetwork : NetworkBehaviour {
                 materials[count++].SetColor("_Color", alfa);
 			}
         }
+    }
+    /////////////////////////////////////////////////////////////////
+
+    ///////////// Functions for GrenadePoop ability /////////////////
+
+
+    [Command]
+    public void CmdPoopGrenade(Vector3 direction, Vector3 startVel, int id) {
+        GameObject poop = Instantiate(this._poopGrenade);
+        GrenadePoopProjectile poopScript = poop.GetComponent<GrenadePoopProjectile>();
+        Vector3 position = (transform.position + direction * 5.0f);
+
+        poopScript.ConnectionID = id;   // Assign the player connection ID to the projectile.
+        poopScript.shoot(direction, position, startVel);
+        poopScript.owner = this.gameObject;
+
+        NetworkServer.Spawn(poop);
+    }
+
+    [Command]
+    public void CmdPoopExplosion(Vector3 pos) {
+        GameObject explosion = Instantiate(this._explosion);
+        explosion.transform.position = pos;
+        NetworkServer.Spawn(explosion);
+        Destroy(explosion, 1.1f);
     }
     /////////////////////////////////////////////////////////////////
 }

@@ -19,16 +19,16 @@ public class NPC : NetworkBehaviour {
     private GameObject _blood;
     private float _yVel;
     // Use this for initialization
-    void Start () {
+    void Start() {
         this._cc = GetComponent<CharacterController>();
         this._blood = Resources.Load<GameObject>("Prefabs/Blood");
         this._yVel = 0;
 
         if (this.isServer) this._syncTimer = 0;
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    }
+
+    // Update is called once per frame
+    void Update() {
         this._yVel += Time.deltaTime * _gravity;
         if (this._cc.isGrounded)
             _yVel = 0;
@@ -42,7 +42,7 @@ public class NPC : NetworkBehaviour {
                 this._syncTimer = 0;
             }
         }
-	}
+    }
 
     public void updateMasterPos(Vector3 masterPos) {
         transform.position = masterPos;
@@ -67,27 +67,26 @@ public class NPC : NetworkBehaviour {
         this._masterDir = this._moveDir;
     }
 
+    public void kill(GameObject killer, int id) {
+        PlayerHealth healthScript = killer.GetComponent<PlayerHealth>();
+        this.CmdBloodParticle(this.transform.position);
+        healthScript.TakeDamage(-10, id);
+
+        Destroy(this.gameObject);
+    }
+
     private void OnCollisionEnter(Collision other) {
         if (other.gameObject.tag == "projectile") {
             BunnyPoop poopScript = other.gameObject.GetComponent<BunnyPoop>();
-            PlayerHealth healthScript = poopScript.owner.GetComponent<PlayerHealth>();
-
-            this.CmdBloodParticle(other.gameObject.transform.position);
-            healthScript.TakeDamage(-10, poopScript.ConnectionID);
-
-            Destroy(this.gameObject);
+            kill(poopScript.owner, poopScript.ConnectionID);
         }
     }
 
     private void OnTriggerEnter(Collider other) {
         if ((other.gameObject.tag == "foxbite")) {
-            PlayerHealth healthScript = other.transform.parent.GetComponent<PlayerHealth>();
             FoxController foxScript = other.GetComponentInParent<FoxController>();
-  
-            this.CmdBloodParticle(foxScript.biteImpact());
-            healthScript.TakeDamage(-10, foxScript.ConnectionID);
-            Destroy(this.gameObject);
-        } 
+            kill(other.transform.parent.gameObject, foxScript.ConnectionID);
+        }
     }
 
     [Command]

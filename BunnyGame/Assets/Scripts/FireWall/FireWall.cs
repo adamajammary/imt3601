@@ -173,18 +173,18 @@ public class FireWall : NetworkBehaviour {
     void OnTriggerExit(Collider other) {
         if (other.tag == "Player") {
             _outsideWallEffect.enabled = true;
-            other.GetComponent<PlayerController>().insideWall = false;
+            other.GetComponent<PlayerEffects>().insideWall = false;
         }else if (other.tag == "Enemy") {
-            other.GetComponent<PlayerController>().insideWall = false;
+            other.GetComponent<PlayerEffects>().insideWall = false;
         }
     }
 
     void OnTriggerEnter(Collider other) {
         if (other.tag == "Player") {
             _outsideWallEffect.enabled = false;
-            other.GetComponent<PlayerController>().insideWall = true;
+            other.GetComponent<PlayerEffects>().insideWall = true;
         } else if (other.tag == "Enemy") {
-            other.GetComponent<PlayerController>().insideWall = true;
+            other.GetComponent<PlayerEffects>().insideWall = true;
         }
     }
 }

@@ -10,6 +10,7 @@ TagManager:
   - foxbite
   - ground
   - npc
+  - FireWall
   layers:
   - Default
   - TransparentFX

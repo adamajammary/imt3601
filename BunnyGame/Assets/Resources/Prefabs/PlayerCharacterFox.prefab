@@ -281,7 +281,7 @@ GameObject:
   - component: {fileID: 65167013829320180}
   - component: {fileID: 23714213636148060}
   - component: {fileID: 54038857399589794}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: FoxBiteHitboxCube
   m_TagString: foxbite
   m_Icon: {fileID: 0}
@@ -323,7 +323,8 @@ GameObject:
   - component: {fileID: 95906887298916214}
   - component: {fileID: 114234935192648348}
   - component: {fileID: 65787153161494126}
-  m_Layer: 0
+  - component: {fileID: 114831858758883044}
+  m_Layer: 8
   m_Name: PlayerCharacterFox
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -1034,8 +1035,8 @@ MonoBehaviour:
   airControlPercent: 0
   turnSmoothTime: 0.2
   speedSmoothTime: 0.2
-  insideWall: 0
   currentSpeed: 0
+  velocityY: 0
   controller: {fileID: 0}
   running: 0
 --- !u!114 &114234935192648348
@@ -1068,6 +1069,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 137f3531404a4e4408c0c04a7a878685, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &114831858758883044
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1812289213968426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aed8cb43cd4969d4484f09ab9629f6fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  insideWall: 0
 --- !u!114 &114836446058181868
 MonoBehaviour:
   m_ObjectHideFlags: 1

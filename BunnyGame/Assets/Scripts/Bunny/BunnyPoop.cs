@@ -5,12 +5,12 @@ public class BunnyPoop : NetworkBehaviour {
     [SyncVar]
     public GameObject owner; //The gameobject which owns this 
 
-    private int       _timeToLive = 3;
-    private float     _timeAlive = 0;
-    private float     _speed = 30.0f;
-    private float     _antiGravity = 5.0f;
+    private int _timeToLive = 3;
+    private float _timeAlive = 0;
+    private float _speed = 30.0f;
+    private float _antiGravity = 5.0f;
     private Rigidbody _rb;
-    private int       _damage = 10;
+    private int _damage = 10;
 
     [SyncVar]
     public int ConnectionID = -1;
@@ -18,9 +18,9 @@ public class BunnyPoop : NetworkBehaviour {
     private void Awake() {
         this._rb = this.GetComponent<Rigidbody>();
     }
-	
-	// Update is called once per frame
-	void FixedUpdate () {
+
+    // Update is called once per frame
+    void FixedUpdate() {
         // to reduce bullet drop
         this._rb.AddForce(Vector3.up * this._antiGravity);
 
@@ -32,7 +32,7 @@ public class BunnyPoop : NetworkBehaviour {
 
     public void shoot(Vector3 dir, Vector3 pos, Vector3 startVel) {
         this.transform.position = pos;
-        this._rb.velocity = dir * _speed + startVel;          
+        this._rb.velocity = dir * _speed + startVel;
     }
 
     private void OnCollisionEnter(Collision other) {

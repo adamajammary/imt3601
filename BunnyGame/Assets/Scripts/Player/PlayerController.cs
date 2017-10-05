@@ -102,7 +102,8 @@ public class PlayerController : NetworkBehaviour {
 		Vector3 moveDir = _cameraTransform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
         moveDir.y = 0;
         
-        Vector3 velocity = moveDir * currentSpeed + Vector3.up * velocityY;
+        Vector3 velocity = moveDir.normalized * currentSpeed + Vector3.up * velocityY;
+
 
         this.controller.Move(velocity * Time.deltaTime);
 

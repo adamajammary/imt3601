@@ -48,10 +48,10 @@ public class PlayerEffects : NetworkBehaviour {
 
     public IEnumerator knockBack(Vector3 impact) {
         Vector3 dir = transform.position - impact;
-        float force = (6 - dir.magnitude) / 4;
+        float force = (6 - dir.magnitude) * 50.0f;
         if (dir.y <= 0.2f) dir.y = 0.2f;
-        for (int i = 0; i < 50; i++) {
-            this._cc.Move(dir.normalized * force);
+        for (float i = 0; i < 0.7f; i += Time.deltaTime) {
+            this._cc.Move(dir.normalized * force * Time.deltaTime);
             yield return 0;
         }
     }

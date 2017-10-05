@@ -41,9 +41,19 @@ public class PlayerEffects : NetworkBehaviour {
     }
     
     //=========Poop Grenade==================================================================================================================
-    public void OnPoopGrenade(int damage, int id) {
-        Debug.Log("I GOT HIT");
+    public void OnPoopGrenade(int damage, int id, Vector3 impact) {
         this._health.TakeDamage(damage, id);
+        StartCoroutine(knockBack(impact));
+    }
+
+    public IEnumerator knockBack(Vector3 impact) {
+        Vector3 dir = transform.position - impact;
+        float force = (6 - dir.magnitude) / 4;
+        if (dir.y <= 0.2f) dir.y = 0.2f;
+        for (int i = 0; i < 50; i++) {
+            this._cc.Move(dir.normalized * force);
+            yield return 0;
+        }
     }
     //========================================================================================================================================
 

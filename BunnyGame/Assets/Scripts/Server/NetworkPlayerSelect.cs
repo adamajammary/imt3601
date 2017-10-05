@@ -4,12 +4,16 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 
 public enum NetworkMessageType {
-    MSG_PLAYERSELECT = 1000, MSG_PLAYERCOUNT, MSG_PLAYERDIED, MSG_PLAYERWON, MSG_PLAYERKILL
+    MSG_PLAYERSELECT = 1000, MSG_PLAYERCOUNT, MSG_PLAYERDIED, MSG_PLAYERWON, MSG_PLAYERKILL, MSG_PLAYERNAME
 }
 
 public class PlayerSelectMessage : MessageBase {
     public uint clientID;
-    public int  selectedModel;
+    public int selectedModel;
+}
+public class PlayerNameMessage : MessageBase {
+    public uint clientID;
+    public string name;
 }
 
 //
@@ -17,11 +21,12 @@ public class PlayerSelectMessage : MessageBase {
 //
 public class NetworkPlayerSelect : NetworkLobbyManager {
 
-    private string[]              _models     = { "PlayerCharacterBunny", "PlayerCharacterFox" };
-    private int                   _players    = 0;
-    private Dictionary<uint, int> _selections = new Dictionary<uint, int>();
-    private Dictionary<int, bool> _isDead     = new Dictionary<int, bool>();
-    private Dictionary<int, int>  _kills      = new Dictionary<int, int>();
+    private string[]                 _models     = { "PlayerCharacterBunny", "PlayerCharacterFox" };
+    private int                      _players    = 0;
+    private Dictionary<uint, int>    _selections = new Dictionary<uint, int>();
+    private Dictionary<uint, string> _names      = new Dictionary<uint, string>();
+    private Dictionary<int, bool>    _isDead     = new Dictionary<int, bool>();
+    private Dictionary<int, int>     _kills      = new Dictionary<int, int>();
 
     // Return the unique identifier for the lobby player object instance.
     private uint getClientID(NetworkConnection conn) {
@@ -33,18 +38,24 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         return (this._selections.ContainsKey(clientID) ? this._selections[clientID] : 0);
     }
 
+    private string getPlayerName(uint clientID) {
+        return (this._names.ContainsKey(clientID) ? this._names[clientID] : "NoName");
+    }
+
     // Register listening for player select messages from clients.
     public override void OnStartServer() {
         base.OnStartServer();
 
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERSELECT, this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERCOUNT,  this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERDIED,   this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERSELECT,  this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERCOUNT,   this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERDIED,    this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERNAME,    this.recieveNetworkMessage);
 
         this._players = 0;
         this._isDead.Clear();
         this._kills.Clear();
         this._selections.Clear();
+        this._names.Clear();
     }
 
     //
@@ -56,19 +67,18 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     // NB! Prefabs for this has to be stored in "Assets/Resources/Prefabs/".
     //
     public override GameObject OnLobbyServerCreateGamePlayer(NetworkConnection conn, short playerControllerId) {
-        NetworkStartPosition[] spawnPoints    = FindObjectsOfType<NetworkStartPosition>();
-        Vector3                position       = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
-        int                    selectedModel  = this.getSelectedModel(this.getClientID(conn));
-        GameObject             playerPrefab   = Resources.Load<GameObject>("Prefabs/" + this._models[selectedModel]);
-        GameObject             playerInstance = Instantiate(playerPrefab, position, playerPrefab.transform.rotation);
-        BunnyController        bunnyScript    = playerInstance.GetComponent<BunnyController>();
-        FoxController          foxScript      = playerInstance.GetComponent<FoxController>();
+        NetworkStartPosition[] spawnPoints      = FindObjectsOfType<NetworkStartPosition>();
+        Vector3                position         = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
+        int                    selectedModel    = this.getSelectedModel(this.getClientID(conn));
+        GameObject             playerPrefab     = Resources.Load<GameObject>("Prefabs/" + this._models[selectedModel]);
+        GameObject             playerInstance   = Instantiate(playerPrefab, position, playerPrefab.transform.rotation);
+        BunnyController        bunnyScript      = playerInstance.GetComponent<BunnyController>();
+        FoxController          foxScript        = playerInstance.GetComponent<FoxController>();
+        PlayerInformation      playerInfo       = playerInstance.GetComponent<PlayerInformation>();
 
-        if (foxScript != null)
-            foxScript.ConnectionID = conn.connectionId;
-
-        if (bunnyScript != null)
-            bunnyScript.ConnectionID = conn.connectionId;
+        playerInfo.ConnectionID = conn.connectionId;
+        playerInfo.playerName = getPlayerName(this.getClientID(conn));
+       
 
         this._isDead.Add(conn.connectionId, false);
         this._kills.Add(conn.connectionId,  0);
@@ -114,6 +124,9 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             case (short)NetworkMessageType.MSG_PLAYERDIED:
                 this.recievePlayerDiedMessage(message.conn.connectionId, message.ReadMessage<IntegerMessage>().value);
                 break;
+            case (short)NetworkMessageType.MSG_PLAYERNAME:
+                this.recievePlayerNameMessage(message.ReadMessage<PlayerNameMessage>());
+                break;
             default:
                 Debug.Log("ERROR! Unknown message type: " + message.msgType);
                 break;
@@ -152,8 +165,14 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     }
 
     // Parse the player select message, and select the player model.
-    private void recievePlayerSelectMessage(PlayerSelectMessage message) {
+    private void recievePlayerSelectMessage(PlayerSelectMessage message)
+    {
         this.selectModel(message.clientID, message.selectedModel);
+    }
+    // Parse the player name message, and set the player name.
+    private void recievePlayerNameMessage(PlayerNameMessage message)
+    {
+        this.setName(message.clientID, message.name);
     }
 
     // Send the number of players still alive to the client.
@@ -182,5 +201,12 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             this._selections.Add(clientID, model);
         else
             this._selections[clientID] = model;
+    }
+
+    private void setName(uint clientID, string name) {
+        if (!this._names.ContainsKey(clientID))
+            this._names.Add(clientID, name);
+        else
+            this._names[clientID] = name;
     }
 }

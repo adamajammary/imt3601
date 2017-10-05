@@ -63,16 +63,18 @@ public class PlayerEffects : NetworkBehaviour {
 
         if ((other.gameObject.tag == "foxbite") && (other.gameObject.transform.parent.gameObject.tag == "Enemy")) {
             FoxController foxScript = other.GetComponentInParent<FoxController>();
+            PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
 
             if ((this._health != null) && (foxScript != null) && !this._health.IsDead()) {
                 this.CmdBloodParticle(foxScript.biteImpact());
-                this._health.TakeDamage(foxScript.GetDamage(), foxScript.ConnectionID);
+                this._health.TakeDamage(foxScript.GetDamage(), otherInfo.ConnectionID);
             }
         } else if (other.gameObject.tag == "projectile") {
             BunnyPoop poopScript = other.gameObject.GetComponent<BunnyPoop>();
+            PlayerInformation otherInfo = poopScript.owner.GetComponent<PlayerInformation>();
             if ((this._health != null) && (poopScript != null) && !this._health.IsDead()) {
                 this.CmdBloodParticle(other.gameObject.transform.position);
-                this._health.TakeDamage(poopScript.GetDamage(), poopScript.ConnectionID);
+                this._health.TakeDamage(poopScript.GetDamage(), otherInfo.ConnectionID);
             }
 
             Destroy(other.gameObject);

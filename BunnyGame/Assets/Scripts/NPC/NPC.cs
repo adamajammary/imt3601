@@ -85,7 +85,8 @@ public class NPC : NetworkBehaviour {
     private void OnTriggerEnter(Collider other) {
         if ((other.gameObject.tag == "foxbite")) {
             FoxController foxScript = other.GetComponentInParent<FoxController>();
-            kill(other.transform.parent.gameObject, foxScript.ConnectionID);
+            PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
+            kill(other.transform.parent.gameObject, otherInfo.ConnectionID);
         }
     }
 

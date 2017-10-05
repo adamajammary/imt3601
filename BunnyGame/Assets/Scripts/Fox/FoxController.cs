@@ -6,9 +6,7 @@ public class FoxController : NetworkBehaviour {
 
     private GameObject biteArea;
     private int _biteDamage = 15;
-
-    [SyncVar]
-    public int ConnectionID = -1;
+    
 
     public override void PreStartClient() {
         base.PreStartClient();

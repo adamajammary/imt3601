@@ -7,13 +7,11 @@ public class BunnyController : NetworkBehaviour {
     private float _fireRate;
     private CharacterController _controller;
     private GameObject bunnyPoop;
-
-    [SyncVar]
-    public int ConnectionID = -1;
+    private PlayerInformation playerInfo;
 
     void Start () {
         bunnyPoop = Resources.Load<GameObject>("Prefabs/poop");
-
+        playerInfo = GetComponent<PlayerInformation>();
         if (!this.isLocalPlayer)
             return;
 
@@ -58,11 +56,11 @@ public class BunnyController : NetworkBehaviour {
             if (Physics.Raycast(ray, out hit, 100)) {
                 Vector3 direction = hit.point - this.transform.position;
                 Vector3 dirNorm = direction.normalized;
-                this.CmdShootPoop(dirNorm, this._controller.velocity, this.ConnectionID);
+                this.CmdShootPoop(dirNorm, this._controller.velocity, playerInfo.ConnectionID);
             } else {
                 Vector3 direction = ray.GetPoint(50.0f) - this.transform.position;
                 Vector3 dirNorm = direction.normalized;
-                this.CmdShootPoop(dirNorm, this._controller.velocity, this.ConnectionID);
+                this.CmdShootPoop(dirNorm, this._controller.velocity, playerInfo.ConnectionID);
             }
 
             this._timer = 0;

@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 
 public enum NetworkMessageType {
-    MSG_PLAYERSELECT = 1000, MSG_PLAYERCOUNT, MSG_PLAYERDIED, MSG_PLAYERWON, MSG_PLAYERKILL
+    MSG_PLAYERSELECT = 1000, MSG_PLAYERCOUNT, MSG_PLAYERDIED, MSG_PLAYERWON, MSG_PLAYERKILL, MSG_PLAYERNAMESET
 }
 
 public class PlayerSelectMessage : MessageBase {
@@ -22,6 +22,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     private Dictionary<uint, int> _selections = new Dictionary<uint, int>();
     private Dictionary<int, bool> _isDead     = new Dictionary<int, bool>();
     private Dictionary<int, int>  _kills      = new Dictionary<int, int>();
+    private string                _playerName;
 
     // Return the unique identifier for the lobby player object instance.
     private uint getClientID(NetworkConnection conn) {
@@ -37,14 +38,16 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     public override void OnStartServer() {
         base.OnStartServer();
 
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERSELECT, this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERCOUNT,  this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERDIED,   this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERSELECT,  this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERCOUNT,   this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERDIED,    this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERNAMESET, this.recieveNetworkMessage);
 
         this._players = 0;
         this._isDead.Clear();
         this._kills.Clear();
         this._selections.Clear();
+        this._playerName = "";
     }
 
     //
@@ -56,19 +59,17 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     // NB! Prefabs for this has to be stored in "Assets/Resources/Prefabs/".
     //
     public override GameObject OnLobbyServerCreateGamePlayer(NetworkConnection conn, short playerControllerId) {
-        NetworkStartPosition[] spawnPoints    = FindObjectsOfType<NetworkStartPosition>();
-        Vector3                position       = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
-        int                    selectedModel  = this.getSelectedModel(this.getClientID(conn));
-        GameObject             playerPrefab   = Resources.Load<GameObject>("Prefabs/" + this._models[selectedModel]);
-        GameObject             playerInstance = Instantiate(playerPrefab, position, playerPrefab.transform.rotation);
-        BunnyController        bunnyScript    = playerInstance.GetComponent<BunnyController>();
-        FoxController          foxScript      = playerInstance.GetComponent<FoxController>();
+        NetworkStartPosition[] spawnPoints      = FindObjectsOfType<NetworkStartPosition>();
+        Vector3                position         = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
+        int                    selectedModel    = this.getSelectedModel(this.getClientID(conn));
+        GameObject             playerPrefab     = Resources.Load<GameObject>("Prefabs/" + this._models[selectedModel]);
+        GameObject             playerInstance   = Instantiate(playerPrefab, position, playerPrefab.transform.rotation);
+        BunnyController        bunnyScript      = playerInstance.GetComponent<BunnyController>();
+        FoxController          foxScript        = playerInstance.GetComponent<FoxController>();
+        PlayerInformation      playerInfo       = playerInstance.GetComponent<PlayerInformation>();
 
-        if (foxScript != null)
-            foxScript.ConnectionID = conn.connectionId;
-
-        if (bunnyScript != null)
-            bunnyScript.ConnectionID = conn.connectionId;
+        playerInfo.ConnectionID = conn.connectionId;
+        playerInfo.playerName = this._playerName;
 
         this._isDead.Add(conn.connectionId, false);
         this._kills.Add(conn.connectionId,  0);

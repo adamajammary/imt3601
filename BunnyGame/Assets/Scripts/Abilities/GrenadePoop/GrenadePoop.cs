@@ -6,12 +6,13 @@ public class GrenadePoop : SpecialAbility {
     AbilityNetwork networkAbility;
     CharacterController controller;
     BunnyController bc;
+    PlayerInformation playerInfo;
 
     // Use this for initialization
     public void init() {
         networkAbility = GetComponent<AbilityNetwork>();
         controller = GetComponent<CharacterController>();
-        bc = GetComponent<BunnyController>(); //ID should be in PlayerController IMO
+        playerInfo = GetComponent<PlayerInformation>();
         base.init("Textures/AbilityIcons/bombIcon");
         base.abilityName = "Poop Grenade";
         base._cooldownTimeInSeconds = 15f;
@@ -20,7 +21,7 @@ public class GrenadePoop : SpecialAbility {
     override public IEnumerator useAbility() {
         if (this._cooldown == 0) {
             StartCoroutine(this.doCoolDown());
-            networkAbility.CmdPoopGrenade(Camera.main.transform.forward, controller.velocity, bc.ConnectionID);
+            networkAbility.CmdPoopGrenade(Camera.main.transform.forward, controller.velocity, playerInfo.ConnectionID);
             StartCoroutine(spin());
         }
         yield return 0;

@@ -73,9 +73,8 @@ public class BunnyController : NetworkBehaviour {
         BunnyPoop  poopScript = poop.GetComponent<BunnyPoop>();
         Vector3    position   = (transform.position + direction * 4.0f);
 
-        poopScript.ConnectionID = id;   // Assign the player connection ID to the projectile.
-        poopScript.shoot(direction, position, startVel);
         poopScript.owner = this.gameObject;
+        poopScript.shoot(direction, position, startVel);
 
         NetworkServer.Spawn(poop);
     }

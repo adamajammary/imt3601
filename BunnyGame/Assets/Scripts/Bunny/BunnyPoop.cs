@@ -12,9 +12,6 @@ public class BunnyPoop : NetworkBehaviour {
     private Rigidbody _rb;
     private int _damage = 10;
 
-    [SyncVar]
-    public int ConnectionID = -1;
-
     private void Awake() {
         this._rb = this.GetComponent<Rigidbody>();
     }

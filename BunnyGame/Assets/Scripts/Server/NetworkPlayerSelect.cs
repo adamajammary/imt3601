@@ -4,16 +4,15 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 
 public enum NetworkMessageType {
-    MSG_PLAYERSELECT = 1000, MSG_PLAYERCOUNT, MSG_PLAYERDIED, MSG_PLAYERWON, MSG_PLAYERKILL, MSG_PLAYERNAME
+    MSG_PLAYERSELECT = 1000, MSG_PLAYERNAME, MSG_PLAYERCOUNT, MSG_GAME_OVER, MSG_KILLER_ID
 }
 
-public class PlayerSelectMessage : MessageBase {
-    public uint clientID;
-    public int selectedModel;
-}
-public class PlayerNameMessage : MessageBase {
-    public uint clientID;
-    public string name;
+public class GameOverMessage : MessageBase {
+    public string killer = "";
+    public string name   = "";
+    public int    rank   = 0;
+    public int    kills  = 0;
+    public bool   win    = false;
 }
 
 //
@@ -21,35 +20,31 @@ public class PlayerNameMessage : MessageBase {
 //
 public class NetworkPlayerSelect : NetworkLobbyManager {
 
-    private string[]                 _models     = { "PlayerCharacterBunny", "PlayerCharacterFox" };
-    private int                      _players    = 0;
-    private Dictionary<uint, int>    _selections = new Dictionary<uint, int>();
-    private Dictionary<uint, string> _names      = new Dictionary<uint, string>();
-    private Dictionary<int, bool>    _isDead     = new Dictionary<int, bool>();
-    private Dictionary<int, int>     _kills      = new Dictionary<int, int>();
-
-    // Return the unique identifier for the lobby player object instance.
-    private uint getClientID(NetworkConnection conn) {
-        return (conn.playerControllers[0] != null ? conn.playerControllers[0].unetView.netId.Value : 0);
-    }
+    private string[]                _models     = { "PlayerCharacterBunny", "PlayerCharacterFox" };
+    private int                     _players    = 0;
+    private Dictionary<int, int>    _selections = new Dictionary<int, int>();
+    private Dictionary<int, string> _names      = new Dictionary<int, string>();
+    private Dictionary<int, bool>   _isDead     = new Dictionary<int, bool>();
+    private Dictionary<int, int>    _kills      = new Dictionary<int, int>();
 
     // Return the model selection made by the user.
-    private int getSelectedModel(uint clientID) {
-        return (this._selections.ContainsKey(clientID) ? this._selections[clientID] : 0);
+    private int getSelectedModel(int id) {
+        return (this._selections.ContainsKey(id) ? this._selections[id] : 0);
     }
 
-    private string getPlayerName(uint clientID) {
-        return (this._names.ContainsKey(clientID) ? this._names[clientID] : "NoName");
+    private string getPlayerName(int id) {
+        return (this._names.ContainsKey(id) ? this._names[id] : "NoName");
     }
 
     // Register listening for player select messages from clients.
     public override void OnStartServer() {
         base.OnStartServer();
 
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERSELECT,  this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERCOUNT,   this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERDIED,    this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERNAME,    this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERSELECT, this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERNAME,   this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYERCOUNT,  this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_GAME_OVER,    this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_KILLER_ID,    this.recieveNetworkMessage);
 
         this._players = 0;
         this._isDead.Clear();
@@ -67,18 +62,15 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     // NB! Prefabs for this has to be stored in "Assets/Resources/Prefabs/".
     //
     public override GameObject OnLobbyServerCreateGamePlayer(NetworkConnection conn, short playerControllerId) {
-        NetworkStartPosition[] spawnPoints      = FindObjectsOfType<NetworkStartPosition>();
-        Vector3                position         = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
-        int                    selectedModel    = this.getSelectedModel(this.getClientID(conn));
-        GameObject             playerPrefab     = Resources.Load<GameObject>("Prefabs/" + this._models[selectedModel]);
-        GameObject             playerInstance   = Instantiate(playerPrefab, position, playerPrefab.transform.rotation);
-        BunnyController        bunnyScript      = playerInstance.GetComponent<BunnyController>();
-        FoxController          foxScript        = playerInstance.GetComponent<FoxController>();
-        PlayerInformation      playerInfo       = playerInstance.GetComponent<PlayerInformation>();
+        NetworkStartPosition[] spawnPoints    = FindObjectsOfType<NetworkStartPosition>();
+        Vector3                position       = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
+        int                    selectedModel  = this.getSelectedModel(conn.connectionId);
+        GameObject             playerPrefab   = Resources.Load<GameObject>("Prefabs/" + this._models[selectedModel]);
+        GameObject             playerInstance = Instantiate(playerPrefab, position, playerPrefab.transform.rotation);
+        PlayerInformation      playerInfo     = playerInstance.GetComponent<PlayerInformation>();
 
         playerInfo.ConnectionID = conn.connectionId;
-        playerInfo.playerName = getPlayerName(this.getClientID(conn));
-       
+        playerInfo.playerName   = this.getPlayerName(conn.connectionId);
 
         this._isDead.Add(conn.connectionId, false);
         this._kills.Add(conn.connectionId,  0);
@@ -103,7 +95,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
             // If there is only one player left, tell them that they won.
             if ((this._players <= 1) && this._isDead.ContainsKey(cID) && !this._isDead[cID])
-                this.sendPlayerWonMessage(cID);
+                this.sendGameOverMessage(cID);
         }
 
         if ((conn.lastError != NetworkError.Ok) && LogFilter.logError)
@@ -116,16 +108,16 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     private void recieveNetworkMessage(NetworkMessage message) {
         switch (message.msgType) {
             case (short)NetworkMessageType.MSG_PLAYERSELECT:
-                this.recievePlayerSelectMessage(message.ReadMessage<PlayerSelectMessage>());
+                this.recievePlayerSelectMessage(message);
                 break;
             case (short)NetworkMessageType.MSG_PLAYERCOUNT:
-                this.recievePlayerCountMessage(message.conn.connectionId);
+                this.recievePlayerCountMessage(message);
                 break;
-            case (short)NetworkMessageType.MSG_PLAYERDIED:
-                this.recievePlayerDiedMessage(message.conn.connectionId, message.ReadMessage<IntegerMessage>().value);
+            case (short)NetworkMessageType.MSG_KILLER_ID:
+                this.recievePlayerDiedMessage(message);
                 break;
             case (short)NetworkMessageType.MSG_PLAYERNAME:
-                this.recievePlayerNameMessage(message.ReadMessage<PlayerNameMessage>());
+                this.recievePlayerNameMessage(message);
                 break;
             default:
                 Debug.Log("ERROR! Unknown message type: " + message.msgType);
@@ -134,21 +126,21 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     }
 
     // Return the number of players still alive.
-    private void recievePlayerCountMessage(int id) {
-        this.sendPlayerCountMessage(id);
+    private void recievePlayerCountMessage(NetworkMessage message) {
+        this.sendPlayerCountMessage(message.conn.connectionId);
     }
 
     // Update the clients when a player dies.
-    private void recievePlayerDiedMessage(int id, int killerID) {
-        this._isDead[id] = true;
+    private void recievePlayerDiedMessage(NetworkMessage message) {
+        int killerID = message.ReadMessage<IntegerMessage>().value;
 
-        if (killerID >= 0) {
+        this._isDead[message.conn.connectionId] = true;
+
+        if (killerID >= 0)
             this._kills[killerID]++;
-            this.sendPlayerKillMessage(killerID);
-        }
 
         // Tell the player who died what their ranking is.
-        this.sendPlayerDiedMessage(id);
+        this.sendGameOverMessage(message.conn.connectionId, killerID, false);
 
         this._players--;
 
@@ -160,19 +152,18 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
             // If there is only one player left, tell them that they won.
             if ((this._players <= 1) && this._isDead.ContainsKey(cID) && !this._isDead[cID])
-                this.sendPlayerWonMessage(cID);
+                this.sendGameOverMessage(cID);
         }
     }
 
     // Parse the player select message, and select the player model.
-    private void recievePlayerSelectMessage(PlayerSelectMessage message)
-    {
-        this.selectModel(message.clientID, message.selectedModel);
+    private void recievePlayerSelectMessage(NetworkMessage message) {
+        this.selectModel(message.conn.connectionId, message.ReadMessage<IntegerMessage>().value);
     }
+
     // Parse the player name message, and set the player name.
-    private void recievePlayerNameMessage(PlayerNameMessage message)
-    {
-        this.setName(message.clientID, message.name);
+    private void recievePlayerNameMessage(NetworkMessage message) {
+        this.setName(message.conn.connectionId, message.ReadMessage<StringMessage>().value);
     }
 
     // Send the number of players still alive to the client.
@@ -180,33 +171,33 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_PLAYERCOUNT, new IntegerMessage(this._players));
     }
 
-    // Tell the player who died what their ranking is.
-    private void sendPlayerDiedMessage(int id) {
-        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_PLAYERDIED, new IntegerMessage(this._players));
-    }
+    // Tell the player the end game stats.
+    private void sendGameOverMessage(int id, int killerID = -1, bool win = true) {
+        GameOverMessage message = new GameOverMessage();
 
-    // Tell the player how many kills they have.
-    private void sendPlayerKillMessage(int id) {
-        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_PLAYERKILL, new IntegerMessage(this._kills[id]));
-    }
+        message.killer = (killerID < 0 ? "" : this.getPlayerName(killerID));
+        message.name   = this.getPlayerName(id);
+        message.rank   = (win ? 1 : this._players);
+        message.kills  = this._kills[id];
+        message.win    = win;
 
-    // Tell the player that they won.
-    private void sendPlayerWonMessage(int id) {
-        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_PLAYERWON, new IntegerMessage(this._players));
+        print("message.killer: " + message.killer);
+
+        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_GAME_OVER, message);
     }
 
     // Save the model selection made by the user.
-    private void selectModel(uint clientID, int model) {
-        if (!this._selections.ContainsKey(clientID))
-            this._selections.Add(clientID, model);
+    private void selectModel(int id, int model) {
+        if (!this._selections.ContainsKey(id))
+            this._selections.Add(id, model);
         else
-            this._selections[clientID] = model;
+            this._selections[id] = model;
     }
 
-    private void setName(uint clientID, string name) {
-        if (!this._names.ContainsKey(clientID))
-            this._names.Add(clientID, name);
+    private void setName(int id, string name) {
+        if (!this._names.ContainsKey(id))
+            this._names.Add(id, name);
         else
-            this._names[clientID] = name;
+            this._names[id] = name;
     }
 }

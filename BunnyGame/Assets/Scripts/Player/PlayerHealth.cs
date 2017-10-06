@@ -16,10 +16,14 @@ public class PlayerHealth : NetworkBehaviour {
     private Image         _spectateImage;
     private Text          _spectateText;
 
-    [SyncVar]                              private int _kills         = 0;
-    [SyncVar(hook = "showGameOverScreen")] private int _rank          = 0;
-    [SyncVar(hook = "updateAliveText")]    private int _playersAlive  = 0;
-    [SyncVar(hook = "updateDamageScreen")] private int _currentHealth = MAX_HEALTH;
+    [SyncVar(hook = "showGameOverScreen")]
+    private GameOverMessage _gameOver = new GameOverMessage();
+
+    [SyncVar(hook = "updateAliveText")]
+    private int _playersAlive  = 0;
+
+    [SyncVar(hook = "updateDamageScreen")]
+    private int _currentHealth = MAX_HEALTH;
 
     void Start() {
         if (!this.isLocalPlayer)
@@ -35,9 +39,7 @@ public class PlayerHealth : NetworkBehaviour {
 
         if (this._client != null) {
             this._client.RegisterHandler((short)NetworkMessageType.MSG_PLAYERCOUNT, this.recieveNetworkMessage);
-            this._client.RegisterHandler((short)NetworkMessageType.MSG_PLAYERDIED,  this.recieveNetworkMessage);
-            this._client.RegisterHandler((short)NetworkMessageType.MSG_PLAYERKILL,  this.recieveNetworkMessage);
-            this._client.RegisterHandler((short)NetworkMessageType.MSG_PLAYERWON,   this.recieveNetworkMessage);
+            this._client.RegisterHandler((short)NetworkMessageType.MSG_GAME_OVER,   this.recieveNetworkMessage);
         }
 
         this.requestAliveCounter();
@@ -109,7 +111,7 @@ public class PlayerHealth : NetworkBehaviour {
             this.CmdDie();
 
         if (this._client != null)
-            this._client.Send((short)NetworkMessageType.MSG_PLAYERDIED, new IntegerMessage(connectionID));
+            this._client.Send((short)NetworkMessageType.MSG_KILLER_ID, new IntegerMessage(connectionID));
     }
 
     [ClientRpc]
@@ -141,42 +143,13 @@ public class PlayerHealth : NetworkBehaviour {
             case (short)NetworkMessageType.MSG_PLAYERCOUNT:
                 this.updateAliveCounter(message.ReadMessage<IntegerMessage>().value);
                 break;
-            case (short)NetworkMessageType.MSG_PLAYERDIED:
-            case (short)NetworkMessageType.MSG_PLAYERWON:
-                this.updateRanking(message.ReadMessage<IntegerMessage>().value);
-                break;
-            case (short)NetworkMessageType.MSG_PLAYERKILL:
-                this.updateKillCounter(message.ReadMessage<IntegerMessage>().value);
+            case (short)NetworkMessageType.MSG_GAME_OVER:
+                this.updateGameOver(message.ReadMessage<GameOverMessage>());
                 break;
             default:
                 Debug.Log("ERROR! Unknown message type: " + message.msgType);
                 break;
         }
-    }
-
-    // Update the number of kills the player have made.
-    private void updateKillCounter(int kills) {
-        if (this.isServer && this.isClient)
-            this.updateKillCounter2(kills);
-        else if (this.isServer)
-            this.RpcUpdateKillCounter(kills);
-        else if (this.isClient)
-            this.CmdUpdateKillCounter(kills);
-    }
-
-    private void updateKillCounter2(int kills) {
-        if (kills >= 0)
-            this._kills = kills;
-    }
-
-    [ClientRpc]
-    private void RpcUpdateKillCounter(int kills) {
-        this.updateKillCounter2(kills);
-    }
-
-    [Command]
-    private void CmdUpdateKillCounter(int kills) {
-        this.RpcUpdateKillCounter(kills);
     }
 
     // Update the number of players still alive.
@@ -205,28 +178,28 @@ public class PlayerHealth : NetworkBehaviour {
     }
 
     // Update the player ranking.
-    private void updateRanking(int rank) {
+    private void updateGameOver(GameOverMessage message) {
         if (this.isServer && this.isClient)
-            this.updateRanking2(rank);
+            this.updateGameOver2(message);
         else if (this.isServer)
-            this.RpcUpdateRanking(rank);
+            this.RpcUpdateGameOver(message);
         else if (this.isClient)
-            this.CmdUpdateRanking(rank);
+            this.CmdUpdateGameOver(message);
     }
 
-    private void updateRanking2(int rank) {
-        if (rank > 0)
-            this._rank = rank;
+    private void updateGameOver2(GameOverMessage message) {
+        if (message.rank > 0)
+            this._gameOver = message;
     }
 
     [ClientRpc]
-    private void RpcUpdateRanking(int rank) {
-        this.updateRanking2(rank);
+    private void RpcUpdateGameOver(GameOverMessage message) {
+        this.updateGameOver2(message);
     }
 
     [Command]
-    private void CmdUpdateRanking(int rank) {
-        this.RpcUpdateRanking(rank);
+    private void CmdUpdateGameOver(GameOverMessage message) {
+        this.RpcUpdateGameOver(message);
     }
 
     //
@@ -234,35 +207,33 @@ public class PlayerHealth : NetworkBehaviour {
     //
 
     // The game has ended, show the win or death screen respectively.
-    private void showGameOverScreen(int rank) {
-        if (rank > 1)
-            this.showDeathScreen(rank);
-        else if (rank == 1)
-            this.showWinScreen(rank);
+    private void showGameOverScreen(GameOverMessage message) {
+        if (message.win)
+            this.showWinScreen(message);
+        else
+            this.showDeathScreen(message);
+    }
+
+    // Show the win screen.
+    private void showWinScreen(GameOverMessage message) {
+		if ((this._gameOverText == null) || (message.rank < 1) || !message.win)
+            return;
+
+        this._gameOverText.text  = string.Format("WINNER WINNER {0} DINNER!\nKills: {1}   Rank: #1", message.name, message.kills);
+        this._gameOverText.color = new Color(this._gameOverText.color.r, this._gameOverText.color.g, this._gameOverText.color.b, 1.0f);
     }
 
     // Show the death screen.
-    private void showDeathScreen(int rank) {
-		if ((this._gameOverText == null) || (this._spectateImage == null) || (this._spectateText == null) || (rank < 1))
+    private void showDeathScreen(GameOverMessage message) {
+		if ((this._gameOverText == null) || (this._spectateImage == null) || (this._spectateText == null) || (message.rank < 1) || message.win)
             return;
 
-        this._rank                = rank;
-        this._gameOverText.text   = string.Format("YOU'RE DEAD\nKills: {0}   Rank: #{1}", this._kills, this._rank);
+        this._gameOverText.text   = string.Format("YOU WERE KILLED BY {0}\nKills: {1}   Rank: #{2}", message.killer, message.kills, message.rank);
         this._gameOverText.color  = new Color(this._gameOverText.color.r,  this._gameOverText.color.g,  this._gameOverText.color.b,  1.0f);
         this._spectateImage.color = new Color(this._spectateImage.color.r, this._spectateImage.color.g, this._spectateImage.color.b, 1.0f);
         this._spectateText.color  = new Color(this._spectateText.color.r,  this._spectateText.color.g,  this._spectateText.color.b,  1.0f);
 
         this._spectateButton.onClick.AddListener(this.spectate); // TODO: see spectate method below
-    }
-
-    // Show the win screen.
-    private void showWinScreen(int rank) {
-		if ((this._gameOverText == null) || (rank < 1))
-            return;
-
-        this._rank               = rank;
-        this._gameOverText.text  = string.Format("YOU WON\nKills: {0}   Rank: #{1}", this._kills, this._rank);
-        this._gameOverText.color = new Color(this._gameOverText.color.r, this._gameOverText.color.g, this._gameOverText.color.b, 1.0f);
     }
 
     // Update the HUD showing the number of players still alive.

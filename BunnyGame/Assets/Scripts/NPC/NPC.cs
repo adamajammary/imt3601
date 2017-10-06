@@ -78,13 +78,14 @@ public class NPC : NetworkBehaviour {
     private void OnCollisionEnter(Collision other) {
         if (other.gameObject.tag == "projectile") {
             BunnyPoop poopScript = other.gameObject.GetComponent<BunnyPoop>();
-            kill(poopScript.owner, poopScript.ConnectionID);
+            PlayerInformation otherInfo = poopScript.owner.GetComponent<PlayerInformation>();
+            kill(poopScript.owner, otherInfo.ConnectionID);
         }
     }
 
     private void OnTriggerEnter(Collider other) {
         if ((other.gameObject.tag == "foxbite")) {
-            FoxController foxScript = other.GetComponentInParent<FoxController>();
+            //FoxController foxScript = other.GetComponentInParent<FoxController>();
             PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
             kill(other.transform.parent.gameObject, otherInfo.ConnectionID);
         }

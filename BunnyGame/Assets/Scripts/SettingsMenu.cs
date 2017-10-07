@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class SettingsMenu : MonoBehaviour {
+    public Font settingsFont;
 	// Use this for initialization
 
 	void Start () {
@@ -61,18 +62,30 @@ public class SettingsMenu : MonoBehaviour {
         uiObject.name = objectName;
         if(parent != null)
             uiObject.transform.SetParent(parent.transform);
-
         return uiObject;
     }
 
     private GameObject addSection(string title, GameObject parent) {
         GameObject sectionPanel = createBaseUIObject("Section: " + title, parent);
 
+        RectTransform rt = sectionPanel.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0, 1);
+        rt.anchorMax = new Vector2(1, 1);
+        rt.offsetMin = new Vector2(0, -50);
+        rt.offsetMax = new Vector2(0, 0);
+
         // Set section width, background etc..
         // Height will be set during packing
 
         GameObject sectionTitle = createBaseUIObject("Section title: " + title, sectionPanel);
         sectionTitle.AddComponent<Text>().text = title;
+        sectionTitle.GetComponent<Text>().font = this.settingsFont;
+
+        rt = sectionTitle.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0, 1);
+        rt.anchorMax = new Vector2(1, 1);
+        rt.offsetMin = new Vector2(0, -50);
+        rt.offsetMax = new Vector2(0, 0);
         // Set title font size, color, positioning, etc...
 
 
@@ -96,7 +109,7 @@ public class SettingsMenu : MonoBehaviour {
 
 
     private GameObject addTextOption(string optionName, GameObject parent, string placeholderText = "") {
-        GameObject option = addBasicOption(optionName, parent);
+        GameObject option = addBasicOption("InputText: "+optionName, parent);
         option.AddComponent<Image>();
         option.AddComponent<InputField>();
 
@@ -104,7 +117,8 @@ public class SettingsMenu : MonoBehaviour {
         text.AddComponent<Text>();
 
         GameObject placeholder = createBaseUIObject("Placeholder: " + optionName, option);
-        placeholder.AddComponent<Text>();
+        placeholder.AddComponent<Text>().text = placeholderText;
+
 
         return option;
     }

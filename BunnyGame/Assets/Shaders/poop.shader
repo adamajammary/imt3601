@@ -17,14 +17,12 @@
 			#pragma fragment frag
 			
 			#include "UnityCG.cginc"
-			//#include "UnityLightingCommon.cginc"
 			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
 			#include "noise.hlsl"
 			#pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
 
-			struct v2f
-			{
+			struct v2f {
 				float4 pos : SV_POSITION;
 				SHADOW_COORDS(1) // put shadows data into TEXCOORD1
 				fixed4 diff : COLOR0;

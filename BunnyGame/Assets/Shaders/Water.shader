@@ -1,56 +1,65 @@
 ﻿Shader "Custom/Water" {
 	Properties {
-		_Color ("Color", Color) = (1,1,1,1)
-		_MainTex ("Albedo (RGB)", 2D) = "white" {}
-		_Glossiness ("Smoothness", Range(0,1)) = 0.5
-		_Metallic ("Metallic", Range(0,1)) = 0.0
+		_Col ("Color", Color) = (0,0,1,0.7)
+		_NoiseSeed("Noise seed", float) = 1.0
 	}
-	SubShader {
-		Tags { 
-			"RenderType" = "Fade" 
-			"Queue" = "Transparent"
-		}
-		LOD 200
+	SubShader{
 		Blend SrcAlpha OneMinusSrcAlpha
 		AlphaToMask On
 
-		CGPROGRAM
-		// Physically based Standard lighting model, and enable shadows on all light types
-		#pragma surface surf Standard fullforwardshadows alpha
-
-		// Use shader model 3.0 target, to get nicer looking lighting
-		#pragma target 3.0
-
-		sampler2D _MainTex;
-
-		struct Input {
-			float2 uv_MainTex;
-		};
-
-		half _Glossiness;
-		half _Metallic;
-		fixed4 _Color;
-
-		// Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
-		// See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
-		// #pragma instancing_options assumeuniformscaling
-		UNITY_INSTANCING_CBUFFER_START(Props)
-			// put more per-instance properties here
-		UNITY_INSTANCING_CBUFFER_END
-
-
-
-
-		void surf (Input IN, inout SurfaceOutputStandard o) {
-			// Albedo comes from a texture tinted by color
-			fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
-			o.Albedo = c.rgb;
-			// Metallic and smoothness come from slider variables
-			o.Metallic = _Metallic;
-			o.Smoothness = _Glossiness;
-			o.Alpha = c.a;
+		Tags{
+			"RenderType" = "Fade"
+			"Queue" = "Transparent"
+			"LightMode" = "ForwardBase"
 		}
-		ENDCG
+		Pass {
+
+
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+
+			#include "UnityCG.cginc"
+			#include "Lighting.cginc"
+			#include "AutoLight.cginc"
+			#include "noise.hlsl"
+			#pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
+
+			struct v2f {
+				float4 pos : SV_POSITION;
+				SHADOW_COORDS(1) // put shadows data into TEXCOORD1
+				fixed4 diff : COLOR0;
+				fixed3 ambient : COLOR1;
+			};
+
+			uniform float4 _Col;
+			uniform float _NoiseSeed;
+
+			v2f vert(appdata_base v) {
+				v2f o;
+				float3 samplePos = v.vertex.xyz + _NoiseSeed;
+				samplePos.xyz *= 1.2;
+				o.pos = UnityObjectToClipPos(v.vertex + v.normal * noise(samplePos)*0.05);
+				half3 worldNormal = UnityObjectToWorldNormal(v.normal);
+				half nl = max(0, dot(worldNormal, _WorldSpaceLightPos0.xyz));
+				o.diff = nl * _LightColor0;
+				o.ambient = ShadeSH9(half4(worldNormal, 1));
+				// compute shadows data
+				TRANSFER_SHADOW(o)
+					return o;
+			}
+
+			fixed4 frag(v2f i) : SV_Target{
+				fixed4 c = _Col;
+				// compute shadow attenuation (1.0 = fully lit, 0.0 = fully shadowed)
+				fixed shadow = SHADOW_ATTENUATION(i);
+				fixed3 light = i.diff * shadow + i.ambient;
+				c.rbg *= light;
+				return c;
+			}
+			ENDCG
+		}		
+		// shadow casting support
+		UsePass "Legacy Shaders/VertexLit/SHADOWCASTER"		
 	}
-	FallBack "Diffuse"
 }

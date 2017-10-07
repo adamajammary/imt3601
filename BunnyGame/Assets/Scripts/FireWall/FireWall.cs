@@ -41,7 +41,7 @@ public class FireWall : NetworkBehaviour {
         }
     }
 
-    private const float _noiseSpeed = -1.25f;   //The rate at which the seed changes for perlin   
+    private const float _noiseSpeed = -40.25f;   //The rate at which the seed changes for perlin   
     private const float _wallShrinkTime = 120.0f;//Time in seconds between _wall shrinking
     private const float _wallShrinkRate = 0.02f; //The rate at which the wall shrinks
 
@@ -49,7 +49,6 @@ public class FireWall : NetworkBehaviour {
     private WallMapRenderer _targetWallRenderer;//Renders the target fire wall
     private RectTransform   _wallTransitionUI;  //The little onscreen bar indicating when the wall will shrink
     private Image           _outsideWallEffect; //A red transparent UI panel indicating that the player is outside the wall
-    private Texture2D       _ft;                //ft = fire texture
     private Material        _fs;                //fs = fireshader
     private Circle          _current;           //The current circle
     private Circle          _target;            //The target circle
@@ -68,8 +67,6 @@ public class FireWall : NetworkBehaviour {
         this._actualWallRenderer = GameObject.Find("FireWallMapRenderer").GetComponent<WallMapRenderer>();
 
         this._fs = GetComponent<Renderer>().material;
-        this._ft = new Texture2D(128, 128, TextureFormat.ARGB32, false);
-        this._fs.mainTexture = this._ft;
         this._current = new Circle(250, Vector3.zero);
         this._target = new Circle(250, Vector3.zero);
 
@@ -121,20 +118,7 @@ public class FireWall : NetworkBehaviour {
     }
 
     private void generateWallTexture() {
-        //Sets every pixel in the firewall texture
-        for (int y = 0; y < _ft.height; y++) {
-            for (int x = 0; x < _ft.width; x++) {
-                float n = this.noise(x, y);
-                if (n < 0.3f)
-                    this._ft.SetPixel(x, y, new Color(0, 0, 0, 0.6f));
-                else if (n < 0.5f)
-                    this._ft.SetPixel(x, y, new Color(1, 0.55f, 0, 0.6f));
-                else
-                    this._ft.SetPixel(x, y, new Color(1, 0, 0, 0.6f));
-            }
-        }
-        // Apply all pixel changes to the texture
-        this._ft.Apply();
+        this._fs.SetFloat("_NoiseSeed", this._noiseSeed);
         // This will change where noise is sampled from the noise plane
         this._noiseSeed += _noiseSpeed * Time.deltaTime;
     }
@@ -154,20 +138,6 @@ public class FireWall : NetworkBehaviour {
         this._wallIsShrinking = false;
         this.recalculateWalls();
         this._targetWallRenderer.draw(this._target.wall.transform);
-    }
-
-    // Generates values from 0.4-1.0 based on perlin noise
-    private float noise(float x, float y) {
-        float xRadius = transform.localScale.x / 2;
-        float zRadius = transform.localScale.z / 2;
-        float avgRadius = (xRadius + zRadius) / 2;
-
-        float xSeed = 1337.0f + this._noiseSeed;
-        float ySeed = 1337.0f + this._noiseSeed;
-        float xDivider = 1144.07f / avgRadius;
-        float yDivider = 31.7f;
-        float n = Mathf.PerlinNoise(x / xDivider + xSeed, y / yDivider + ySeed);
-        return n;
     }
 
     void OnTriggerExit(Collider other) {

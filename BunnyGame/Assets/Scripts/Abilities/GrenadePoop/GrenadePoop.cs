@@ -31,12 +31,12 @@ public class GrenadePoop : SpecialAbility {
         bool dir = (Random.Range(0.0f, 1.0f) > 0.5);
         if (dir) {
             for (float rad = 0; rad <= 360; rad += Time.deltaTime * 360) {
-                transform.rotation = Quaternion.AngleAxis(rad, Camera.main.transform.forward) * transform.rotation;
+                transform.rotation = Quaternion.AngleAxis(rad, this.transform.forward) * transform.rotation;
                 yield return 0;
             }
         } else {
             for (float rad = 360; rad >= 0; rad -= Time.deltaTime * 360) {
-                transform.rotation = Quaternion.AngleAxis(rad, Camera.main.transform.forward) * transform.rotation;
+                transform.rotation = Quaternion.AngleAxis(rad, this.transform.forward) * transform.rotation;
                 yield return 0;
             }
         }

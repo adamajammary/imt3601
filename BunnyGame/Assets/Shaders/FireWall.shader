@@ -1,6 +1,6 @@
 ﻿Shader "Unlit/FireWall" {
 	Properties {
-		_MainTex ("Texture", 2D) = "white" {}
+		_NoiseSeed ("Noise seed", float) = 1.0
 	}
 	SubShader {
 		AlphaToMask On
@@ -14,30 +14,36 @@
 			#pragma vertex vert
 			#pragma fragment frag			
 			#include "UnityCG.cginc"
+			#include "noise.hlsl"
+
+			uniform float _NoiseSeed;
 
 			struct appdata {
 				float4 vertex : POSITION;
-				float2 uv : TEXCOORD0;
 			};
 
 			struct v2f {
-				float2 uv : TEXCOORD0;
+				float3 worldPos : TEXCOORD0;
 				float4 vertex : SV_POSITION;
 			};
-
-			sampler2D _MainTex;
-			float4 _MainTex_ST;
 			
 			v2f vert (appdata v) {
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
-				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+				o.worldPos = mul(unity_ObjectToWorld, v.vertex);
 				return o;
 			}
 			
 			fixed4 frag (v2f i) : SV_Target{
-				// sample the texture
-				fixed4 col = tex2D(_MainTex, i.uv);
+				float3 samplePos = i.worldPos;
+				samplePos.xyz = samplePos.xyz + _NoiseSeed;
+				samplePos /= 33.7;
+
+				fixed4 red = { 1, 0, 0, 0.5f };
+				fixed4 black = { 0, 0, 0, 0.5f };
+				fixed4 white = { 1, 1, 1, 0.5f };
+				float n = noise(samplePos);
+				fixed4 col = lerp(lerp(black, red, n), lerp(red, white, n*n), n);
 				return col;
 			}
 			ENDCG

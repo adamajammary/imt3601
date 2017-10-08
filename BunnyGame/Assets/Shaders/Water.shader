@@ -13,8 +13,6 @@
 			"LightMode" = "ForwardBase"
 		}
 		Pass {
-
-
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
@@ -46,7 +44,7 @@
 				o.ambient = ShadeSH9(half4(worldNormal, 1));
 				// compute shadows data
 				TRANSFER_SHADOW(o)
-					return o;
+				return o;
 			}
 
 			fixed4 frag(v2f i) : SV_Target{

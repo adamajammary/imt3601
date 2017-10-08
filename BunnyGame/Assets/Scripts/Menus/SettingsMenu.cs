@@ -31,8 +31,11 @@ public class SettingsMenu : MonoBehaviour {
         GameObject textoptionTest = addTextOption("option1.1", testSection, "placeholder text");
         GameObject textoptionTest2 = addTextOption("option1.2", testSection, "placeholder text");
 
-        //GameObject section2 = addSection("Section 2", panel);
-        //GameObject textoptionTest3 = addTextOption("option2.1", testSection, "placeholder text");
+        GameObject section2 = addSection("Section 2", panel);
+        GameObject textoptionTest3 = addTextOption("option2.1", section2, "placeholder text");
+
+        GameObject section3 = addSection("Section 3", panel);
+        GameObject textoptionTest4 = addTextOption("option3.1", section3, "placeholder text");
 
 
 
@@ -84,9 +87,8 @@ public class SettingsMenu : MonoBehaviour {
         rt.anchorMax = new Vector2(1, 1);
         rt.offsetMin = new Vector2(0, optionHeight);
         rt.offsetMax = new Vector2(0, 0);
-
-        // Set section width, background etc..
         // Height will be set during packing
+        
 
         GameObject sectionTitle = createBaseUIObject("Section title: " + title, sectionPanel);
         sectionTitle.AddComponent<Text>().text = title;
@@ -129,6 +131,8 @@ public class SettingsMenu : MonoBehaviour {
         GameObject interactiveElement = createBaseUIObject("Option: " + text, option);
         // Set up size and position etc...
 
+        rt = interactiveElement.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 0);
 
         return interactiveElement;
     }
@@ -140,19 +144,13 @@ public class SettingsMenu : MonoBehaviour {
         InputField inf = option.AddComponent<InputField>();
         inf.targetGraphic = option.GetComponent<Image>();
 
-        RectTransform rt = option.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0);
-        rt.anchorMax = new Vector2(1, 1);
-        rt.offsetMin = new Vector2(0, 0);
-        rt.offsetMax = new Vector2(0, 0);
-
 
         GameObject text = createBaseUIObject("Text: " + optionName, option);
         Text textComponent = text.AddComponent<Text>();
         textComponent.font = settingsFont;
         textComponent.color = new Color(0,0,0);
 
-        rt = text.GetComponent<RectTransform>();
+        RectTransform rt = text.GetComponent<RectTransform>();
         rt.offsetMin = new Vector2(5, 5);
         rt.offsetMax = new Vector2(-5, -5);
 
@@ -198,18 +196,22 @@ public class SettingsMenu : MonoBehaviour {
 
 
     // Resize the panel and sections inside so that they fit the number of settings and size of the window
-    private void pack(GameObject panel)
-    {
-        // Starting at 1 becuase child 0 is the Settings window title
-        for (int i = 1; i < panel.transform.childCount; i++) {
-            int sectionItems = panel.transform.GetChild(i).childCount - 1; // Child 1 is section title
+    private void pack(GameObject panel) {
+        int totalHeight = 0;
+        
 
-            // TODO set the size of the panel based on how many children it has
+        for (int i = 0; i < panel.transform.childCount; i++) {
+            RectTransform sectionRT = panel.transform.GetChild(i).gameObject.GetComponent<RectTransform>();
+            int sectionItems = panel.transform.GetChild(i).childCount;
+            sectionRT.offsetMin = new Vector2(0, totalHeight + sectionItems * optionHeight);
+            sectionRT.offsetMax = new Vector2(0, totalHeight);
+            totalHeight += sectionItems * optionHeight;
 
         }
 
-        // TODO Set the size of the panel so that it fits as many settings as possible at once without being to big for the window
-
+        RectTransform rt = panel.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0, 1);
+        rt.offsetMin = new Vector2(0, totalHeight);
     }
 
 

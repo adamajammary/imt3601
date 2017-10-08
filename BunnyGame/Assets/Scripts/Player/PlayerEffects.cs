@@ -48,7 +48,7 @@ public class PlayerEffects : NetworkBehaviour {
 
     public IEnumerator knockBack(Vector3 impact) {
         Vector3 dir = transform.position - impact;
-        float force = (6 - dir.magnitude) * 25.0f;
+        float force = 10.0f;
         dir.Normalize();
         if (dir.y <= 0.2f) dir.y = 0.2f;
         dir.Normalize();

@@ -9,7 +9,7 @@ public class GrenadePoopProjectile : NetworkBehaviour {
     private const float _speed = 20.0f;
     private const float _antiGravity = 2.5f;
     private const int _damage = 30;
-    private const float AOE = 6;
+    private const float AOE = 10;
 
     private Rigidbody _rb;
     private float _timeAlive = 0;
@@ -17,10 +17,12 @@ public class GrenadePoopProjectile : NetworkBehaviour {
     private const float _noiseSpeed = 2.25f;
     private float _noiseSeed;
     private Material _shader;
+    private bool _dead;
 
     [SyncVar] public int ConnectionID = -1;
 
     private void Awake() {
+        this._dead = true;
         this._noiseSeed = Random.Range(0, 9999);
         this._shader = GetComponent<Renderer>().material;
         this._rb = this.GetComponent<Rigidbody>();
@@ -45,7 +47,7 @@ public class GrenadePoopProjectile : NetworkBehaviour {
     }
 
     private void OnCollisionEnter(Collision other) {
-        if (other.gameObject == this.owner) return;
+        if (other.gameObject == this.owner || this._dead) return;
 
         // Find npcs/players in blast area
         int playerlayer = 1 << 8;
@@ -60,7 +62,8 @@ public class GrenadePoopProjectile : NetworkBehaviour {
             }
         }
         this.owner.GetComponent<AbilityNetwork>().CmdPoopExplosion(this.transform.position);
-        Destroy(this.gameObject);
+        Destroy(this.gameObject, 1.0f); //Give the object a chance to collide on other clients
+        this._dead = true;
 
     }
 

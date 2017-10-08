@@ -84,7 +84,7 @@ public class SettingsMenu : MonoBehaviour {
         // VIDEO SETTINGS:
         GameObject videoSettings = addSection("Video", panel);
 
-        string[] resolutions = new string[] { "1920x1080", "1280x720", "1024x768" };
+        string[] resolutions = new string[] { "2560x1440","1920x1080", "1280x720", "1024x768" };
         GameObject resolution = addDropdownOption("Resolution", 
             videoSettings, 
             resolutions, 

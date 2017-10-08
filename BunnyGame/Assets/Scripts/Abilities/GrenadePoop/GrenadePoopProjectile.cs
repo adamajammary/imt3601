@@ -63,6 +63,7 @@ public class GrenadePoopProjectile : NetworkBehaviour {
         }
         this.owner.GetComponent<AbilityNetwork>().CmdPoopExplosion(this.transform.position);
         Destroy(this.gameObject, 1.0f); //Give the object a chance to collide on other clients
+        this.GetComponent<Collider>().enabled = false;
         this._dead = true;
 
     }

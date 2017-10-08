@@ -9,15 +9,15 @@ public class SettingsMenu : MonoBehaviour {
 
     private int optionHeight = -50; // value must be negative, as we are working downwards instead of upwards, which unity ui does
 
-    private Dictionary<string, string> stringValues = new Dictionary<string, string>();
-    private Dictionary<string, float> floatValues = new Dictionary<string, float>();
-    private Dictionary<string, int> intValues = new Dictionary<string, int>();
+    private Dictionary<string, Slider> sliders = new Dictionary<string, Slider>();
+    private Dictionary<string, Dropdown> dropdowns = new Dictionary<string, Dropdown>();
+    private Dictionary<string, InputField> inputFields = new Dictionary<string, InputField>();
 
 
     void Start () {
         createSettingsMenu();
         close();
-
+        load();
 
     }
 	
@@ -27,29 +27,29 @@ public class SettingsMenu : MonoBehaviour {
     }
     public void close() {
         transform.GetChild(0).gameObject.SetActive(false);
+        load();
     }
 
     public void save()
     {
-        foreach (KeyValuePair<string, string> entry in stringValues)
-            PlayerPrefs.SetString(entry.Key, entry.Value);
-        foreach (KeyValuePair<string, float> entry in floatValues)
-            PlayerPrefs.SetFloat(entry.Key, entry.Value);
-        foreach (KeyValuePair<string, int> entry in intValues)
-            PlayerPrefs.SetInt(entry.Key, entry.Value);
+        foreach (KeyValuePair<string, InputField> entry in inputFields)
+            PlayerPrefs.SetString(entry.Key, entry.Value.text);
+        foreach (KeyValuePair<string, Slider> entry in sliders)
+            PlayerPrefs.SetFloat(entry.Key, entry.Value.value);
+        foreach (KeyValuePair<string, Dropdown> entry in dropdowns)
+            PlayerPrefs.SetInt(entry.Key, entry.Value.value);
 
         PlayerPrefs.Save();
     }
 
-    private void updateDict<value_t>(Dictionary<string, value_t> dict, string key, value_t value) {
-        if (dict.ContainsKey(key))
-            dict[key] = value;
-        else
-            dict.Add(key, value);
-
-        save();
+    public void load() {
+        foreach (KeyValuePair<string, InputField> entry in inputFields)
+            entry.Value.text = PlayerPrefs.GetString(entry.Key, entry.Value.text);
+        foreach (KeyValuePair<string, Slider> entry in sliders)
+            entry.Value.value = PlayerPrefs.GetFloat(entry.Key, entry.Value.value);
+        foreach (KeyValuePair<string, Dropdown> entry in dropdowns)
+            entry.Value.value = PlayerPrefs.GetInt(entry.Key, entry.Value.value);
     }
-
 
     private void createSettingsMenu() {
         GameObject panel = transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject; // Yep
@@ -187,11 +187,8 @@ public class SettingsMenu : MonoBehaviour {
         inf.textComponent = text.GetComponent<Text>();
         inf.placeholder = placeholder.GetComponent<Text>();
 
-        // Call function updateDict() when the text changes
-        inf.onValueChanged.AddListener(delegate { updateDict(stringValues, optionName, inf.text); });
-        // Load initial value from settings
-        inf.text = PlayerPrefs.GetString(optionName, "");
 
+        inputFields.Add(optionName, inf);
 
         return option;
     }
@@ -220,10 +217,8 @@ public class SettingsMenu : MonoBehaviour {
         slider.fillRect = fill.GetComponent<RectTransform>();
         slider.handleRect = handle.GetComponent<RectTransform>();
 
-        // Call function updateDict() when the value changes
-        slider.onValueChanged.AddListener(delegate { updateDict(floatValues, optionName, slider.value); });
-        // Load initial value from settings
-        slider.value = PlayerPrefs.GetFloat(optionName, minval + (maxval-minval)/2);
+
+        sliders.Add(optionName, slider);
 
         return option;
     }
@@ -295,11 +290,8 @@ public class SettingsMenu : MonoBehaviour {
         dropdown.template = template.GetComponent<RectTransform>();
         dropdown.itemText = itemLabelText;
 
-        // Call function updateDict() when the value changes
-        dropdown.onValueChanged.AddListener(delegate { updateDict(intValues, optionName, dropdown.value); });
-        // Load initial value from settings
-        dropdown.value = PlayerPrefs.GetInt(optionName, 0);
 
+        dropdowns.Add(optionName, dropdown);
 
         return option;
     }

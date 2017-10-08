@@ -9,10 +9,16 @@ public class SettingsMenu : MonoBehaviour {
 
     private int optionHeight = -50; // value must be negative, as we are working downwards instead of upwards, which unity ui does
 
+    private Dictionary<string, string> stringValues = new Dictionary<string, string>();
+    private Dictionary<string, float> floatValues = new Dictionary<string, float>();
+    private Dictionary<string, int> intValues = new Dictionary<string, int>();
 
-	void Start () {
-        createSettings();
+
+    void Start () {
+        createSettingsMenu();
         close();
+
+
     }
 	
 
@@ -23,13 +29,38 @@ public class SettingsMenu : MonoBehaviour {
         transform.GetChild(0).gameObject.SetActive(false);
     }
 
+    public void save()
+    {
+        foreach (KeyValuePair<string, string> entry in stringValues)
+            PlayerPrefs.SetString(entry.Key, entry.Value);
+        foreach (KeyValuePair<string, float> entry in floatValues)
+            PlayerPrefs.SetFloat(entry.Key, entry.Value);
+        foreach (KeyValuePair<string, int> entry in intValues)
+            PlayerPrefs.SetInt(entry.Key, entry.Value);
 
-    private void createSettings() {
+        PlayerPrefs.Save();
+    }
+
+    private void updateDict<value_t>(Dictionary<string, value_t> dict, string key, value_t value) {
+        if (dict.ContainsKey(key))
+            dict[key] = value;
+        else
+            dict.Add(key, value);
+
+        save();
+    }
+
+
+    private void createSettingsMenu() {
         GameObject panel = transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject; // Yep
+       
+        GameObject videoSettings = addSection("Video", panel);
+        GameObject resolution = addDropdownOption("Resolution", videoSettings, new string[]{"1920x1080","1280x720", "1024x768"});
 
-        GameObject testSection = addSection("Section 1", panel);
-        GameObject textoptionTest = addTextOption("option1.1", testSection, "placeholder text");
-        GameObject textoptionTest2 = addTextOption("option1.2", testSection, "placeholder text");
+
+        GameObject cameraSection = addSection("Camera", panel);
+        GameObject fov = addSliderOption("FOV", cameraSection, 50, 150);
+        GameObject mouseSensitivity = addSliderOption("Mouse Sensitivity", cameraSection, 0, 100);
 
 
         GameObject soundSection = addSection("Sound", panel);
@@ -37,16 +68,8 @@ public class SettingsMenu : MonoBehaviour {
         GameObject musicVolume = addSliderOption("Music Volume", soundSection, 0, 100);
 
 
-        GameObject videoSettings = addSection("Video", panel);
-        GameObject resolution = addDropdownOption("Resolution", videoSettings, new string[]{"1920x1080","1280x720", "1024x768"});
-
-        
-        //GameObject cameraSection = addSection("Camera", panel);
-        //GameObject fov = addSliderOption("FOV", cameraSection, 50, 150);
-        //GameObject mouseSensitivity = addSliderOption("Mouse Sensitivity", cameraSection, 0, 100);
-
-
-        // Add save and cancel button
+        // TODO: Add save and cancel button
+        // TODO: Add a blocker, so you can't click on anything else while the settings panel is open
 
         pack(panel);
     }
@@ -106,19 +129,24 @@ public class SettingsMenu : MonoBehaviour {
         rt.offsetMin = new Vector2(0, optionHeight * parent.transform.childCount);
         rt.offsetMax = new Vector2(0, optionHeight * (parent.transform.childCount - 1));
 
+        float titleSpace = (text == "" ? 0 : 0.5f);
+        if (text == "")
+            titleSpace = 0;
+
+
         GameObject optionText = createBaseUIObject("Option Text: " + text, option);
         Text textComponent = optionText.AddComponent<Text>();
         textComponent.text = text;
         textComponent.font = settingsFont;
         rt = optionText.GetComponent<RectTransform>();
         rt.anchorMin = new Vector2(0, 0);
-        rt.anchorMax = new Vector2(0.5f, 1);
+        rt.anchorMax = new Vector2(titleSpace, 1);
         rt.offsetMin = new Vector2(5, 5);
         rt.offsetMax = new Vector2(-5, -5);
 
         GameObject interactiveElement = createBaseUIObject("Option: " + text, option);
         rt = interactiveElement.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0);
+        rt.anchorMin = new Vector2(titleSpace, 0);
         rt.offsetMax = new Vector2(-15, -15);
         rt.offsetMin = new Vector2(15, 15);
 
@@ -159,6 +187,11 @@ public class SettingsMenu : MonoBehaviour {
         inf.textComponent = text.GetComponent<Text>();
         inf.placeholder = placeholder.GetComponent<Text>();
 
+        // Call function updateDict() when the text changes
+        inf.onValueChanged.AddListener(delegate { updateDict(stringValues, optionName, inf.text); });
+        // Load initial value from settings
+        inf.text = PlayerPrefs.GetString(optionName, "");
+
 
         return option;
     }
@@ -186,6 +219,11 @@ public class SettingsMenu : MonoBehaviour {
         slider.targetGraphic = handle.GetComponent<Image>();
         slider.fillRect = fill.GetComponent<RectTransform>();
         slider.handleRect = handle.GetComponent<RectTransform>();
+
+        // Call function updateDict() when the value changes
+        slider.onValueChanged.AddListener(delegate { updateDict(floatValues, optionName, slider.value); });
+        // Load initial value from settings
+        slider.value = PlayerPrefs.GetFloat(optionName, minval + (maxval-minval)/2);
 
         return option;
     }
@@ -257,8 +295,13 @@ public class SettingsMenu : MonoBehaviour {
         dropdown.template = template.GetComponent<RectTransform>();
         dropdown.itemText = itemLabelText;
 
+        // Call function updateDict() when the value changes
+        dropdown.onValueChanged.AddListener(delegate { updateDict(intValues, optionName, dropdown.value); });
+        // Load initial value from settings
+        dropdown.value = PlayerPrefs.GetInt(optionName, 0);
 
-        ; return option;
+
+        return option;
     }
 
 

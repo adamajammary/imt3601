@@ -19,8 +19,8 @@ public class PlayerHealth : NetworkBehaviour {
     [SyncVar(hook = "showGameOverScreen")]
     private GameOverMessage _gameOver = new GameOverMessage();
 
-    [SyncVar(hook = "updateAliveText")]
-    private int _playersAlive  = 0;
+    [SyncVar(hook = "updatePlayerStatsText")]
+    private PlayerStatsMessage _playerStats = new PlayerStatsMessage();
 
     [SyncVar(hook = "updateDamageScreen")]
     private int _currentHealth = MAX_HEALTH;
@@ -30,7 +30,7 @@ public class PlayerHealth : NetworkBehaviour {
             return;
 
         this._damageImage    = GameObject.Find("Canvas/BloodSplatterOverlay").GetComponent<Image>();
-        this._gameOverText   = GameObject.Find("Canvas/PlayerIsDeadText").GetComponent<Text>();
+        this._gameOverText   = GameObject.Find("Canvas/GameOverText").GetComponent<Text>();
         this._spectateButton = GameObject.Find("Canvas/SpectateButton").GetComponent<Button>();
         this._spectateImage  = GameObject.Find("Canvas/SpectateButton").GetComponent<Image>();
         this._spectateText   = GameObject.Find("Canvas/SpectateButton/SpectateButtonText").GetComponent<Text>();
@@ -38,11 +38,11 @@ public class PlayerHealth : NetworkBehaviour {
         this._client         = NetworkClient.allClients[0];
 
         if (this._client != null) {
-            this._client.RegisterHandler((short)NetworkMessageType.MSG_PLAYERCOUNT, this.recieveNetworkMessage);
-            this._client.RegisterHandler((short)NetworkMessageType.MSG_GAME_OVER,   this.recieveNetworkMessage);
-        }
+            this._client.RegisterHandler((short)NetworkMessageType.MSG_PLAYER_STATS, this.recieveNetworkMessage);
+            this._client.RegisterHandler((short)NetworkMessageType.MSG_GAME_OVER,    this.recieveNetworkMessage);
 
-        this.requestAliveCounter();
+            this._client.Send((short)NetworkMessageType.MSG_PLAYER_READY, new IntegerMessage());
+        }
 
         // Make player immune from damage for the first 5 seconds after spawning
         StartCoroutine(this.damageImmune(5.0f));
@@ -128,20 +128,14 @@ public class PlayerHealth : NetworkBehaviour {
     // Network message handling, sends/receieves messages between clients and server.
     //
 
-    // Ask the server how many players are still alive.
-    private void requestAliveCounter() {
-        if (this.isLocalPlayer && (this._client != null))
-            this._client.Send((short)NetworkMessageType.MSG_PLAYERCOUNT, new IntegerMessage());
-    }
-
     // Recieve and handle the network message.
     private void recieveNetworkMessage(NetworkMessage message) {
         if (!this.isLocalPlayer)
             return;
 
         switch (message.msgType) {
-            case (short)NetworkMessageType.MSG_PLAYERCOUNT:
-                this.updateAliveCounter(message.ReadMessage<IntegerMessage>().value);
+            case (short)NetworkMessageType.MSG_PLAYER_STATS:
+                this.updatePlayerStats(message.ReadMessage<PlayerStatsMessage>());
                 break;
             case (short)NetworkMessageType.MSG_GAME_OVER:
                 this.updateGameOver(message.ReadMessage<GameOverMessage>());
@@ -152,29 +146,29 @@ public class PlayerHealth : NetworkBehaviour {
         }
     }
 
-    // Update the number of players still alive.
-    private void updateAliveCounter(int players) {
+    // Update the player stats.
+    private void updatePlayerStats(PlayerStatsMessage message) {
         if (this.isServer && this.isClient)
-            this.updateAliveCounter2(players);
+            this.updatePlayerStats2(message);
         else if (this.isServer)
-            this.RpcUpdateAliveCounter(players);
+            this.RpcUpdatePlayerStats(message);
         else if (this.isClient)
-            this.CmdUpdateAliveCounter(players);
+            this.CmdUpdatePlayerStats(message);
     }
 
-    private void updateAliveCounter2(int players) {
-        if (players > 0)
-            this._playersAlive = players;
+    private void updatePlayerStats2(PlayerStatsMessage message) {
+        if (message.playersAlive > 0)
+            this._playerStats = message;
     }
 
     [ClientRpc]
-    private void RpcUpdateAliveCounter(int players) {
-        this.updateAliveCounter2(players);
+    private void RpcUpdatePlayerStats(PlayerStatsMessage message) {
+        this.updatePlayerStats2(message);
     }
 
     [Command]
-    private void CmdUpdateAliveCounter(int players) {
-        this.RpcUpdateAliveCounter(players);
+    private void CmdUpdatePlayerStats(PlayerStatsMessage message) {
+        this.RpcUpdatePlayerStats(message);
     }
 
     // Update the player ranking.
@@ -208,6 +202,9 @@ public class PlayerHealth : NetworkBehaviour {
 
     // The game has ended, show the win or death screen respectively.
     private void showGameOverScreen(GameOverMessage message) {
+        if (!this.isLocalPlayer)
+            return;
+
         if (message.win)
             this.showWinScreen(message);
         else
@@ -219,7 +216,8 @@ public class PlayerHealth : NetworkBehaviour {
 		if ((this._gameOverText == null) || (message.rank < 1) || !message.win)
             return;
 
-        this._gameOverText.text  = string.Format("WINNER WINNER {0} DINNER!\nKills: {1}   Rank: #1", message.name, message.kills);
+        this._gameOver           = message;
+        this._gameOverText.text  = string.Format("WINNER WINNER {0} DINNER!\nKills: {1}   Rank: #1", this._gameOver.name, this._gameOver.kills);
         this._gameOverText.color = new Color(this._gameOverText.color.r, this._gameOverText.color.g, this._gameOverText.color.b, 1.0f);
     }
 
@@ -228,21 +226,48 @@ public class PlayerHealth : NetworkBehaviour {
 		if ((this._gameOverText == null) || (this._spectateImage == null) || (this._spectateText == null) || (message.rank < 1) || message.win)
             return;
 
-        this._gameOverText.text   = string.Format("YOU WERE KILLED BY {0}\nKills: {1}   Rank: #{2}", message.killer, message.kills, message.rank);
+        this._gameOver            = message;
+        this._gameOverText.text   = string.Format("YOU WERE KILLED BY {0}\nKills: {1}   Rank: #{2}", this._gameOver.killer, this._gameOver.kills, this._gameOver.rank);
         this._gameOverText.color  = new Color(this._gameOverText.color.r,  this._gameOverText.color.g,  this._gameOverText.color.b,  1.0f);
         this._spectateImage.color = new Color(this._spectateImage.color.r, this._spectateImage.color.g, this._spectateImage.color.b, 1.0f);
         this._spectateText.color  = new Color(this._spectateText.color.r,  this._spectateText.color.g,  this._spectateText.color.b,  1.0f);
 
-        this._spectateButton.onClick.AddListener(this.spectate); // TODO: see spectate method below
+        this._spectateButton.onClick.AddListener(this.spectate); // TODO: see spectate method
     }
 
-    // Update the HUD showing the number of players still alive.
-    private void updateAliveText(int playersAlive) {
-        Text aliveText = GameObject.Find("Canvas/PlayersAliveText").GetComponent<Text>();
+    //
+    private IEnumerator showKilledText(float totalSeconds, float passedSeconds, Text killedText) {
+        Color startColor = new Color(killedText.color.r, killedText.color.g, killedText.color.b, 1.0f);
+        Color endColor   = new Color(killedText.color.r, killedText.color.g, killedText.color.b, 0.0f);
+        killedText.color = Color.Lerp(startColor, endColor, (passedSeconds / totalSeconds));
 
-        if ((aliveText != null) && (playersAlive > 0)) {
-            this._playersAlive = playersAlive;
-            aliveText.text     = string.Format("{0} ALIVE", this._playersAlive);
+        yield return new WaitForSeconds(0.01f);
+
+        if (passedSeconds < totalSeconds)
+            StartCoroutine(this.showKilledText(5.0f, (passedSeconds + 0.01f), killedText));
+    }
+
+    // Update the HUD showing the player stats.
+    private void updatePlayerStatsText(PlayerStatsMessage message) {
+        if (!this.isLocalPlayer)
+            return;
+
+        Text aliveText = GameObject.Find("Canvas/PlayerStatsText").GetComponent<Text>();
+
+        if ((aliveText == null) || (message.playersAlive < 1))
+            return;
+
+        this._playerStats = message;
+        aliveText.text    = string.Format("{0}\n{1} ALIVE\n{2} KILLS", this._playerStats.name, this._playerStats.playersAlive, this._playerStats.kills);
+
+        if ((this._playerStats.killer == "") || (this._playerStats.dead == ""))
+            return;
+
+        Text killedText = GameObject.Find("Canvas/PlayerKilledText").GetComponent<Text>();
+
+        if (killedText != null) {
+            killedText.text = string.Format("{0} was killed by {1}", this._playerStats.dead, this._playerStats.killer);
+            StartCoroutine(this.showKilledText(5.0f, 0.0f, killedText));
         }
     }
 

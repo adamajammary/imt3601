@@ -76,7 +76,8 @@ public class SettingsMenu : MonoBehaviour {
                 string[] dimensions = resolutions[PlayerPrefs.GetInt("Resolution")].Split('x');
                 Screen.SetResolution(Int32.Parse(dimensions[0]), Int32.Parse(dimensions[1]), Screen.fullScreen);
                 return null;
-            });
+            }
+        );
 
         GameObject windowMode = addDropdownOption("Window Mode",
             videoSettings,
@@ -84,7 +85,8 @@ public class SettingsMenu : MonoBehaviour {
             delegate {
                 Screen.fullScreen = PlayerPrefs.GetInt("Window Mode", 0) == 1;
                 return null;
-            });
+            }
+        );
 
 
         // CAMERA SETTINGS:
@@ -96,8 +98,16 @@ public class SettingsMenu : MonoBehaviour {
                 if (tpc != null)
                     tpc.SetFOV(PlayerPrefs.GetFloat("Field of View",  60));
                 return null;
-            });
-        GameObject mouseSensitivity = addSliderOption("Mouse Sensitivity", cameraSection, 0, 100);
+            }
+        );
+        GameObject mouseSensitivity = addSliderOption("Mouse Sensitivity", cameraSection, 2, 20,
+            delegate {
+                ThirdPersonCamera tpc = GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>();
+                if (tpc != null)
+                    tpc.SetSensitivity(PlayerPrefs.GetFloat("Mouse Sensitivity", 10));
+                return null;
+            }
+        );
 
 
         // Audio has not yet been implemented, so these settings currently doesn't really do anything

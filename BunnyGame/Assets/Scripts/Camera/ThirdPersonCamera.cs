@@ -21,6 +21,7 @@ public class ThirdPersonCamera : MonoBehaviour {
     void Start()
     {
         SetFOV(Mathf.Clamp(PlayerPrefs.GetFloat("Field of View", GetComponent<Camera>().fieldOfView), 40, 100));
+        SetSensitivity(Mathf.Clamp(PlayerPrefs.GetFloat("Mouse Sensitivity", _mouseSensitivity), 2, 20));
 
         _crosshair = GameObject.Find("Crosshair");
 
@@ -70,5 +71,10 @@ public class ThirdPersonCamera : MonoBehaviour {
 
     public void SetFOV(float fov) {
         GetComponent<Camera>().fieldOfView = fov;
+    }
+
+    public void SetSensitivity(float sensitivity)
+    {
+        _mouseSensitivity = sensitivity;
     }
 }

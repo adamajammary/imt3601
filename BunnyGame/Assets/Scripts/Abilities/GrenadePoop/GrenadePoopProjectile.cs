@@ -22,7 +22,7 @@ public class GrenadePoopProjectile : NetworkBehaviour {
     [SyncVar] public int ConnectionID = -1;
 
     private void Awake() {
-        this._dead = true;
+        this._dead = false;
         this._noiseSeed = Random.Range(0, 9999);
         this._shader = GetComponent<Renderer>().material;
         this._rb = this.GetComponent<Rigidbody>();
@@ -64,8 +64,8 @@ public class GrenadePoopProjectile : NetworkBehaviour {
         this.owner.GetComponent<AbilityNetwork>().CmdPoopExplosion(this.transform.position);
         Destroy(this.gameObject, 1.0f); //Give the object a chance to collide on other clients
         this.GetComponent<Collider>().enabled = false;
+        this.GetComponent<MeshRenderer>().enabled = false;
         this._dead = true;
-
     }
 
     public int GetDamage() {

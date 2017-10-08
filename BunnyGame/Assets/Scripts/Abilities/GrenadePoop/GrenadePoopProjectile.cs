@@ -14,15 +14,22 @@ public class GrenadePoopProjectile : NetworkBehaviour {
     private Rigidbody _rb;
     private float _timeAlive = 0;
 
+    private const float _noiseSpeed = 2.25f;
+    private float _noiseSeed;
+    private Material _shader;
 
     [SyncVar] public int ConnectionID = -1;
 
     private void Awake() {
+        this._noiseSeed = Random.Range(0, 9999);
+        this._shader = GetComponent<Renderer>().material;
         this._rb = this.GetComponent<Rigidbody>();
     }
 
     // Update is called once per frame
     void FixedUpdate() {
+        this._noiseSeed += _noiseSpeed * Time.deltaTime;
+        this._shader.SetFloat("_NoiseSeed", this._noiseSeed);
         // to reduce bullet drop
         this._rb.AddForce(Vector3.up * _antiGravity);
 

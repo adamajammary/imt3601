@@ -23,12 +23,13 @@ public class SettingsMenu : MonoBehaviour {
         close();
         load();
 
+        executeSettings();
     }
 	
-
     public void open() {
         transform.GetChild(0).gameObject.SetActive(true);
     }
+
     public void close() {
         transform.GetChild(0).gameObject.SetActive(false);
         load();
@@ -45,11 +46,7 @@ public class SettingsMenu : MonoBehaviour {
 
         PlayerPrefs.Save();
 
-        // Run functions attached to the setting (eg. change resolution to what is set by the resolution setting) 
-        foreach(KeyValuePair<string, Func<object>> entry in _settingExcecutions) {
-            if(entry.Value != null)
-                entry.Value();
-        } // TODO : Check that a setting has actually been changed, so that we don't need to run the functions for settings that hasn't been updated
+        executeSettings();
     }
 
     public void load() {
@@ -59,6 +56,14 @@ public class SettingsMenu : MonoBehaviour {
             entry.Value.value = PlayerPrefs.GetFloat(entry.Key, entry.Value.value);
         foreach (KeyValuePair<string, Dropdown> entry in _dropdowns)
             entry.Value.value = PlayerPrefs.GetInt(entry.Key, entry.Value.value);
+    }
+
+    private void executeSettings() {
+        // Run functions attached to the setting (eg. change resolution to what is set by the resolution setting) 
+        foreach (KeyValuePair<string, Func<object>> entry in _settingExcecutions) {
+            if (entry.Value != null)
+                entry.Value();
+        } // TODO : Check that a setting has actually been changed, so that we don't need to run the functions for settings that hasn't been updated
     }
 
     private void createSettingsMenu() {
@@ -87,6 +92,17 @@ public class SettingsMenu : MonoBehaviour {
                 return null;
             }
         );
+
+        GameObject vsync = addDropdownOption("Vsync",
+            videoSettings,
+            new string[] { "Off", "On" },
+            delegate {
+                QualitySettings.vSyncCount = PlayerPrefs.GetInt("Vsync", 1);
+                return null;
+            }
+        );
+
+
 
 
         // CAMERA SETTINGS:
@@ -123,6 +139,7 @@ public class SettingsMenu : MonoBehaviour {
 
         pack(panel);
     }
+
     // Creates a basic ui object with a rect transform and a canvas renderer
     private GameObject createBaseUIObject(string objectName = "Unnamed", GameObject parent = null)
     {
@@ -187,10 +204,12 @@ public class SettingsMenu : MonoBehaviour {
         Text textComponent = optionText.AddComponent<Text>();
         textComponent.text = text;
         textComponent.font = settingsFont;
+        textComponent.fontSize = 18;
+        textComponent.alignment = TextAnchor.MiddleLeft;
         rt = optionText.GetComponent<RectTransform>();
         rt.anchorMin = new Vector2(0, 0);
         rt.anchorMax = new Vector2(titleSpace, 1);
-        rt.offsetMin = new Vector2(5, 5);
+        rt.offsetMin = new Vector2(15, 5);
         rt.offsetMax = new Vector2(-5, -5);
 
         GameObject interactiveElement = createBaseUIObject("Option: " + text, option);
@@ -243,7 +262,6 @@ public class SettingsMenu : MonoBehaviour {
         return option;
     }
 
-    // TODO: Dispaly min and max value
     private GameObject addSliderOption(string optionName, GameObject parent, int minval, int maxval, Func<object> func = null) {
         GameObject option = addBasicOption(optionName, parent);
         Slider slider = option.AddComponent<Slider>();
@@ -264,6 +282,26 @@ public class SettingsMenu : MonoBehaviour {
         rt.offsetMax = new Vector2(5, 0);
         rt.offsetMin = new Vector2(-5, 0);
 
+        GameObject minvalText = createBaseUIObject("Minval: " + optionName, option);
+        GameObject maxvalText = createBaseUIObject("Maxval: " + optionName, option);
+        GameObject currentvalText = createBaseUIObject("Currentval: " + optionName, option);
+
+        foreach (GameObject obj in new GameObject[] { minvalText, maxvalText, currentvalText }) {
+            Text text = obj.AddComponent<Text>();
+            text.color = new Color(1, 1, 1);
+            text.font = settingsFont;
+            rt = obj.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0, 1);
+            rt.offsetMax = new Vector2(0, 20);
+        }
+        minvalText.GetComponent<Text>().alignment = TextAnchor.MiddleLeft;
+        maxvalText.GetComponent<Text>().alignment = TextAnchor.MiddleRight;
+        currentvalText.GetComponent<Text>().alignment = TextAnchor.MiddleCenter;
+
+        minvalText.GetComponent<Text>().text = minval.ToString();
+        maxvalText.GetComponent<Text>().text = maxval.ToString();
+
+        slider.onValueChanged.AddListener(delegate { currentvalText.GetComponent<Text>().text = slider.value.ToString("0.0"); });
 
         slider.targetGraphic = handle.GetComponent<Image>();
         slider.fillRect = fill.GetComponent<RectTransform>();
@@ -275,7 +313,6 @@ public class SettingsMenu : MonoBehaviour {
 
         return option;
     }
-
 
     private GameObject addDropdownOption(string optionName, GameObject parent, string[] elements, Func<object> func = null) {
         GameObject option = addBasicOption(optionName, parent);
@@ -349,7 +386,6 @@ public class SettingsMenu : MonoBehaviour {
 
         return option;
     }
-
 
     // Resize the panel and sections inside so that they fit the number of settings and size of the window
     private void pack(GameObject panel) {

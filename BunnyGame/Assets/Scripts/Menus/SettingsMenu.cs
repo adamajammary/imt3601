@@ -4,6 +4,11 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
+
+/*
+ * Generates and manages the setting menu.
+ * To add new settings and/or sections, add these in the generateMenu() function.
+ */
 public class SettingsMenu : MonoBehaviour {
 
     public Font settingsFont;
@@ -19,24 +24,28 @@ public class SettingsMenu : MonoBehaviour {
 
 
     void Start () {
-        createSettingsMenu();
+        generateMenu();
         close();
         load();
 
         executeSettings();
     }
 	
-    public void open() {
+    public void open()
+    {
         transform.GetChild(0).gameObject.SetActive(true);
+        transform.GetChild(1).gameObject.SetActive(true);
     }
 
-    public void close() {
+    public void close()
+    {
         transform.GetChild(0).gameObject.SetActive(false);
+        transform.GetChild(1).gameObject.SetActive(false);
         load();
     }
 
-    public void save()
-    {
+    // Save changes to PlayerPrefs
+    public void save() {
         foreach (KeyValuePair<string, InputField> entry in _inputFields)
             PlayerPrefs.SetString(entry.Key, entry.Value.text);
         foreach (KeyValuePair<string, Slider> entry in _sliders)
@@ -49,6 +58,7 @@ public class SettingsMenu : MonoBehaviour {
         executeSettings();
     }
 
+    // Load settings from PlayerPrefs
     public void load() {
         foreach (KeyValuePair<string, InputField> entry in _inputFields)
             entry.Value.text = PlayerPrefs.GetString(entry.Key, entry.Value.text);
@@ -58,15 +68,16 @@ public class SettingsMenu : MonoBehaviour {
             entry.Value.value = PlayerPrefs.GetInt(entry.Key, entry.Value.value);
     }
 
+    // Run functions attached to the setting (eg. change resolution to what is set by the resolution setting) 
     private void executeSettings() {
-        // Run functions attached to the setting (eg. change resolution to what is set by the resolution setting) 
         foreach (KeyValuePair<string, Func<object>> entry in _settingExcecutions) {
             if (entry.Value != null)
                 entry.Value();
         } // TODO : Check that a setting has actually been changed, so that we don't need to run the functions for settings that hasn't been updated
     }
 
-    private void createSettingsMenu() {
+    // Set up the content of the settings menu here
+    private void generateMenu() {
         GameObject panel = transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject; // Yep
        
 
@@ -159,6 +170,7 @@ public class SettingsMenu : MonoBehaviour {
         return uiObject;
     }
 
+    // Creates a section for containing and categorizing settings
     private GameObject addSection(string title, GameObject parent) {
         GameObject sectionPanel = createBaseUIObject("Section: " + title, parent);
 
@@ -188,6 +200,7 @@ public class SettingsMenu : MonoBehaviour {
         return sectionPanel;
     }
 
+    // Creates the base for which any of the option types below (slider, dropdown, etc..) build ontop of
     private GameObject addBasicOption(string text, GameObject parent) {
         GameObject option = createBaseUIObject("Option panel: " + text, parent);
         RectTransform rt = option.GetComponent<RectTransform>();
@@ -221,6 +234,7 @@ public class SettingsMenu : MonoBehaviour {
         return interactiveElement;
     }
 
+    // Creates a textfield type option
     private GameObject addTextOption(string optionName, GameObject parent, string placeholderText = "", Func<object> func = null) {
         GameObject option = addBasicOption(optionName, parent);
         option.AddComponent<Image>();
@@ -262,6 +276,7 @@ public class SettingsMenu : MonoBehaviour {
         return option;
     }
 
+    // Creates a slider type option
     private GameObject addSliderOption(string optionName, GameObject parent, int minval, int maxval, Func<object> func = null) {
         GameObject option = addBasicOption(optionName, parent);
         Slider slider = option.AddComponent<Slider>();
@@ -314,6 +329,7 @@ public class SettingsMenu : MonoBehaviour {
         return option;
     }
 
+    // Adds a dropdown type option
     private GameObject addDropdownOption(string optionName, GameObject parent, string[] elements, Func<object> func = null) {
         GameObject option = addBasicOption(optionName, parent);
         option.AddComponent<Image>();
@@ -342,6 +358,8 @@ public class SettingsMenu : MonoBehaviour {
         rt = template.GetComponent<RectTransform>();
         rt.anchorMax = new Vector2(1, 0);
         rt.offsetMin = new Vector2(0, -20 * elements.Length);
+        templateSR.horizontal = false;
+        templateSR.elasticity = 0.1f;
         template.SetActive(false);
 
 
@@ -356,6 +374,8 @@ public class SettingsMenu : MonoBehaviour {
 
         GameObject item = createBaseUIObject("Item", content);
         Toggle itemToggle = item.AddComponent<Toggle>();
+        rt.anchorMin = new Vector2(0, 1);
+        rt.offsetMin = new Vector2(0, -20);
 
         GameObject itemBackground = createBaseUIObject("Item Background", item);
         itemBackground.AddComponent<Image>();
@@ -373,7 +393,6 @@ public class SettingsMenu : MonoBehaviour {
 
         templateSR.content = content.GetComponent<RectTransform>();
         templateSR.viewport = viewport.GetComponent<RectTransform>();
-
 
         dropdown.captionText = label.GetComponent<Text>();
         dropdown.targetGraphic = dropdown.GetComponent<Image>();

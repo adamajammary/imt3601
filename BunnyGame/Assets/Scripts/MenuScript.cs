@@ -10,13 +10,12 @@ public class MenuScript : MonoBehaviour {
     public Button playButton;
     public Button exitButton;
 
-
 	// Use this for initialization
 	void Start () {
         quitMenu = quitMenu.GetComponent<Canvas>();
         playButton = playButton.GetComponent<Button>();
         exitButton = exitButton.GetComponent<Button>();
-        quitMenu.enabled = false;
+        quitMenu.enabled = false;   
     }
 	
 
@@ -43,4 +42,6 @@ public class MenuScript : MonoBehaviour {
     {
         Application.Quit();
     }
+
+
 }

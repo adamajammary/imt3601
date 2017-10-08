@@ -26,8 +26,10 @@ public class PlayerController : NetworkBehaviour {
 
     private Transform _cameraTransform;
     public CharacterController controller;
+    private EscMenu escButtonPress;
 
-    bool lockCursor = false;
+    bool lockCursor = true;
+    bool escMenu = false;
     public bool running = false;
 
     void Start() {
@@ -37,6 +39,7 @@ public class PlayerController : NetworkBehaviour {
         if (!this.isLocalPlayer)
             return;
 
+        this.escButtonPress = FindObjectOfType<EscMenu>();
         this._cameraTransform = Camera.main.transform;
         this.controller = this.GetComponent<CharacterController>();
 
@@ -59,6 +62,7 @@ public class PlayerController : NetworkBehaviour {
 
         HandleAiming();
         handleMouse();
+        handleEscMenu();
     }
 
     // Turn off and on MeshRenderer so FPS camera works
@@ -165,5 +169,18 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
+    private void handleEscMenu()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            escMenu = !escMenu;
+          
+        escButtonPress.EscPress(escMenu);
 
+        if(escButtonPress.resumePressed())
+        {
+            escMenu = false;
+            escButtonPress.rusumePressedReset();
+            lockCursor = true;
+        }  
+    }
 }

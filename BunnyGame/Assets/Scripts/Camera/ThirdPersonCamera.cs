@@ -6,6 +6,7 @@ public class ThirdPersonCamera : MonoBehaviour {
 
     private float       _mouseSensitivity = 10;    
     private float       _distanceFromTarget = 6;
+    private float       _curDist;
     private Vector2     _pitchMinMax = new Vector2(-5, 85);
     private float       _rotationSmoothTime = 0.0f;
 
@@ -20,6 +21,9 @@ public class ThirdPersonCamera : MonoBehaviour {
 
     void Start()
     {
+        SetFOV(Mathf.Clamp(PlayerPrefs.GetFloat("Field of View", GetComponent<Camera>().fieldOfView), 40, 100));
+        SetSensitivity(Mathf.Clamp(PlayerPrefs.GetFloat("Mouse Sensitivity", _mouseSensitivity), 2, 20));
+
         _crosshair = GameObject.Find("Crosshair");
 
         if (_crosshair == null)
@@ -42,6 +46,7 @@ public class ThirdPersonCamera : MonoBehaviour {
   
         this.transform.eulerAngles = _currentRotation;
 
+        this.camCollision();
         HandleFpsAim();      
     }
 
@@ -56,7 +61,7 @@ public class ThirdPersonCamera : MonoBehaviour {
         else 
         {
             _crosshair.SetActive(false);
-            this.transform.position = _target.position - transform.forward * _distanceFromTarget;
+            this.transform.position = _target.position - transform.forward * this._curDist;
             _pitchMinMax = new Vector2(-5, 85);
         }
     }
@@ -64,5 +69,26 @@ public class ThirdPersonCamera : MonoBehaviour {
     public void SetTarget(Transform targetTransform)
     {
         this._target = targetTransform;
+    }
+
+    public void SetFOV(float fov) {
+        GetComponent<Camera>().fieldOfView = fov;
+    }
+
+    public void SetSensitivity(float sensitivity) {
+        _mouseSensitivity = sensitivity;
+    }
+
+    void camCollision() {
+        RaycastHit hit;
+        Ray ray = new Ray(this._target.transform.position, this.transform.position - this._target.transform.position);
+        int layermask = (1 << 8);
+        layermask |= (1 << 11);
+        layermask = ~layermask;
+
+        if (Physics.Raycast(ray, out hit, this._distanceFromTarget, layermask)) {
+            this._curDist = hit.distance;
+        } else
+            this._curDist = this._distanceFromTarget;
     }
 }

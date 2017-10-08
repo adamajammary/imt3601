@@ -20,6 +20,8 @@ public class ThirdPersonCamera : MonoBehaviour {
 
     void Start()
     {
+        SetFOV(Mathf.Clamp(PlayerPrefs.GetFloat("Field of View", GetComponent<Camera>().fieldOfView), 40, 100));
+
         _crosshair = GameObject.Find("Crosshair");
 
         if (_crosshair == null)
@@ -64,5 +66,9 @@ public class ThirdPersonCamera : MonoBehaviour {
     public void SetTarget(Transform targetTransform)
     {
         this._target = targetTransform;
+    }
+
+    public void SetFOV(float fov) {
+        GetComponent<Camera>().fieldOfView = fov;
     }
 }

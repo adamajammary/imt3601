@@ -64,7 +64,10 @@ public class SettingsMenu : MonoBehaviour {
     private void createSettingsMenu() {
         GameObject panel = transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject; // Yep
        
+
+        // VIDEO SETTINGS:
         GameObject videoSettings = addSection("Video", panel);
+
         string[] resolutions = new string[] { "1920x1080", "1280x720", "1024x768" };
         GameObject resolution = addDropdownOption("Resolution", 
             videoSettings, 
@@ -83,17 +86,29 @@ public class SettingsMenu : MonoBehaviour {
                 return null;
             });
 
+
+        // CAMERA SETTINGS:
         GameObject cameraSection = addSection("Camera", panel);
-        GameObject fov = addSliderOption("FOV", cameraSection, 50, 150);
+
+        GameObject fov = addSliderOption("Field of View", cameraSection, 40, 100,
+            delegate {
+                ThirdPersonCamera tpc = GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>();
+                if (tpc != null)
+                    tpc.SetFOV(PlayerPrefs.GetFloat("Field of View",  60));
+                return null;
+            });
         GameObject mouseSensitivity = addSliderOption("Mouse Sensitivity", cameraSection, 0, 100);
 
 
+        // Audio has not yet been implemented, so these settings currently doesn't really do anything
+        // AUDIO SETTINGS:
         GameObject soundSection = addSection("Sound", panel);
+
         GameObject masterVolume = addSliderOption("Master Volume", soundSection, 0, 100);
         GameObject musicVolume = addSliderOption("Music Volume", soundSection, 0, 100);
 
 
-        // TODO: Add save and cancel button
+
         // TODO: Add a blocker, so you can't click on anything else while the settings panel is open
 
         pack(panel);
@@ -218,10 +233,12 @@ public class SettingsMenu : MonoBehaviour {
         return option;
     }
 
-    // TODO: Actually do something with min and max value
+    // TODO: Dispaly min and max value
     private GameObject addSliderOption(string optionName, GameObject parent, int minval, int maxval, Func<object> func = null) {
         GameObject option = addBasicOption(optionName, parent);
         Slider slider = option.AddComponent<Slider>();
+        slider.minValue = minval;
+        slider.maxValue = maxval;
 
         GameObject background = createBaseUIObject("Background: " + optionName, option);
         background.AddComponent<Image>();

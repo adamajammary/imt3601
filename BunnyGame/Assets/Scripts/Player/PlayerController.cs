@@ -28,8 +28,8 @@ public class PlayerController : NetworkBehaviour {
     public CharacterController controller;
     private EscMenu escButtonPress;
 
-    bool lockCursor = false;
-    bool escMenu = true;
+    bool lockCursor = true;
+    bool escMenu = false;
     public bool running = false;
 
     void Start() {

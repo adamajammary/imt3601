@@ -6,8 +6,9 @@ public class ThirdPersonCamera : MonoBehaviour {
 
     private float       _mouseSensitivity = 10;    
     private float       _distanceFromTarget = 6;
+    private float       _curDist;
     private Vector2     _pitchMinMax = new Vector2(-5, 85);
-	private float 		_rotationSmoothTime = 0.0f, distance = 2.3f, height = 1f;
+    private float       _rotationSmoothTime = 0.0f;
 
     private GameObject  _crosshair;
     private Transform   _target;
@@ -16,12 +17,6 @@ public class ThirdPersonCamera : MonoBehaviour {
     Vector3             _currentRotation;
     float               _yaw;
     float               _pitch;
-	Vector3				dest;
-	RaycastHit			hit;
-	public Transform	player_cam, center_point;
-
-
-
   
 
     void Start()
@@ -48,7 +43,7 @@ public class ThirdPersonCamera : MonoBehaviour {
   
         this.transform.eulerAngles = _currentRotation;
 
-
+        this.camCollision();
         HandleFpsAim();      
     }
 
@@ -63,7 +58,7 @@ public class ThirdPersonCamera : MonoBehaviour {
         else 
         {
             _crosshair.SetActive(false);
-            this.transform.position = _target.position - transform.forward * _distanceFromTarget;
+            this.transform.position = _target.position - transform.forward * this._curDist;
             _pitchMinMax = new Vector2(-5, 85);
         }
     }
@@ -73,13 +68,16 @@ public class ThirdPersonCamera : MonoBehaviour {
         this._target = targetTransform;
     }
 
+    void camCollision() {
+        RaycastHit hit;
+        Ray ray = new Ray(this._target.transform.position, this.transform.position - this._target.transform.position);
+        int layermask = (1 << 8);
+        layermask |= (1 << 11);
+        layermask = ~layermask;
 
-	void FixedUpdate() {
-		dest = center_point.position + center_point.forward * -1 * distance + Vector3.up * height;
-		if (Physics.Linecast (center_point.position, dest, out hit)) {
-			if (hit.collider.CompareTag("IslandObjects")) {
-				player_cam.position =  hit.point + hit.normal * 0.14f;
-			}
-		}
-	}
+        if (Physics.Raycast(ray, out hit, this._distanceFromTarget, layermask)) {
+            this._curDist = hit.distance;
+        } else
+            this._curDist = this._distanceFromTarget;
+    }
 }

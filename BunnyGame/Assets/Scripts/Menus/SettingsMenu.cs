@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,9 +10,12 @@ public class SettingsMenu : MonoBehaviour {
 
     private int optionHeight = -50; // value must be negative, as we are working downwards instead of upwards, which unity ui does
 
-    private Dictionary<string, Slider> sliders = new Dictionary<string, Slider>();
-    private Dictionary<string, Dropdown> dropdowns = new Dictionary<string, Dropdown>();
-    private Dictionary<string, InputField> inputFields = new Dictionary<string, InputField>();
+    private Dictionary<string, Slider> _sliders = new Dictionary<string, Slider>();
+    private Dictionary<string, Dropdown> _dropdowns = new Dictionary<string, Dropdown>();
+    private Dictionary<string, InputField> _inputFields = new Dictionary<string, InputField>();
+
+    // What functions should be called when a setting is changed and saved
+    private Dictionary<string, Func<object>> _settingExcecutions = new Dictionary<string, Func<object>>();
 
 
     void Start () {
@@ -32,22 +36,28 @@ public class SettingsMenu : MonoBehaviour {
 
     public void save()
     {
-        foreach (KeyValuePair<string, InputField> entry in inputFields)
+        foreach (KeyValuePair<string, InputField> entry in _inputFields)
             PlayerPrefs.SetString(entry.Key, entry.Value.text);
-        foreach (KeyValuePair<string, Slider> entry in sliders)
+        foreach (KeyValuePair<string, Slider> entry in _sliders)
             PlayerPrefs.SetFloat(entry.Key, entry.Value.value);
-        foreach (KeyValuePair<string, Dropdown> entry in dropdowns)
+        foreach (KeyValuePair<string, Dropdown> entry in _dropdowns)
             PlayerPrefs.SetInt(entry.Key, entry.Value.value);
 
         PlayerPrefs.Save();
+
+        // Run functions attached to the setting (eg. change resolution to what is set by the resolution setting) 
+        foreach(KeyValuePair<string, Func<object>> entry in _settingExcecutions) {
+            if(entry.Value != null)
+                entry.Value();
+        } // TODO : Check that a setting has actually been changed, so that we don't need to run the functions for settings that hasn't been updated
     }
 
     public void load() {
-        foreach (KeyValuePair<string, InputField> entry in inputFields)
+        foreach (KeyValuePair<string, InputField> entry in _inputFields)
             entry.Value.text = PlayerPrefs.GetString(entry.Key, entry.Value.text);
-        foreach (KeyValuePair<string, Slider> entry in sliders)
+        foreach (KeyValuePair<string, Slider> entry in _sliders)
             entry.Value.value = PlayerPrefs.GetFloat(entry.Key, entry.Value.value);
-        foreach (KeyValuePair<string, Dropdown> entry in dropdowns)
+        foreach (KeyValuePair<string, Dropdown> entry in _dropdowns)
             entry.Value.value = PlayerPrefs.GetInt(entry.Key, entry.Value.value);
     }
 
@@ -55,8 +65,23 @@ public class SettingsMenu : MonoBehaviour {
         GameObject panel = transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject; // Yep
        
         GameObject videoSettings = addSection("Video", panel);
-        GameObject resolution = addDropdownOption("Resolution", videoSettings, new string[]{"1920x1080","1280x720", "1024x768"});
+        string[] resolutions = new string[] { "1920x1080", "1280x720", "1024x768" };
+        GameObject resolution = addDropdownOption("Resolution", 
+            videoSettings, 
+            resolutions, 
+            delegate { // Update screen resolution
+                string[] dimensions = resolutions[PlayerPrefs.GetInt("Resolution")].Split('x');
+                Screen.SetResolution(Int32.Parse(dimensions[0]), Int32.Parse(dimensions[1]), Screen.fullScreen);
+                return null;
+            });
 
+        GameObject windowMode = addDropdownOption("Window Mode",
+            videoSettings,
+            new string[] { "Windowed", "Fullscreen" },
+            delegate {
+                Screen.fullScreen = PlayerPrefs.GetInt("Window Mode", 0) == 1;
+                return null;
+            });
 
         GameObject cameraSection = addSection("Camera", panel);
         GameObject fov = addSliderOption("FOV", cameraSection, 50, 150);
@@ -73,7 +98,6 @@ public class SettingsMenu : MonoBehaviour {
 
         pack(panel);
     }
-
     // Creates a basic ui object with a rect transform and a canvas renderer
     private GameObject createBaseUIObject(string objectName = "Unnamed", GameObject parent = null)
     {
@@ -153,7 +177,7 @@ public class SettingsMenu : MonoBehaviour {
         return interactiveElement;
     }
 
-    private GameObject addTextOption(string optionName, GameObject parent, string placeholderText = "") {
+    private GameObject addTextOption(string optionName, GameObject parent, string placeholderText = "", Func<object> func = null) {
         GameObject option = addBasicOption(optionName, parent);
         option.AddComponent<Image>();
         InputField inf = option.AddComponent<InputField>();
@@ -188,13 +212,14 @@ public class SettingsMenu : MonoBehaviour {
         inf.placeholder = placeholder.GetComponent<Text>();
 
 
-        inputFields.Add(optionName, inf);
+        _inputFields.Add(optionName, inf);
+        _settingExcecutions.Add(optionName, func);
 
         return option;
     }
 
     // TODO: Actually do something with min and max value
-    private GameObject addSliderOption(string optionName, GameObject parent, int minval, int maxval) {
+    private GameObject addSliderOption(string optionName, GameObject parent, int minval, int maxval, Func<object> func = null) {
         GameObject option = addBasicOption(optionName, parent);
         Slider slider = option.AddComponent<Slider>();
 
@@ -218,13 +243,14 @@ public class SettingsMenu : MonoBehaviour {
         slider.handleRect = handle.GetComponent<RectTransform>();
 
 
-        sliders.Add(optionName, slider);
+        _sliders.Add(optionName, slider);
+        _settingExcecutions.Add(optionName, func);
 
         return option;
     }
 
 
-    private GameObject addDropdownOption(string optionName, GameObject parent, string[] elements) {
+    private GameObject addDropdownOption(string optionName, GameObject parent, string[] elements, Func<object> func = null) {
         GameObject option = addBasicOption(optionName, parent);
         option.AddComponent<Image>();
         Dropdown dropdown = option.AddComponent<Dropdown>();
@@ -291,7 +317,8 @@ public class SettingsMenu : MonoBehaviour {
         dropdown.itemText = itemLabelText;
 
 
-        dropdowns.Add(optionName, dropdown);
+        _dropdowns.Add(optionName, dropdown);
+        _settingExcecutions.Add(optionName, func);
 
         return option;
     }

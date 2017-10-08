@@ -32,17 +32,18 @@ public class SettingsMenu : MonoBehaviour {
         GameObject textoptionTest2 = addTextOption("option1.2", testSection, "placeholder text");
 
 
-
         GameObject soundSection = addSection("Sound", panel);
         GameObject masterVolume = addSliderOption("Master Volume", soundSection, 0, 100);
         GameObject musicVolume = addSliderOption("Music Volume", soundSection, 0, 100);
 
+
+        GameObject videoSettings = addSection("Video", panel);
+        GameObject resolution = addDropdownOption("Resolution", videoSettings, new string[]{"1920x1080","1280x720", "1024x768"});
+
+        
         //GameObject cameraSection = addSection("Camera", panel);
         //GameObject fov = addSliderOption("FOV", cameraSection, 50, 150);
         //GameObject mouseSensitivity = addSliderOption("Mouse Sensitivity", cameraSection, 0, 100);
-
-        //GameObject videoSettings = addSection("Video", panel);
-        //GameObject resolution = addDropdownOption("Resolution", panel, new string[]{"1920x1080","1280x720"});
 
 
         // Add save and cancel button
@@ -124,7 +125,6 @@ public class SettingsMenu : MonoBehaviour {
         return interactiveElement;
     }
 
-
     private GameObject addTextOption(string optionName, GameObject parent, string placeholderText = "") {
         GameObject option = addBasicOption(optionName, parent);
         option.AddComponent<Image>();
@@ -163,6 +163,7 @@ public class SettingsMenu : MonoBehaviour {
         return option;
     }
 
+    // TODO: Actually do something with min and max value
     private GameObject addSliderOption(string optionName, GameObject parent, int minval, int maxval) {
         GameObject option = addBasicOption(optionName, parent);
         Slider slider = option.AddComponent<Slider>();
@@ -192,14 +193,72 @@ public class SettingsMenu : MonoBehaviour {
 
     private GameObject addDropdownOption(string optionName, GameObject parent, string[] elements) {
         GameObject option = addBasicOption(optionName, parent);
+        option.AddComponent<Image>();
+        Dropdown dropdown = option.AddComponent<Dropdown>();
+        foreach(string element in elements)
+            dropdown.options.Add(new Dropdown.OptionData(element));
 
-        return option;
-    }
 
-    private GameObject addToggleOption(string optionName, GameObject parent) {
-        GameObject option = addBasicOption(optionName, parent);
+        GameObject label = createBaseUIObject("Label: " + optionName, option);
+        Text labelText = label.AddComponent<Text>();
+        labelText.text = "";
+        labelText.font = settingsFont;
+        labelText.color = new Color(0, 0, 0);
+        RectTransform rt = label.GetComponent<RectTransform>();
 
-        return option;
+
+        GameObject arrow = createBaseUIObject("Arrow: " + optionName, option);
+        arrow.AddComponent<Image>().color = new Color(.5f, .5f, .5f);
+        rt = arrow.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(1, 0);
+        rt.offsetMin = new Vector2(-20, 0);
+
+        GameObject template = createBaseUIObject("Template", option);
+        template.AddComponent<Image>();
+        ScrollRect templateSR = template.AddComponent<ScrollRect>();
+        rt = template.GetComponent<RectTransform>();
+        rt.anchorMax = new Vector2(1, 0);
+        rt.offsetMin = new Vector2(0, -20 * elements.Length);
+        template.SetActive(false);
+
+
+        GameObject viewport = createBaseUIObject("Viewport", template);
+        viewport.AddComponent<Mask>();
+        viewport.AddComponent<Image>();
+
+        GameObject content = createBaseUIObject("Content", viewport);
+        rt = content.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0, 1);
+        rt.offsetMin = new Vector2(0, -20);
+
+        GameObject item = createBaseUIObject("Item", content);
+        Toggle itemToggle = item.AddComponent<Toggle>();
+
+        GameObject itemBackground = createBaseUIObject("Item Background", item);
+        itemBackground.AddComponent<Image>();
+
+        GameObject itemHighlight = createBaseUIObject("Item Highlight", item);
+        itemHighlight.AddComponent<Image>();
+
+        GameObject itemLabel = createBaseUIObject("Item Label", item);
+        Text itemLabelText = itemLabel.AddComponent<Text>();
+        itemLabelText.font = settingsFont;
+        itemLabelText.color = new Color(0, 0, 0);
+
+        itemToggle.targetGraphic = itemBackground.GetComponent<Image>();
+        itemToggle.graphic = itemHighlight.GetComponent<Image>();
+
+        templateSR.content = content.GetComponent<RectTransform>();
+        templateSR.viewport = viewport.GetComponent<RectTransform>();
+
+
+        dropdown.captionText = label.GetComponent<Text>();
+        dropdown.targetGraphic = dropdown.GetComponent<Image>();
+        dropdown.template = template.GetComponent<RectTransform>();
+        dropdown.itemText = itemLabelText;
+
+
+        ; return option;
     }
 
 

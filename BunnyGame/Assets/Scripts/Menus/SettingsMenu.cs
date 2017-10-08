@@ -31,21 +31,11 @@ public class SettingsMenu : MonoBehaviour {
         GameObject textoptionTest = addTextOption("option1.1", testSection, "placeholder text");
         GameObject textoptionTest2 = addTextOption("option1.2", testSection, "placeholder text");
 
-        GameObject section2 = addSection("Section 2", panel);
-        GameObject textoptionTest3 = addTextOption("option2.1", section2, "placeholder text");
-
-        GameObject section3 = addSection("Section 3", panel);
-        GameObject textoptionTest4 = addTextOption("option3.1", section3, "placeholder text");
 
 
-
-
-        //GameObject nameSection = addSection("Default name", panel);
-        //GameObject customDefaultName = addTextOption("", nameSection);
-
-        //GameObject soundSection = addSection("Sound", panel);
-        //GameObject masterVolume = addSliderOption("Master Volume", soundSection, 0, 100);
-        //GameObject musicVolume = addSliderOption("Music Volume", soundSection, 0, 100);
+        GameObject soundSection = addSection("Sound", panel);
+        GameObject masterVolume = addSliderOption("Master Volume", soundSection, 0, 100);
+        GameObject musicVolume = addSliderOption("Music Volume", soundSection, 0, 100);
 
         //GameObject cameraSection = addSection("Camera", panel);
         //GameObject fov = addSliderOption("FOV", cameraSection, 50, 150);
@@ -91,15 +81,18 @@ public class SettingsMenu : MonoBehaviour {
         
 
         GameObject sectionTitle = createBaseUIObject("Section title: " + title, sectionPanel);
-        sectionTitle.AddComponent<Text>().text = title;
-        sectionTitle.GetComponent<Text>().font = this.settingsFont;
+        Text titleText = sectionTitle.AddComponent<Text>();
+        titleText.text = title;
+        titleText.font = this.settingsFont;
+        titleText.fontSize = 25;
+        titleText.fontStyle = FontStyle.Bold;
+        titleText.alignment = TextAnchor.MiddleCenter;
 
         rt = sectionTitle.GetComponent<RectTransform>();
         rt.anchorMin = new Vector2(0, 1);
         rt.anchorMax = new Vector2(1, 1);
         rt.offsetMin = new Vector2(0, optionHeight);
         rt.offsetMax = new Vector2(0, 0);
-        // Set title font size, color, positioning, etc...
 
 
         return sectionPanel;
@@ -108,31 +101,25 @@ public class SettingsMenu : MonoBehaviour {
     private GameObject addBasicOption(string text, GameObject parent) {
         GameObject option = createBaseUIObject("Option panel: " + text, parent);
         RectTransform rt = option.GetComponent<RectTransform>();
-        // Set up size, position, etc...
         rt.anchorMin = new Vector2(0, 1);
         rt.offsetMin = new Vector2(0, optionHeight * parent.transform.childCount);
         rt.offsetMax = new Vector2(0, optionHeight * (parent.transform.childCount - 1));
-
-
 
         GameObject optionText = createBaseUIObject("Option Text: " + text, option);
         Text textComponent = optionText.AddComponent<Text>();
         textComponent.text = text;
         textComponent.font = settingsFont;
-
         rt = optionText.GetComponent<RectTransform>();
         rt.anchorMin = new Vector2(0, 0);
         rt.anchorMax = new Vector2(0.5f, 1);
         rt.offsetMin = new Vector2(5, 5);
         rt.offsetMax = new Vector2(-5, -5);
 
-        // Set up size, position, font size, font color, etc...
-
         GameObject interactiveElement = createBaseUIObject("Option: " + text, option);
-        // Set up size and position etc...
-
         rt = interactiveElement.GetComponent<RectTransform>();
         rt.anchorMin = new Vector2(0.5f, 0);
+        rt.offsetMax = new Vector2(-15, -15);
+        rt.offsetMin = new Vector2(15, 15);
 
         return interactiveElement;
     }
@@ -149,10 +136,11 @@ public class SettingsMenu : MonoBehaviour {
         Text textComponent = text.AddComponent<Text>();
         textComponent.font = settingsFont;
         textComponent.color = new Color(0,0,0);
+        textComponent.alignment = TextAnchor.MiddleLeft;
 
         RectTransform rt = text.GetComponent<RectTransform>();
-        rt.offsetMin = new Vector2(5, 5);
-        rt.offsetMax = new Vector2(-5, -5);
+        rt.offsetMin = new Vector2(5, 0);
+        rt.offsetMax = new Vector2(-5, 0);
 
 
         GameObject placeholder = createBaseUIObject("Placeholder: " + optionName, option);
@@ -161,11 +149,11 @@ public class SettingsMenu : MonoBehaviour {
         placeholderTextComponent.text = placeholderText;
         placeholderTextComponent.fontStyle = FontStyle.Italic;
         placeholderTextComponent.color = new Color(.5f, .5f, .5f);
+        placeholderTextComponent.alignment = TextAnchor.MiddleLeft;
 
         rt = placeholder.GetComponent<RectTransform>();
-        rt.offsetMin = new Vector2(5, 5);
-        rt.offsetMax = new Vector2(-5, -5);
-
+        rt.offsetMin = new Vector2(5, 0);
+        rt.offsetMax = new Vector2(-5, 0);
 
 
         inf.textComponent = text.GetComponent<Text>();
@@ -175,18 +163,38 @@ public class SettingsMenu : MonoBehaviour {
         return option;
     }
 
+    private GameObject addSliderOption(string optionName, GameObject parent, int minval, int maxval) {
+        GameObject option = addBasicOption(optionName, parent);
+        Slider slider = option.AddComponent<Slider>();
+
+        GameObject background = createBaseUIObject("Background: " + optionName, option);
+        background.AddComponent<Image>();
+
+        GameObject fillArea = createBaseUIObject("Fill Area: " + optionName, option);
+        GameObject fill = createBaseUIObject("Fill: " + optionName, fillArea);
+        fill.AddComponent<Image>();
+
+        GameObject handleSlideArea = createBaseUIObject("Handle Slide Area: " + optionName, option);
+        GameObject handle = createBaseUIObject("Handle: " + optionName, handleSlideArea);
+        handle.AddComponent<Image>().color = new Color(1, 0.5f, 0.5f);
+        RectTransform rt = handle.GetComponent<RectTransform>();
+        rt.offsetMax = new Vector2(5, 0);
+        rt.offsetMin = new Vector2(-5, 0);
+
+
+        slider.targetGraphic = handle.GetComponent<Image>();
+        slider.fillRect = fill.GetComponent<RectTransform>();
+        slider.handleRect = handle.GetComponent<RectTransform>();
+
+        return option;
+    }
+
+
     private GameObject addDropdownOption(string optionName, GameObject parent, string[] elements) {
         GameObject option = addBasicOption(optionName, parent);
 
         return option;
     }
-
-    private GameObject addSliderOption(string optionName, GameObject parent, int minval, int maxval) {
-        GameObject option = addBasicOption(optionName, parent);
-
-        return option;
-    }
-
 
     private GameObject addToggleOption(string optionName, GameObject parent) {
         GameObject option = addBasicOption(optionName, parent);

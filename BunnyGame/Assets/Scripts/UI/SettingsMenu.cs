@@ -5,22 +5,13 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-/**
- * TODO: Refactor code.
- * Parts of this code doesn't really belong in the SettingsMenu class, but should
- * instead be moved to some class specifically for UI generation
- * 
- * (This includes the createBaseUIObject as well as parts of the add[thing]Option functions, as that is code that could be reused)
- * /
-
-
 /*
  * Generates and manages the setting menu.
  * To add new settings and/or sections, add these in the generateMenu() function.
  */
 public class SettingsMenu : MonoBehaviour {
 
-    public Font font;
+    public Font settingsFont;
 
     private int optionHeight = -50; // value must be negative, as we are working downwards instead of upwards, which unity ui does
 
@@ -161,7 +152,7 @@ public class SettingsMenu : MonoBehaviour {
     }
 
     // Creates a basic ui object with a rect transform and a canvas renderer
-    public static GameObject createBaseUIObject(string objectName = "Unnamed", GameObject parent = null)
+    private GameObject createBaseUIObject(string objectName = "Unnamed", GameObject parent = null)
     {
         GameObject uiObject = new GameObject();
         uiObject.AddComponent<RectTransform>();
@@ -194,7 +185,7 @@ public class SettingsMenu : MonoBehaviour {
         GameObject sectionTitle = createBaseUIObject("Section title: " + title, sectionPanel);
         Text titleText = sectionTitle.AddComponent<Text>();
         titleText.text = title;
-        titleText.font = font;
+        titleText.font = this.settingsFont;
         titleText.fontSize = 25;
         titleText.fontStyle = FontStyle.Bold;
         titleText.alignment = TextAnchor.MiddleCenter;
@@ -225,7 +216,7 @@ public class SettingsMenu : MonoBehaviour {
         GameObject optionText = createBaseUIObject("Option Text: " + text, option);
         Text textComponent = optionText.AddComponent<Text>();
         textComponent.text = text;
-        textComponent.font = font;
+        textComponent.font = settingsFont;
         textComponent.fontSize = 18;
         textComponent.alignment = TextAnchor.MiddleLeft;
         rt = optionText.GetComponent<RectTransform>();
@@ -253,7 +244,7 @@ public class SettingsMenu : MonoBehaviour {
 
         GameObject text = createBaseUIObject("Text: " + optionName, option);
         Text textComponent = text.AddComponent<Text>();
-        textComponent.font = font;
+        textComponent.font = settingsFont;
         textComponent.color = new Color(0,0,0);
         textComponent.alignment = TextAnchor.MiddleLeft;
 
@@ -264,7 +255,7 @@ public class SettingsMenu : MonoBehaviour {
 
         GameObject placeholder = createBaseUIObject("Placeholder: " + optionName, option);
         Text placeholderTextComponent = placeholder.AddComponent<Text>();
-        placeholderTextComponent.font = font;
+        placeholderTextComponent.font = settingsFont;
         placeholderTextComponent.text = placeholderText;
         placeholderTextComponent.fontStyle = FontStyle.Italic;
         placeholderTextComponent.color = new Color(.5f, .5f, .5f);
@@ -313,7 +304,7 @@ public class SettingsMenu : MonoBehaviour {
         foreach (GameObject obj in new GameObject[] { minvalText, maxvalText, currentvalText }) {
             Text text = obj.AddComponent<Text>();
             text.color = new Color(1, 1, 1);
-            text.font = font;
+            text.font = settingsFont;
             rt = obj.GetComponent<RectTransform>();
             rt.anchorMin = new Vector2(0, 1);
             rt.offsetMax = new Vector2(0, 20);
@@ -350,7 +341,7 @@ public class SettingsMenu : MonoBehaviour {
         GameObject label = createBaseUIObject("Label: " + optionName, option);
         Text labelText = label.AddComponent<Text>();
         labelText.text = "";
-        labelText.font = font;
+        labelText.font = settingsFont;
         labelText.color = new Color(0, 0, 0);
         RectTransform rt = label.GetComponent<RectTransform>();
 
@@ -394,7 +385,7 @@ public class SettingsMenu : MonoBehaviour {
 
         GameObject itemLabel = createBaseUIObject("Item Label", item);
         Text itemLabelText = itemLabel.AddComponent<Text>();
-        itemLabelText.font = font;
+        itemLabelText.font = settingsFont;
         itemLabelText.color = new Color(0, 0, 0);
 
         itemToggle.targetGraphic = itemBackground.GetComponent<Image>();

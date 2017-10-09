@@ -55,9 +55,9 @@ Shader "Custom/Water" {
 				float3 modifiedVertex = v.vertex + float3(0, 0, 1) * noise(samplePos)*_Wavyness;
 				//Usefull data
 				o.pos = UnityObjectToClipPos(modifiedVertex);
-				o.eyeNormal =normalize( UnityObjectToViewPos(v.normal));
+				o.eyeNormal = normalize(UnityObjectToViewPos(v.normal));
 				o.posEye = UnityObjectToViewPos(modifiedVertex);
-				float3 lightDirEye = normalize(_WorldSpaceLightPos0); //It's a directional light
+				o.lightDirEye = normalize(_WorldSpaceLightPos0); //It's a directional light
 				float3 worldPos = mul(unity_ObjectToWorld, v.vertex);
 				float3 worldViewDir = normalize(UnityWorldSpaceViewDir(worldPos));
 				float3 wNormal = UnityObjectToWorldNormal(v.normal);
@@ -83,14 +83,13 @@ Shader "Custom/Water" {
 				float3 eyeReflection = reflect(i.lightDirEye, i.eyeNormal);
 				float3 posToViewer = normalize(-i.posEye);
 				float dotSpecular = saturate(dot(eyeReflection, posToViewer));
-				float3 specular = pow((dotSpecular), 20) *_LightColor0;
+				float3 specular = pow((dotSpecular), 10) *_LightColor0;
 				fixed3 light = (i.diff*2 + specular) * shadow + i.ambient*2;
 				//fixed3 light = specular;
 				//Combine into final color
 				fixed4 c = _Col;
 				c.rgb = skyColor;
 				c.rbg *= light;
-				//c.rbg = i.eyeNormal;
 				return c;
 			}
 			ENDCG

@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class PlayerHealth : NetworkBehaviour {
@@ -209,6 +210,28 @@ public class PlayerHealth : NetworkBehaviour {
             this.showWinScreen(message);
         else
             this.showDeathScreen(message);
+
+        StartCoroutine(gameOverTimer(10));
+    }
+
+    // Shows a contdown until you are automatically moved out of the server
+    private IEnumerator gameOverTimer(float time) {
+        GameObject timeDisplay = SettingsMenu.createBaseUIObject("Time Remaining", GameObject.Find("ConstantSizeCanvas"));
+        Text displayText = timeDisplay.AddComponent<Text>();
+        displayText.font = GameObject.Find("SettingsMenu").GetComponent<SettingsMenu>().font; // Because atm this is the only item in the scene I'm aware of having a font set through the scene editor
+        displayText.text = time.ToString();
+        displayText.color = new Color(0, 0, 0);
+        displayText.fontSize = 40;
+        //RectTransform rt = timeDisplay.GetComponent<RectTransform>();
+
+        float timeremaining = time;
+        while (timeremaining > 0 ) {
+            displayText.text = timeremaining.ToString("0");
+            timeremaining -= Time.deltaTime;
+            yield return null;
+        }
+
+        SceneManager.LoadScene("Lobby");
     }
 
     // Show the win screen.

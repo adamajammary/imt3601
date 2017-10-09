@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class PlayerHealth : NetworkBehaviour {
@@ -209,7 +210,10 @@ public class PlayerHealth : NetworkBehaviour {
             this.showWinScreen(message);
         else
             this.showDeathScreen(message);
+
+        StartCoroutine(gameOverTimer(10));
     }
+
 
     // Show the win screen.
     private void showWinScreen(GameOverMessage message) {
@@ -233,6 +237,32 @@ public class PlayerHealth : NetworkBehaviour {
         this._spectateText.color  = new Color(this._spectateText.color.r,  this._spectateText.color.g,  this._spectateText.color.b,  1.0f);
 
         this._spectateButton.onClick.AddListener(this.spectate); // TODO: see spectate method
+    }
+
+
+    // Shows a countdown until you are automatically moved out of the server
+    private IEnumerator gameOverTimer(float time) {
+
+        // Wait until all but one player is dead
+        while (this._playerStats.playersAlive > 1) {
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        string message = "Sending you back to lobby in: ";
+
+        GameObject timeDisplay = GameObject.Find("ConstantSizeCanvas").transform.GetChild(2).gameObject;
+        Text timeDisplayText = timeDisplay.GetComponent<Text>();
+        timeDisplayText.text = message + time.ToString("0");
+        timeDisplay.SetActive(true);
+
+        float timeremaining = time;
+        while (timeremaining > 0) {
+            timeDisplayText.text = message + timeremaining.ToString("0");
+            timeremaining -= Time.deltaTime;
+            yield return null;
+        }
+
+        SceneManager.LoadScene("Lobby"); // Not sure if anything else should be done before leaving the scene?
     }
 
     //

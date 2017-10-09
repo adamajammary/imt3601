@@ -32,32 +32,36 @@
 			uniform float4 _Col;
 			uniform float _NoiseSeed;
 			
-			v2f vert (appdata_base v)
-			{
+			v2f vert (appdata_base v) {
 				v2f o;
+				//Vertex manipulation for the wobbly effect
 				float3 samplePos = v.vertex.xyz + _NoiseSeed;
 				samplePos.xyz *= 2.2;
 				o.pos = UnityObjectToClipPos(v.vertex + v.normal * noise(samplePos)*0.6);
+				//Usuefull data
 				half3 worldNormal = UnityObjectToWorldNormal(v.normal);
+				//Light
 				half nl = max(0, dot(worldNormal, _WorldSpaceLightPos0.xyz));
 				o.diff = nl * _LightColor0;
 				o.ambient = ShadeSH9(half4(worldNormal, 1));
-				// compute shadows data
+				//Shadow
 				TRANSFER_SHADOW(o)
 				return o;
 			}
 			
 			fixed4 frag (v2f i) : SV_Target {
-				fixed4 c = _Col;
-				// compute shadow attenuation (1.0 = fully lit, 0.0 = fully shadowed)
+				//shadow
 				fixed shadow = SHADOW_ATTENUATION(i);
+				//light
 				fixed3 light = i.diff * shadow + i.ambient;
+				//Final fragment color
+				fixed4 c = _Col;
 				c.rbg *= light;
 				return c;
 			}
 			ENDCG
 		}
-		// shadow caster rendering pass, implemented manually
+		// shadow caster rendering pass
 		// using macros from UnityCG.cginc
 		Pass {
 			Tags{ "LightMode" = "ShadowCaster" }

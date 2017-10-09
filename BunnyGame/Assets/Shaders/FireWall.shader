@@ -55,13 +55,12 @@
 				float normH = ((i.worldPos.y + 40) / 500); //Normalized height (not perfect)
 				// The thing with (ceil(x - a) - ceil(x - b)) is that it returns 1 when a < x < b for 0 < x < 1.
 				// This makes it so that i wont need if statements, which are a bad idea on the GPU.
-				fixed4 col = 
-					black * (ceil(normH + n1 - 0.0f) - ceil(normH + n1 - 0.2))
-					+ red * (ceil(normH + n1 - 0.2) - ceil(normH + n1 - 0.5))
-					+ orange * (ceil(normH + n1 - 0.5) - ceil(normH + n1 - 0.8))
-					+ gray * (ceil(normH + n1 - 0.8) - ceil(normH + n1 - 0.85))
-					+ white * (ceil(normH + n1 - 0.85) - ceil(normH + n1 - 0.9));
-					+ none * (ceil(normH + n1 - 0.9) - ceil(normH + n1 - 1.0));
+				fixed4 col =
+					black * (ceil(normH + n1 - 0.0f) - ceil(normH + n1 - 0.1))
+					+ red * (ceil(normH + n1 - 0.1) - ceil(normH + n1 - 0.4))
+					+ orange * (ceil(normH + n1 - 0.4) - ceil(normH + n1 - 0.7))
+					+ gray * (ceil(normH + n1 - 0.7) - ceil(normH + n1 - 0.9))
+					+ white * (ceil(normH + n1 - 0.9) - ceil(normH + n1 - 1.0));
 				return col;
 			}
 			ENDCG

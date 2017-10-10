@@ -58,7 +58,7 @@ public class GrenadePoopProjectile : NetworkBehaviour {
             if (hit[i].tag == "npc") {
                 hit[i].GetComponent<NPC>().kill(this.owner, this.ConnectionID);
             } else if (hit[i].tag == "Player" && hit[i].isTrigger && hit[i].gameObject != owner) {                   
-                hit[i].gameObject.GetComponent<PlayerEffects>().OnPoopGrenade(_damage, ConnectionID, transform.position);
+                hit[i].gameObject.GetComponent<PlayerEffects>().OnPoopGrenade(owner, _damage, ConnectionID, transform.position);
             }
         }
         this.owner.GetComponent<AbilityNetwork>().CmdPoopExplosion(this.transform.position);

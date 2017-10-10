@@ -102,14 +102,13 @@ public class PlayerController : NetworkBehaviour {
 
         float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
         this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
-        this.currentSpeed *= playerEffects.getSpeed();
 
         this.velocityY += Time.deltaTime * gravity;
 
 		Vector3 moveDir = _cameraTransform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
         moveDir.y = 0;
         
-        Vector3 velocity = moveDir.normalized * currentSpeed + Vector3.up * velocityY;
+        Vector3 velocity = moveDir.normalized * currentSpeed * playerEffects.getSpeed() + Vector3.up * velocityY;
 
 
         this.controller.Move(velocity * Time.deltaTime);

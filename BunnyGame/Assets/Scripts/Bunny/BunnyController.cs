@@ -20,10 +20,11 @@ public class BunnyController : NetworkBehaviour {
         _fireRate = 0.2f;
 
         // Set custom attributes for class:
-        PlayerController playerController = GetComponent<PlayerController>();
-        playerController.jumpHeight = 3;
+        PlayerEffects pe = GetComponent<PlayerEffects>();
+        pe.setAttributes(1.0f, 1.0f, 1.0f, 1.5f);
 
         // Add abilities to class:
+        PlayerController playerController = GetComponent<PlayerController>();
         SuperJump sj = gameObject.AddComponent<SuperJump>();
         sj.init(10);
         GrenadePoop gp = gameObject.AddComponent<GrenadePoop>();

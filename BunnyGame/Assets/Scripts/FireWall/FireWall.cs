@@ -41,7 +41,7 @@ public class FireWall : NetworkBehaviour {
         }
     }
 
-    private const float _noiseSpeed = -40.25f;   //The rate at which the seed changes for perlin   
+    private const float _noiseSpeed     = -40.25f;   //The rate at which the seed changes for perlin   
     private const float _wallShrinkTime = 45.0f;//Time in seconds between _wall shrinking
     private const float _wallShrinkRate = 0.04f; //The rate at which the wall shrinks
 

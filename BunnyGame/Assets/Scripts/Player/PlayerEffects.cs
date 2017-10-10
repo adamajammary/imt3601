@@ -9,6 +9,7 @@ public class PlayerEffects : NetworkBehaviour {
     [SyncVar] private float     _toughness;
     [SyncVar] private float     _damage;
     [SyncVar] private float     _speed;
+    [SyncVar] private float     _jump;
 
     private GameObject          _blood;
     private PlayerController    _pc;
@@ -25,40 +26,40 @@ public class PlayerEffects : NetworkBehaviour {
     // Use this for initialization
     void Start () {
         this.insideWall = true;
-        this._pc = GetComponent<PlayerController>();
-        this._cc = GetComponent<CharacterController>();
-        this._blood = Resources.Load<GameObject>("Prefabs/Blood");
-
-        this._health = this.GetComponent<PlayerHealth>();
+        this._pc        = GetComponent<PlayerController>();
+        this._cc        = GetComponent<CharacterController>();
+        this._blood     = Resources.Load<GameObject>("Prefabs/Blood");
+        this._health    = this.GetComponent<PlayerHealth>();
     }
 	
 	// Update is called once per frame
 	void Update () {
         if (!this.isLocalPlayer) return;
-        if (!this.insideWall) // Feels hacky, but when TakeDamage only works on the server its got to be this way
-            wallDamage();
-
+        if (!this.insideWall) wallDamage();
         handleFallDamage();
     }
     
     //=========Attrbutes=====================================================================================================================
-    public void setAttributes(float t, float d, float s) { // Used when spawning players
+    public void setAttributes(float t, float d, float s, float j) { // Used when spawning players
         this._toughness = t;
-        this._damage = d;
-        this._speed = s;
+        this._damage    = d;
+        this._speed     = s;
+        this._jump      = j;
     }
 
-    public void addToughness(float amount) { this._toughness += amount; } //Used when getting dealt damage (multiplier)
-    public void addDamage(float amount) { this._damage += amount; } //Used when dealing damage (multiplier)
-    public void addSpeed(float amount) { this._speed += amount; } //Used when moving (multiplier)
+    public void addToughness(float amount)  { this._toughness += amount; } 
+    public void addDamage(float amount)     { this._damage += amount; }     
+    public void addSpeed(float amount)      { this._speed += amount; }  
+    public void addJump(float amount)       { this._jump += amount; }    
 
-    public float getToughness() { return this._toughness; }
-    public float getDamage() { return this._damage; }
-    public float getSpeed() { return this._speed; }
+    public float getToughness() { return this._toughness; } //Used when getting dealt damage (multiplier)
+    public float getDamage()    { return this._damage; }    //Used when dealing damage (multiplier)
+    public float getSpeed()     { return this._speed; }     //Used when moving (multiplier)
+    public float getJump()      { return this._jump; }
 
     //=========Poop Grenade==================================================================================================================
-    public void OnPoopGrenade(int damage, int id, Vector3 impact) {
-        this._health.TakeDamage(damage, id);
+    public void OnPoopGrenade(GameObject attacker, int damage, int id, Vector3 impact) {
+        this._health.TakeDamage(calcDamage(attacker, damage), id);
         StartCoroutine(knockBack(impact));
     }
 
@@ -93,20 +94,25 @@ public class PlayerEffects : NetworkBehaviour {
 
             if ((this._health != null) && (foxScript != null) && !this._health.IsDead()) {
                 this.CmdBloodParticle(foxScript.biteImpact());
-                this._health.TakeDamage(foxScript.GetDamage(), otherInfo.ConnectionID);
+                this._health.TakeDamage(calcDamage(other.transform.parent.gameObject, foxScript.GetDamage()), otherInfo.ConnectionID);
             }
         } else if (other.gameObject.tag == "projectile") {
             BunnyPoop poopScript = other.gameObject.GetComponent<BunnyPoop>();
             PlayerInformation otherInfo = poopScript.owner.GetComponent<PlayerInformation>();
             if ((this._health != null) && (poopScript != null) && !this._health.IsDead()) {
                 this.CmdBloodParticle(other.gameObject.transform.position);
-                this._health.TakeDamage(poopScript.GetDamage(), otherInfo.ConnectionID);
+                this._health.TakeDamage(calcDamage(poopScript.owner, poopScript.GetDamage()), otherInfo.ConnectionID);
             }
 
             Destroy(other.gameObject);
         } else if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
         }
+    }
+
+    private float calcDamage(GameObject attacker, float damage) { // Use this to get attribute adjusted damage
+        float damageMult = attacker.GetComponent<PlayerEffects>().getDamage();
+        return damage * damageMult * this._toughness;
     }
 
     private void wallDamage() {

@@ -29,10 +29,11 @@ public class FoxController : NetworkBehaviour {
             return;
 
         // Set custom attributes for class:
-        PlayerController playerController = GetComponent<PlayerController>();
-        playerController.runSpeed = 15;
+        PlayerEffects pe = GetComponent<PlayerEffects>();
+        pe.setAttributes(1.2f, 1.2f, 1.2f, 3.0f);
 
         // Add abilities to class:
+        PlayerController playerController = GetComponent<PlayerController>();
         Sprint sp = gameObject.AddComponent<Sprint>();
         sp.init(50, 1);
         playerController.abilities.Add(sp);

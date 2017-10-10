@@ -27,6 +27,7 @@ public class PlayerController : NetworkBehaviour {
     private Transform _cameraTransform;
     public CharacterController controller;
     private EscMenu escButtonPress;
+    private PlayerEffects playerEffects;
 
     bool lockCursor = true;
     bool escMenu = false;
@@ -42,6 +43,7 @@ public class PlayerController : NetworkBehaviour {
         this.escButtonPress = FindObjectOfType<EscMenu>();
         this._cameraTransform = Camera.main.transform;
         this.controller = this.GetComponent<CharacterController>();
+        this.playerEffects = GetComponent<PlayerEffects>();
 
         this.airControlPercent = 1;
 	}
@@ -100,6 +102,7 @@ public class PlayerController : NetworkBehaviour {
 
         float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
         this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
+        this.currentSpeed *= playerEffects.getSpeed();
 
         this.velocityY += Time.deltaTime * gravity;
 
@@ -117,7 +120,7 @@ public class PlayerController : NetworkBehaviour {
 
     public void jump() {
         if (controller.isGrounded) {
-            float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight); 
+            float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight * this.playerEffects.getJump()); 
             this.velocityY = jumpVelocity;
         }
     }

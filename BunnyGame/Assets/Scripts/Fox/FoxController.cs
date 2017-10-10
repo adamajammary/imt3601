@@ -30,7 +30,7 @@ public class FoxController : NetworkBehaviour {
 
         // Set custom attributes for class:
         PlayerEffects pe = GetComponent<PlayerEffects>();
-        pe.setAttributes(1.2f, 1.2f, 1.2f, 0.8f);
+        pe.CmdSetAttributes(1.2f, 1.2f, 1.2f, 0.8f);
 
         // Add abilities to class:
         PlayerController playerController = GetComponent<PlayerController>();

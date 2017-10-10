@@ -16,14 +16,23 @@ public class AttributeUI : MonoBehaviour {
         d       = GameObject.Find("damageBar").GetComponent<RectTransform>();
         s       = GameObject.Find("speedBar").GetComponent<RectTransform>();
         j       = GameObject.Find("jumpBar").GetComponent<RectTransform>();
-        player  = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerEffects>();
+        player = null;
     }
 	
 	// Update is called once per frame
 	void Update () {
-		t.sizeDelta = new Vector2(20, player.getToughness() * 100);
-        d.sizeDelta = new Vector2(20, player.getDamage() * 100);
-        s.sizeDelta = new Vector2(20, player.getSpeed() * 100);
-        j.sizeDelta = new Vector2(20, player.getJump() * 100);
+        if (player == null)
+            tryGetPlayer();
+        else {
+            t.sizeDelta = new Vector2(20, player.getToughness() * 100);
+            d.sizeDelta = new Vector2(20, player.getDamage() * 100);
+            s.sizeDelta = new Vector2(20, player.getSpeed() * 100);
+            j.sizeDelta = new Vector2(20, player.getJump() * 100);
+        }
+    }
+
+    void tryGetPlayer() { //Due to networking, this is needed because this gameobject will spawn before the player
+        GameObject obj = GameObject.FindGameObjectWithTag("Player");
+        if (obj != null) player = obj.GetComponent<PlayerEffects>();
     }
 }

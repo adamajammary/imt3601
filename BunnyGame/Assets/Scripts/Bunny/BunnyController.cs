@@ -21,7 +21,7 @@ public class BunnyController : NetworkBehaviour {
 
         // Set custom attributes for class:
         PlayerEffects pe = GetComponent<PlayerEffects>();
-        pe.setAttributes(1.0f, 1.0f, 1.0f, 1.5f);
+        pe.CmdSetAttributes(1.0f, 1.0f, 1.0f, 1.5f);
 
         // Add abilities to class:
         PlayerController playerController = GetComponent<PlayerController>();

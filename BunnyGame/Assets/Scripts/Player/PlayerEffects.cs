@@ -8,8 +8,8 @@ public class PlayerEffects : NetworkBehaviour {
 
     [SyncVar] private float     _toughness;
     [SyncVar] private float     _damage;
-    [SyncVar] private float     _speed;
-    [SyncVar] private float     _jump;
+    [SyncVar] private float _speed;
+    [SyncVar] private float _jump;
 
     private GameObject          _blood;
     private PlayerController    _pc;
@@ -20,8 +20,6 @@ public class PlayerEffects : NetworkBehaviour {
     private int                 _fallDamage = 40;
     private bool                _dealFallDamageOnCollision = false;
     private bool                _fallDamageImmune = false;
-
-    private bool                _hitByPoopGrenade = false;
 
     // Use this for initialization
     void Start () {
@@ -38,25 +36,32 @@ public class PlayerEffects : NetworkBehaviour {
         if (!this.insideWall) wallDamage();
         handleFallDamage();
     }
-    
+
     //=========Attrbutes=====================================================================================================================
-    public void setAttributes(float t, float d, float s, float j) { // Used when spawning players
+    [Command]
+    public void CmdSetAttributes(float t, float d, float s, float j) { // Used when spawning players
         this._toughness = t;
         this._damage    = d;
         this._speed     = s;
         this._jump      = j;
     }
 
-    public void addToughness(float amount)  { this._toughness += amount; } 
-    public void addDamage(float amount)     { this._damage += amount; }     
-    public void addSpeed(float amount)      { this._speed += amount; }  
-    public void addJump(float amount)       { this._jump += amount; }    
+    [Command] public void CmdAddToughness(float amount)  { this._toughness += amount; }
+    [Command] public void CmdAddDamage(float amount)     { this._damage += amount; }
+    [Command] public void CmdAddSpeed(float amount)      { this._speed += amount; }
+    [Command] public void CmdAddJump(float amount)       { this._jump += amount; }    
 
     public float getToughness() { return this._toughness; } //Used when getting dealt damage (multiplier)
     public float getDamage()    { return this._damage; }    //Used when dealing damage (multiplier)
     public float getSpeed()     { return this._speed; }     //Used when moving (multiplier)
-    public float getJump()      { return this._jump; }
+    public float getJump()      { return this._jump; }      //Used when jumping (multiplier)
 
+    private float calcDamage(GameObject attacker, float damage) { // Use this to get attribute adjusted damage
+        float damageMult = attacker.GetComponent<PlayerEffects>().getDamage();
+        Debug.Log("Damage: " + damage + "DamageMult: " + damageMult + "Toughness: " + this._toughness);
+        Debug.Log("Final damage: " + damage * damageMult / this._toughness);
+        return damage * damageMult / this._toughness;
+    }
     //=========Poop Grenade==================================================================================================================
     public void OnPoopGrenade(GameObject attacker, int damage, int id, Vector3 impact) {
         this._health.TakeDamage(calcDamage(attacker, damage), id);
@@ -65,7 +70,7 @@ public class PlayerEffects : NetworkBehaviour {
 
     public IEnumerator knockBack(Vector3 impact) {
         Vector3 dir = transform.position - impact;
-        float force = 10.0f;
+        float force = 20.0f;
         dir.Normalize();
         if (dir.y <= 0.2f) dir.y = 0.2f;
         dir.Normalize();
@@ -110,10 +115,7 @@ public class PlayerEffects : NetworkBehaviour {
         }
     }
 
-    private float calcDamage(GameObject attacker, float damage) { // Use this to get attribute adjusted damage
-        float damageMult = attacker.GetComponent<PlayerEffects>().getDamage();
-        return damage * damageMult * this._toughness;
-    }
+    
 
     private void wallDamage() {
         this.GetComponent<PlayerHealth>().TakeDamage(10 * Time.deltaTime, -1);

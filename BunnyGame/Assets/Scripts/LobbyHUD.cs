@@ -78,15 +78,18 @@ public class LobbyHUD : MonoBehaviour {
     
     // Create a server using the user-set parameters
     public void onCreateServer() {
+        this._serverCreationPanel.SetActive(false);
+        this._lobbyPanel.SetActive(true);
+
         if (this._localhost) {
             createLocalServer();
             return;
         }
         // Create a matchmaking server using the user-set params in the servercreation panel
-        this._serverCreationPanel.SetActive(false);
-        this._lobbyPanel.SetActive(true);
 
-
+        this._manager.StartMatchMaker();
+        this._manager.matchName = _serverCreationPanel.transform.GetChild(0).GetChild(1).GetChild(2).gameObject.GetComponent<Text>().text;
+        this._manager.matchMaker.CreateMatch(this._manager.matchName, this._manager.matchSize, true, "", "", "", 0, 0, this._manager.OnMatchCreate);
     }
 
     public void createLocalServer() {
@@ -97,14 +100,21 @@ public class LobbyHUD : MonoBehaviour {
         // Go back to panel1
         this._panel1.SetActive(true);
         this._serverCreationPanel.SetActive(false);
+        this._manager.StopMatchMaker();
     }
-    
+
     /**
      * Server Find panel
      * 
      **/
 
-    public void onJoinChannel(GameObject obj) {
+    public void onJoinServer()
+    {
+
+    }
+
+    public void onJoinLocalServer()
+    {
 
     }
 

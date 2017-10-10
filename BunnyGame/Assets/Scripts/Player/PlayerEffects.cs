@@ -4,29 +4,30 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class PlayerEffects : NetworkBehaviour {
+    public bool                 insideWall;
 
-    public bool insideWall;
+    [SyncVar] private float     _toughness;
+    [SyncVar] private float     _damage;
+    [SyncVar] private float     _speed;
 
-    private GameObject _blood;
-    private PlayerController _pc;
+    private GameObject          _blood;
+    private PlayerController    _pc;
     private CharacterController _cc;
-    private PlayerHealth _health;
-    private const float _damageRate = 0.25f;    //How often to damage player outside wall
-    private float _damageTimer;                 //Timer used to find out when to damage player   
+    private PlayerHealth        _health;  
 
-    private float _maxFallSpeed = 20; // How fast you can fall before starting to take fall damage
-    private int _fallDamage = 40;
-    private bool _dealFallDamageOnCollision = false;
-    private bool _fallDamageImmune = false;
-    private bool _hitByPoopGrenade = false;
+    private float               _maxFallSpeed = 20; // How fast you can fall before starting to take fall damage
+    private int                 _fallDamage = 40;
+    private bool                _dealFallDamageOnCollision = false;
+    private bool                _fallDamageImmune = false;
+
+    private bool                _hitByPoopGrenade = false;
+
     // Use this for initialization
     void Start () {
         this.insideWall = true;
         this._pc = GetComponent<PlayerController>();
         this._cc = GetComponent<CharacterController>();
         this._blood = Resources.Load<GameObject>("Prefabs/Blood");
-
-        this._damageTimer = 0;
 
         this._health = this.GetComponent<PlayerHealth>();
     }
@@ -40,6 +41,21 @@ public class PlayerEffects : NetworkBehaviour {
         handleFallDamage();
     }
     
+    //=========Attrbutes=====================================================================================================================
+    public void setAttributes(float t, float d, float s) { // Used when spawning players
+        this._toughness = t;
+        this._damage = d;
+        this._speed = s;
+    }
+
+    public void addToughness(float amount) { this._toughness += amount; } //Used when getting dealt damage (multiplier)
+    public void addDamage(float amount) { this._damage += amount; } //Used when dealing damage (multiplier)
+    public void addSpeed(float amount) { this._speed += amount; } //Used when moving (multiplier)
+
+    public float getToughness() { return this._toughness; }
+    public float getDamage() { return this._damage; }
+    public float getSpeed() { return this._speed; }
+
     //=========Poop Grenade==================================================================================================================
     public void OnPoopGrenade(int damage, int id, Vector3 impact) {
         this._health.TakeDamage(damage, id);
@@ -65,8 +81,8 @@ public class PlayerEffects : NetworkBehaviour {
             yield return 0;
         }
     }
-    //========================================================================================================================================
 
+    //=========Other==========================================================================================================================
     private void OnTriggerEnter(Collider other) {
         if (!this.isLocalPlayer)
             return;
@@ -94,11 +110,7 @@ public class PlayerEffects : NetworkBehaviour {
     }
 
     private void wallDamage() {
-        if (this._damageTimer > _damageRate) {
-            this.GetComponent<PlayerHealth>().TakeDamage(1, -1);
-            this._damageTimer = 0;
-        }
-        this._damageTimer += Time.deltaTime;
+        this.GetComponent<PlayerHealth>().TakeDamage(10 * Time.deltaTime, -1);
     }
 
     public void onWaterStay(float waterForce) {

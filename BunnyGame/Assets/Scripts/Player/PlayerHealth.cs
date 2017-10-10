@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class PlayerHealth : NetworkBehaviour {
 
-    private const int     MAX_HEALTH = 100;
+    private const float     MAX_HEALTH = 100;
     private NetworkClient _client;
     private Image         _damageImage;
     private bool          _damageImmune;
@@ -24,7 +24,7 @@ public class PlayerHealth : NetworkBehaviour {
     private PlayerStatsMessage _playerStats = new PlayerStatsMessage();
 
     [SyncVar(hook = "updateDamageScreen")]
-    private int _currentHealth = MAX_HEALTH;
+    private float _currentHealth = MAX_HEALTH;
 
     void Start() {
         if (!this.isLocalPlayer)
@@ -71,7 +71,7 @@ public class PlayerHealth : NetworkBehaviour {
     //
 
     // Take damage when hit, and respawn the player if dead.
-    public void TakeDamage(int amount, int connectionID) {
+    public void TakeDamage(float amount, int connectionID) {
         if (!this.isLocalPlayer || this._damageImmune)
             return;
 
@@ -83,7 +83,7 @@ public class PlayerHealth : NetworkBehaviour {
             this.CmdTakeDamage(amount, connectionID);
     }
 
-    private void takeDamage2(int amount, int connectionID) {
+    private void takeDamage2(float amount, int connectionID) {
         if (this._currentHealth <= 0)
             return;
 
@@ -95,12 +95,12 @@ public class PlayerHealth : NetworkBehaviour {
     }
 
     [ClientRpc]
-    private void RpcTakeDamage(int amount, int connectionID) {
+    private void RpcTakeDamage(float amount, int connectionID) {
         this.takeDamage2(amount, connectionID);
     }
 
     [Command]
-    private void CmdTakeDamage(int amount, int connectionID) {
+    private void CmdTakeDamage(float amount, int connectionID) {
         this.RpcTakeDamage(amount, connectionID);
     }
 
@@ -302,11 +302,11 @@ public class PlayerHealth : NetworkBehaviour {
     }
 
     // Update the health/damage screen overlay.
-    private void updateDamageScreen(int health) {
+    private void updateDamageScreen(float health) {
         if (!this.isLocalPlayer || (this._damageImage == null) || (this._damageImage.color.a >= 1.0f) || (health < 0))
             return;
 
-        float alpha             = (1.0f - (float)health / (float)MAX_HEALTH);
+        float alpha             = (1.0f - health / MAX_HEALTH);
         this._damageImage.color = new Color(this._damageImage.color.r, this._damageImage.color.g, this._damageImage.color.b, alpha);
     }
 }

@@ -27,6 +27,7 @@ public class PlayerController : NetworkBehaviour {
     private Transform _cameraTransform;
     public CharacterController controller;
     private EscMenu escButtonPress;
+    private PlayerEffects playerEffects;
 
     bool lockCursor = true;
     bool escMenu = false;
@@ -42,6 +43,7 @@ public class PlayerController : NetworkBehaviour {
         this.escButtonPress = FindObjectOfType<EscMenu>();
         this._cameraTransform = Camera.main.transform;
         this.controller = this.GetComponent<CharacterController>();
+        this.playerEffects = GetComponent<PlayerEffects>();
 
         this.airControlPercent = 1;
 	}
@@ -106,7 +108,7 @@ public class PlayerController : NetworkBehaviour {
 		Vector3 moveDir = _cameraTransform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
         moveDir.y = 0;
         
-        Vector3 velocity = moveDir.normalized * currentSpeed + Vector3.up * velocityY;
+        Vector3 velocity = moveDir.normalized * currentSpeed * playerEffects.getSpeed() + Vector3.up * velocityY;
 
 
         this.controller.Move(velocity * Time.deltaTime);
@@ -117,7 +119,7 @@ public class PlayerController : NetworkBehaviour {
 
     public void jump() {
         if (controller.isGrounded) {
-            float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight); 
+            float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight * this.playerEffects.getJump()); 
             this.velocityY = jumpVelocity;
         }
     }

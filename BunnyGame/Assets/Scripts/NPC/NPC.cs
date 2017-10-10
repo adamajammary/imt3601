@@ -6,35 +6,43 @@ using UnityEngine.Networking;
 // All of the logic for the NPC will be handeled by NPCThread
 public class NPC : NetworkBehaviour {
     [SyncVar(hook = "updateMasterPos")]
-    private Vector3 _masterPos;
+    private Vector3             _masterPos;
     [SyncVar(hook = "updateMasterDir")]
-    private Vector3 _masterDir;
+    private Vector3             _masterDir;
 
-    private const float _gravity = -12;
-    private const float _syncRate = 1; //How many times to sync per second
+    private const float         _gravity = -12;
+    private const float         _syncRate = 1; //How many times to sync per second
 
-    private float _syncTimer;
-    private Vector3 _moveDir;
+    private float               _syncTimer;
+    private Vector3             _moveDir;
     private CharacterController _cc;
-    private GameObject _blood;
-    private float _yVel;
+    private GameObject          _blood;
+    private float               _yVel;
+
+    private Animator _ani;
     // Use this for initialization
     void Start() {
-        this._cc = GetComponent<CharacterController>();
+        this._cc    = GetComponent<CharacterController>();
         this._blood = Resources.Load<GameObject>("Prefabs/Blood");
-        this._yVel = 0;
+        this._yVel  = 0;
+        this._ani   = GetComponentInChildren<Animator>();
 
         if (this.isServer) this._syncTimer = 0;
     }
 
     // Update is called once per frame
     void Update() {
+        //fall
         this._yVel += Time.deltaTime * _gravity;
         if (this._cc.isGrounded)
             _yVel = 0;
+
+        //move
         this._cc.Move(_moveDir * Time.deltaTime + new Vector3(0, this._yVel, 0));
         this.transform.LookAt(transform.position + this._moveDir);
+        this._ani.SetFloat("movespeed", this._moveDir.magnitude * 4);
 
+        //sync clients
         if (this.isServer) {
             this._syncTimer += Time.deltaTime;
             if (this._syncTimer > _syncRate) {
@@ -85,7 +93,6 @@ public class NPC : NetworkBehaviour {
 
     private void OnTriggerEnter(Collider other) {
         if ((other.gameObject.tag == "foxbite")) {
-            //FoxController foxScript = other.GetComponentInParent<FoxController>();
             PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
             kill(other.transform.parent.gameObject, otherInfo.ConnectionID);
         }

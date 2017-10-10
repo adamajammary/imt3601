@@ -64,7 +64,7 @@ public class NPCThread {
                     float speed = 1.0f;
                     NPCState state;
                     this._npcStates.TryGetValue(npc.getId(), out state);
-                    Vector3 avoidDir, fleeDir, roamDir;
+                    Vector3 avoidDir, fleeDir;
 
                     avoidDir = this.avoidObstacle(npc);
                     if (avoidDir != Vector3.zero) state.add(State.AVOIDING);
@@ -82,10 +82,6 @@ public class NPCThread {
                     } else if (state.contains(State.FLEEING)) {
                         fleeDir = this.avoidPlayer(npc, player);
                         this.sendInstuction(npc, fleeDir.normalized * speed);
-                    } else if (state.contains(State.ROAMING)) {
-                        //This thing goes out of sync real fast
-                        //roamDir = this.randomDir(npc);
-                        //if (roamDir != Vector3.zero) this.sendInstuction(npc, roamDir.normalized * speed);
                     }
                     npc.update(npc.getPos() + npc.getDir() * (1 / 60),  npc.getDir()); // Try to guess next pos
                 }
@@ -95,6 +91,7 @@ public class NPCThread {
 	}
 
     private void sendInstuction(NPCWorldView.GameCharacter npc, Vector3 dir) {
+        if (dir == npc.getDir()) return;
         npc.update(npc.getPos(), dir); // Try to guess next pos
         instruction i = new instruction(npc.getId(), dir);
         this._instructions.Enqueue(i);
@@ -151,7 +148,9 @@ public class NPCThread {
         Vector3 right = Quaternion.AngleAxis(-turnAngle, Vector3.up) * dir;
         float leftAngle = angle(flee, left);
         float rightAngle = angle(flee, right);
-        return (leftAngle <= rightAngle) ? left : right;
+        //Only turn if the course error is greater than turnAngle, to avoid jerky movement
+        Vector3 retVec = (leftAngle <= rightAngle) ? left : right;
+        return  (leftAngle >= turnAngle || rightAngle >= turnAngle) ? retVec : dir;
     }
 
     private NPCWorldView.GameCharacter closestPlayer(NPCWorldView.GameCharacter npc) {

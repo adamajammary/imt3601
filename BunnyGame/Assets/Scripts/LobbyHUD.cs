@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Networking.Match;
+using UnityEngine.Networking.Types;
 using UnityEngine.UI;
 
 /**
@@ -11,6 +13,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(NetworkManager))]
 public class LobbyHUD : MonoBehaviour {
 
+
     public GameObject targetCanvas;
     private GameObject _panel1;
     private GameObject _serverCreationPanel;
@@ -18,6 +21,8 @@ public class LobbyHUD : MonoBehaviour {
     private GameObject _lobbyPanel;
 
     private NetworkManager _manager;
+
+    private List<MatchInfoSnapshot> _matchList;
 
     private bool _localhost;
 
@@ -69,6 +74,10 @@ public class LobbyHUD : MonoBehaviour {
         // Display screen for finding a server or entering a localhost ip
         this._panel1.SetActive(false);
         this._serverFindPanel.SetActive(true);
+        this._manager.StartMatchMaker();
+
+        _matchList = new List<MatchInfoSnapshot>();
+        this._manager.matchMaker.ListMatches(0, 10, "", true, 0, 0, displayServers);
     }
 
     /**
@@ -108,13 +117,48 @@ public class LobbyHUD : MonoBehaviour {
      * 
      **/
 
-    public void onJoinServer()
+    public void displayServers(bool success, string extendedInfo, List<MatchInfoSnapshot> matchList)
     {
+        // TODO: Display error message if not a success
 
+
+        this._matchList = matchList;
+
+        GameObject template = _serverFindPanel.transform.GetChild(1).GetChild(0).gameObject;
+
+        RectTransform rt;
+        for (int i = 0; i < matchList.Count; i++) {
+            string servername = matchList[i].name;
+            NetworkID id = matchList[i].networkId;
+            int currentSize = matchList[i].currentSize;
+            int maxSize = matchList[i].maxSize;
+
+            GameObject serverPanel = Instantiate(template);
+            serverPanel.SetActive(true);
+            serverPanel.transform.SetParent(_serverFindPanel.transform.GetChild(1));
+            serverPanel.transform.GetChild(0).gameObject.GetComponent<Text>().text = servername;
+            rt = serverPanel.GetComponent<RectTransform>();
+            rt.offsetMin = new Vector2(0, (i + 1) * -35);
+            rt.offsetMax = new Vector2(0, i * -35);
+            int idx = i;
+            serverPanel.transform.GetChild(1).GetComponent<Button>().onClick.AddListener( delegate { onJoinServer(idx); } );
+        }
+
+        rt = _serverFindPanel.GetComponent<RectTransform>();
+        rt.offsetMin = new Vector2(-200, -100 - 17.5f * (matchList.Count - 1));
+        rt.offsetMax = new Vector2(200, 100 + 17.5f * (matchList.Count - 1));
     }
 
-    public void onJoinLocalServer()
+    public void onJoinServer(int serverIndex)
     {
+        this._manager.matchName = this._matchList[serverIndex].name;
+        this._manager.matchSize = (uint)this._matchList[serverIndex].currentSize;
+        _manager.matchMaker.JoinMatch(this._matchList[serverIndex].networkId, "", "", "", 0, 0, this._manager.OnMatchJoined);
+    }
+
+    public void onJoinLocalServer() {
+        this._manager.StopMatchMaker();
+
 
     }
 
@@ -122,6 +166,10 @@ public class LobbyHUD : MonoBehaviour {
         this._panel1.SetActive(true);
         this._serverFindPanel.SetActive(false);
         // reset whatever is in the  localhost ip slot
+        this._manager.StopMatchMaker();
+
+        for(int i = 2; i < this._serverFindPanel.transform.GetChild(1).childCount; i++)
+            Destroy(this._serverFindPanel.transform.GetChild(1).GetChild(i).gameObject);
     }
     
 
@@ -131,8 +179,7 @@ public class LobbyHUD : MonoBehaviour {
      * 
      **/
 
-    public void onLeaveLobby()
-    {
+    public void onLeaveLobby() {
 
     }
 

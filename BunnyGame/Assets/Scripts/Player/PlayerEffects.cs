@@ -58,8 +58,8 @@ public class PlayerEffects : NetworkBehaviour {
 
     private float calcDamage(GameObject attacker, float damage) { // Use this to get attribute adjusted damage
         float damageMult = attacker.GetComponent<PlayerEffects>().getDamage();
-        Debug.Log("Damage: " + damage + "DamageMult: " + damageMult + "Toughness: " + this._toughness);
-        Debug.Log("Final damage: " + damage * damageMult / this._toughness);
+        //Debug.Log("Damage: " + damage + "DamageMult: " + damageMult + "Toughness: " + this._toughness);
+        //Debug.Log("Final damage: " + damage * damageMult / this._toughness);
         return damage * damageMult / this._toughness;
     }
     //=========Poop Grenade==================================================================================================================

@@ -27,9 +27,9 @@ public class NPCManager : NetworkBehaviour {
         this._ready = false;
 
         if (this.isServer) {
-            GameObject turtle = Resources.Load<GameObject>("Prefabs/TurtleNPC");
-            for (int i = 0; i < 100; i++)  // Spawn turtles            
-                this.CmdSpawnNPC(turtle);
+            GameObject npc = Resources.Load<GameObject>("Prefabs/ChikenNPC");
+            for (int i = 0; i < 100; i++)  // Spawn npcs           
+                this.CmdSpawnNPC(npc);
         }
 
         StartCoroutine(lateStart());
@@ -133,7 +133,7 @@ public class NPCManager : NetworkBehaviour {
     //Spawns a NPC with a random direction
     [Command]
     private void CmdSpawnNPC(GameObject npc) {
-        var turtle = Instantiate(npc);
+        var npcInstance = Instantiate(npc);
         NPCWorldView.worldCellData landCell;
         NPCWorldView.worldCellData waterCell;
         do { //Find a random position for the NPC
@@ -144,10 +144,8 @@ public class NPCManager : NetworkBehaviour {
         } while (landCell.blocked || !waterCell.blocked);    
         //Angle is used to generate a direction
         float angle = Random.Range(0, Mathf.PI * 2);
-        turtle.GetComponent<NPC>().spawn(landCell.pos, Quaternion.Euler(Mathf.Cos(angle), 0, Mathf.Sin(angle)));
-
-        //Add a datastructure for the NPC in the NPCWorldView class
-        NetworkServer.Spawn(turtle);
+        npcInstance.GetComponent<NPC>().spawn(landCell.pos, Quaternion.Euler(Mathf.Cos(angle), 0, Mathf.Sin(angle)));
+        NetworkServer.Spawn(npcInstance);
     }
 
     void OnApplicationQuit() {

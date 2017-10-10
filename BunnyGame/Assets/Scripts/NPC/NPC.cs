@@ -18,11 +18,15 @@ public class NPC : NetworkBehaviour {
     private CharacterController _cc;
     private GameObject _blood;
     private float _yVel;
+
+    private Animator _ani;
     // Use this for initialization
     void Start() {
         this._cc = GetComponent<CharacterController>();
         this._blood = Resources.Load<GameObject>("Prefabs/Blood");
         this._yVel = 0;
+
+        this._ani = GetComponentInChildren<Animator>();
 
         if (this.isServer) this._syncTimer = 0;
     }
@@ -34,6 +38,7 @@ public class NPC : NetworkBehaviour {
             _yVel = 0;
         this._cc.Move(_moveDir * Time.deltaTime + new Vector3(0, this._yVel, 0));
         this.transform.LookAt(transform.position + this._moveDir);
+        this._ani.SetFloat("movespeed", this._moveDir.magnitude * 4);
 
         if (this.isServer) {
             this._syncTimer += Time.deltaTime;

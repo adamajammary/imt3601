@@ -84,16 +84,16 @@ public class NPC : NetworkBehaviour {
         this.CmdBloodParticle(this.transform.position);
         
         switch (this.type) {
-            case "bear":
+            case "whale":
                 pe.CmdAddToughness(0.05f);
                 break;
-            case "wolf":
+            case "cat":
                 pe.CmdAddDamage(0.05f);
                 break;
-            case "boar":
+            case "dog":
                 pe.CmdAddSpeed(0.05f);
                 break;
-            case "squirrel":
+            case "eagle":
                 pe.CmdAddJump(0.05f);
                 break;
             case "chicken":

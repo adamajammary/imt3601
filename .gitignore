@@ -3,6 +3,7 @@ BunnyGame/[Tt]emp/
 BunnyGame/[Oo]bj/
 BunnyGame/[Bb]uild/
 BunnyGame/[Bb]uilds/
+BunnyGame/Assets/ignore
 BunnyGame/Assets/AssetStoreTools*
 
 # Visual Studio 2015 cache directory

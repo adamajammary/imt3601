@@ -568,6 +568,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 343956a5c2d24c64f9d3748acc5ee718, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  type: chicken
 --- !u!137 &137548636562062430
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1

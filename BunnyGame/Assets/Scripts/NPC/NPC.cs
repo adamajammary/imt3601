@@ -5,6 +5,8 @@ using UnityEngine.Networking;
 
 // All of the logic for the NPC will be handeled by NPCThread
 public class NPC : NetworkBehaviour {
+    public string type = "not set";
+
     [SyncVar(hook = "updateMasterPos")]
     private Vector3             _masterPos;
     [SyncVar(hook = "updateMasterDir")]
@@ -20,6 +22,7 @@ public class NPC : NetworkBehaviour {
     private float               _yVel;
 
     private Animator _ani;
+
     // Use this for initialization
     void Start() {
         this._cc    = GetComponent<CharacterController>();
@@ -77,8 +80,26 @@ public class NPC : NetworkBehaviour {
 
     public void kill(GameObject killer, int id) {
         PlayerHealth healthScript = killer.GetComponent<PlayerHealth>();
+        PlayerEffects pe = killer.GetComponent<PlayerEffects>();
         this.CmdBloodParticle(this.transform.position);
-        healthScript.TakeDamage(-10, id);
+        
+        switch (this.type) {
+            case "bear":
+                pe.CmdAddToughness(0.05f);
+                break;
+            case "wolf":
+                pe.CmdAddDamage(0.05f);
+                break;
+            case "boar":
+                pe.CmdAddSpeed(0.05f);
+                break;
+            case "squirrel":
+                pe.CmdAddJump(0.05f);
+                break;
+            case "chicken":
+                healthScript.TakeDamage(-10, id);
+                break;
+        }
 
         Destroy(this.gameObject);
     }

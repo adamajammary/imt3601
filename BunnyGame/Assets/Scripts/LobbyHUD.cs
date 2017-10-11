@@ -201,30 +201,40 @@ public class LobbyHUD : MonoBehaviour {
         while (_inRoom) {
             int index = 0;
 
-            for (int i = 2; i < this._lobbyPanel.transform.GetChild(0).childCount; i++)
-                Destroy(this._lobbyPanel.transform.GetChild(0).GetChild(i).gameObject);
+            if (this._lobbyPanel != null) {
+                for (int i = 2; i < this._lobbyPanel.transform.GetChild(0).childCount; i++)
+                    Destroy(this._lobbyPanel.transform.GetChild(0).GetChild(i).gameObject);
 
-            foreach(GameObject player in GameObject.FindGameObjectsWithTag("lobbyplayer")) {
-                //players.Add(player.GetComponent<NetworkLobbyPlayer>());
-                GameObject listing = Instantiate(template);
-                listing.transform.SetParent(template.transform.parent);
-                listing.SetActive(true);
-                rt = listing.GetComponent<RectTransform>();
-                rt.offsetMax = new Vector2(192, (index + 1) * -45 - 20);
-                rt.offsetMin = new Vector2(0, (index + 2) * -45 - 20);
+                foreach(GameObject player in GameObject.FindGameObjectsWithTag("lobbyplayer")) {
+                    //players.Add(player.GetComponent<NetworkLobbyPlayer>());
+                    GameObject listing = Instantiate(template);
+                    listing.transform.SetParent(template.transform.parent);
+                    listing.SetActive(true);
+                    rt = listing.GetComponent<RectTransform>();
+                    rt.offsetMax = new Vector2(192, (index + 1) * -45 - 20);
+                    rt.offsetMin = new Vector2(0, (index + 2) * -45 - 20);
 
-                listing.transform.GetChild(0).GetComponent<Text>().text = "Player [" + player.GetComponent<NetworkLobbyPlayer>().netId + "]";
-                listing.transform.GetChild(1).GetComponent<Text>().text = (player.GetComponent<NetworkLobbyPlayer>().readyToBegin ? "Ready" : "Not ready");
+                    listing.transform.GetChild(0).GetComponent<Text>().text = "Player [" + player.GetComponent<NetworkLobbyPlayer>().netId + "]"+player.GetComponent<NetworkLobbyPlayer>().playerControllerId;
+                    listing.transform.GetChild(1).GetComponent<Text>().text = (player.GetComponent<NetworkLobbyPlayer>().readyToBegin ? "Ready" : "Not ready");
 
-                ++index;
+                    ++index;
+                }
             }
             yield return null;
         }
     }
 
     public void onReady() {
-        NetworkLobbyPlayer localPlayer = GetComponent<NetworkLobbyManager>().lobbyPlayerPrefab;
-        localPlayer.SendReadyToBeginMessage();
+        foreach(GameObject player in GameObject.FindGameObjectsWithTag("lobbyplayer")) {
+            NetworkLobbyPlayer lobbyPlayer = player.GetComponent<NetworkLobbyPlayer>();
+            if (lobbyPlayer.isLocalPlayer) {
+                if (!lobbyPlayer.readyToBegin)
+                    lobbyPlayer.SendReadyToBeginMessage();
+                else
+                    lobbyPlayer.SendNotReadyToBeginMessage();
+                break;
+            }
+        }
         
 
     }

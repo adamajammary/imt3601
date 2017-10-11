@@ -28,7 +28,7 @@ public class NPCManager : NetworkBehaviour {
 
         if (this.isServer) {
             //string[] npcPrefabNames = { "BearNPC", "BoarNPC", "SquirrelNPC", "WolfNPC", "ChikenNPC" };
-            string[] npcPrefabNames = { "SquirrelNPC" };
+            string[] npcPrefabNames = { "BearNPC" };
             List<GameObject> npcs = new List<GameObject>();
             foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
             for (int i = 0; i < 100; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);

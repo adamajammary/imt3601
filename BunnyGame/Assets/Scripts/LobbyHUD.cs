@@ -4,41 +4,33 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.Match;
 using UnityEngine.Networking.Types;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /**
-  * I'll probably make this use the same UI generator as the settings menu eventually
+  * I might make this use the same UI generator as the settings menu eventually
   */
-[AddComponentMenu("Network/NetworkManagerHUD")]
-[RequireComponent(typeof(NetworkManager))]
 public class LobbyHUD : MonoBehaviour {
 
+    private NetworkManager _manager;
 
-    public GameObject targetCanvas;
     private GameObject _panel1;
     private GameObject _serverCreationPanel;
     private GameObject _serverFindPanel;
     private GameObject _lobbyPanel;
 
-    private NetworkManager _manager;
-
     private List<MatchInfoSnapshot> _matchList;
 
     private bool _localhost;
-
     private bool _inRoom;
 
-	// Use this for initialization
-	void Awake () {
-        this._manager             = GetComponent<NetworkManager>();
-        this._panel1              = targetCanvas.transform.GetChild(0).gameObject;
-        this._serverCreationPanel = targetCanvas.transform.GetChild(1).gameObject;
-        this._serverFindPanel     = targetCanvas.transform.GetChild(2).gameObject;
-        this._lobbyPanel          = targetCanvas.transform.GetChild(3).gameObject;
-
-    }
 
     void Start() {
+        this._manager             = GameObject.Find("LobbyManager").GetComponent<NetworkPlayerSelect>();
+        this._panel1              = this.transform.GetChild(0).gameObject;
+        this._serverCreationPanel = this.transform.GetChild(1).gameObject;
+        this._serverFindPanel     = this.transform.GetChild(2).gameObject;
+        this._lobbyPanel          = this.transform.GetChild(3).gameObject;
 
         this._panel1.SetActive(true);
         this._serverCreationPanel.SetActive(false);
@@ -46,11 +38,9 @@ public class LobbyHUD : MonoBehaviour {
         this._lobbyPanel.SetActive(false);
     }
 
-    // Update is called once per frame
-    void Update () {
-		
-	}
-
+    private void Update()
+    {
+    }
 
     /**
      * Panel 1
@@ -82,6 +72,10 @@ public class LobbyHUD : MonoBehaviour {
         this._manager.matchMaker.ListMatches(0, 10, "", true, 0, 0, displayServers);
     }
 
+    public void onBackToStart() {
+        SceneManager.LoadScene("StartScreen");
+    }
+
     /**
      * Server Creation panel
      * 
@@ -97,7 +91,6 @@ public class LobbyHUD : MonoBehaviour {
             return;
         }
         // Create a matchmaking server using the user-set params in the servercreation panel
-
         this._manager.StartMatchMaker();
         this._manager.matchName = _serverCreationPanel.transform.GetChild(0).GetChild(1).GetChild(2).gameObject.GetComponent<Text>().text;
         this._manager.matchMaker.CreateMatch(this._manager.matchName, this._manager.matchSize, true, "", "", "", 0, 0, 
@@ -214,7 +207,7 @@ public class LobbyHUD : MonoBehaviour {
                     rt.offsetMax = new Vector2(192, (index + 1) * -45 - 20);
                     rt.offsetMin = new Vector2(0, (index + 2) * -45 - 20);
 
-                    listing.transform.GetChild(0).GetComponent<Text>().text = "Player [" + player.GetComponent<NetworkLobbyPlayer>().netId + "]"+player.GetComponent<NetworkLobbyPlayer>().playerControllerId;
+                    listing.transform.GetChild(0).GetComponent<Text>().text = "Player [" + player.GetComponent<NetworkLobbyPlayer>().netId + "]";
                     listing.transform.GetChild(1).GetComponent<Text>().text = (player.GetComponent<NetworkLobbyPlayer>().readyToBegin ? "Ready" : "Not ready");
 
                     ++index;

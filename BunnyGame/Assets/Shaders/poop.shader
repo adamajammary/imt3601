@@ -24,7 +24,10 @@
 
 			struct v2f {
 				float4 pos : SV_POSITION;
-				SHADOW_COORDS(1) // put shadows data into TEXCOORD1
+				float3 posEye : TEXCOORD0;
+				float3 lightDirEye : TEXCOORD1;
+				float3 eyeNormal : TEXCOORD2;
+				SHADOW_COORDS(3) // put shadows data into TEXCOORD1
 				fixed4 diff : COLOR0;
 				fixed3 ambient : COLOR1;
 			};
@@ -37,9 +40,13 @@
 				//Vertex manipulation for the wobbly effect
 				float3 samplePos = v.vertex.xyz + _NoiseSeed;
 				samplePos.xyz *= 2.2;
-				o.pos = UnityObjectToClipPos(v.vertex + v.normal * noise(samplePos)*0.6);
+				float3 modifiedVertex = v.vertex + v.normal * noise(samplePos) * 0.6;
 				//Usuefull data
+				o.pos = UnityObjectToClipPos(modifiedVertex);
 				half3 worldNormal = UnityObjectToWorldNormal(v.normal);
+				o.eyeNormal = normalize(UnityObjectToViewPos(v.normal));
+				o.posEye = UnityObjectToViewPos(modifiedVertex);
+				o.lightDirEye = normalize(_WorldSpaceLightPos0); //It's a directional light
 				//Light
 				half nl = max(0, dot(worldNormal, _WorldSpaceLightPos0.xyz));
 				o.diff = nl * _LightColor0;
@@ -53,7 +60,12 @@
 				//shadow
 				fixed shadow = SHADOW_ATTENUATION(i);
 				//light
-				fixed3 light = i.diff * shadow + i.ambient;
+				//	Specular
+				float3 eyeReflection = reflect(i.lightDirEye, i.eyeNormal);
+				float3 posToViewer = normalize(-i.posEye);
+				float dotSpecular = saturate(dot(eyeReflection, posToViewer));
+				float3 specular = pow((dotSpecular), 5) *_LightColor0;
+				fixed3 light = (i.diff + specular) * shadow + i.ambient;
 				//Final fragment color
 				fixed4 c = _Col;
 				c.rbg *= light;

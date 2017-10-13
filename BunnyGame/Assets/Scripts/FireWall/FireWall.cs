@@ -151,6 +151,8 @@ public class FireWall : NetworkBehaviour {
             other.GetComponent<PlayerEffects>().insideWall = false;
         }else if (other.tag == "Enemy") {
             other.GetComponent<PlayerEffects>().insideWall = false;
+        } else if (other.tag == "npc") {
+            other.GetComponent<NPC>().burn();
         }
     }
 

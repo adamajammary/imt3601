@@ -103,6 +103,10 @@ public class NPC : NetworkBehaviour {
 
         Destroy(this.gameObject);
     }
+    
+    public void burn() {
+        Destroy(this.gameObject);
+    }
 
     private void OnCollisionEnter(Collision other) {
         if (other.gameObject.tag == "projectile") {

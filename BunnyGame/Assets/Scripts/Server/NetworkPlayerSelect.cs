@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 
 public enum NetworkMessageType {
-    MSG_PLAYER_SELECT = 1000, MSG_PLAYER_NAME, MSG_PLAYER_READY, MSG_KILLER_ID, MSG_PLAYER_STATS, MSG_GAME_OVER
+    MSG_PLAYER_SELECT = 1000, MSG_PLAYER_NAME, MSG_NAME_AVAILABLE, MSG_PLAYER_READY, MSG_KILLER_ID, MSG_PLAYER_STATS, MSG_GAME_OVER
 }
 
 public class GameOverMessage : MessageBase {
@@ -185,23 +185,27 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
     // Parse the player name message, and set the player name.
     private void recievePlayerNameMessage(NetworkMessage message) {
-        this.setName(message.conn.connectionId, message.ReadMessage<StringMessage>().value);
+        this.sendNameAvailableMessage(message.conn.connectionId, message.ReadMessage<StringMessage>().value);
     }
 
-    // Send the number of players still alive to the client.
-    private void sendPlayerStatsMessage(int id, int killerID = -1, int deadID = -1) {
-        PlayerStatsMessage message = new PlayerStatsMessage();
+    // Tells the player wether the name they chose is available or not.
+    private void sendNameAvailableMessage(int id, string name) {
+        bool isNameAvailable = true;
 
-        message.name         = this._names[id];
-        message.playersAlive = this._players;
-        message.kills        = this._kills[id];
-        message.killer       = (killerID < 0 ? "" : this._names[killerID]);
-        message.dead         = (deadID   < 0 ? "" : this._names[deadID]);
+        foreach (var n in this._names) {
+            if ((n.Key != id) && (n.Value == name)) {
+                isNameAvailable = false;
+                break;
+            }
+        }
 
-        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_PLAYER_STATS, message);
+        if (isNameAvailable || (name == ""))
+            this.setName(id, name);
+
+        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_NAME_AVAILABLE, new IntegerMessage(isNameAvailable ? 1 : 0));
     }
 
-    // Tell the player the end game stats.
+    // Tells the player the end game stats.
     private void sendGameOverMessage(int id, int killerID = -1, bool win = true) {
         GameOverMessage message = new GameOverMessage();
 
@@ -212,6 +216,19 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         message.win    = win;
 
         NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_GAME_OVER, message);
+    }
+
+    // Tells the player how many players are still alive.
+    private void sendPlayerStatsMessage(int id, int killerID = -1, int deadID = -1) {
+        PlayerStatsMessage message = new PlayerStatsMessage();
+
+        message.name         = this._names[id];
+        message.playersAlive = this._players;
+        message.kills        = this._kills[id];
+        message.killer       = (killerID < 0 ? "" : this._names[killerID]);
+        message.dead         = (deadID   < 0 ? "" : this._names[deadID]);
+
+        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_PLAYER_STATS, message);
     }
 
     // Save the model selection made by the user.
@@ -227,7 +244,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
     private void setName(int id, string name) {
         if (name == "")
-            return;
+            name = ("Player [#" + (id + 1) + "]");
 
         if (!this._names.ContainsKey(id))
             this._names.Add(id, name);

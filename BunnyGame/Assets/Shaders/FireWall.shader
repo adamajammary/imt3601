@@ -1,12 +1,14 @@
 ﻿Shader "Unlit/FireWall" {
 	Properties {
-		_NoiseSeed ("Noise seed", float) = 1.0
 	}
 	SubShader {
 		AlphaToMask On
 		Cull Off
-		Tags {"Queue" = "Transparent-5" "RenderType"= "Transparent"}
-		LOD 100
+		Tags {
+		"Queue" = "Transparent-5" 
+		"RenderType"= "Transparent"
+		}
+		Blend One One
 
 		Pass {
 			CGPROGRAM
@@ -15,8 +17,6 @@
 			#pragma fragment frag			
 			#include "UnityCG.cginc"
 			#include "noise.hlsl"
-
-			uniform float _NoiseSeed;
 
 			struct appdata {
 				float4 vertex : POSITION;
@@ -37,7 +37,7 @@
 			
 			fixed4 frag (v2f i) : SV_Target{
 				float3 samplePos = i.worldPos;
-				samplePos.y = samplePos.y + _NoiseSeed * 10; //Only move noise plane in y dir, so that fire rises
+				samplePos.y = samplePos.y - _Time.y * 400; //Only move noise plane in y dir, so that fire rises
 				samplePos.xz /= 23.7;
 				samplePos.y /= 102.3;
 
@@ -52,15 +52,16 @@
 		
 				float n = abs(noise(samplePos));
 				float n1 = n / 2;
-				float normH = ((i.worldPos.y + 40) / 500); //Normalized height (not perfect)
+				float normH = ((i.worldPos.y + 20) / 440); //Normalized height (not perfect)
 				// The thing with (ceil(x - a) - ceil(x - b)) is that it returns 1 when a < x < b for 0 < x < 1.
 				// This makes it so that i wont need if statements, which are a bad idea on the GPU.
 				fixed4 col =
 					black * (ceil(normH + n1 - 0.0f) - ceil(normH + n1 - 0.1))
 					+ red * (ceil(normH + n1 - 0.1) - ceil(normH + n1 - 0.4))
 					+ orange * (ceil(normH + n1 - 0.4) - ceil(normH + n1 - 0.7))
-					+ gray * (ceil(normH + n1 - 0.7) - ceil(normH + n1 - 0.9))
-					+ white * (ceil(normH + n1 - 0.9) - ceil(normH + n1 - 1.0));
+					+ gray * (ceil(normH + n1 - 0.7) - ceil(normH + n1 - 0.75))
+					+ white * (ceil(normH + n1 - 0.75) - ceil(normH + n1 - 0.8))
+					+ none * (ceil(normH + n1 - 0.8) - ceil(normH + n1 - 1.0));
 				return col;
 			}
 			ENDCG

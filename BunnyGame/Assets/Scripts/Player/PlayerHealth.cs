@@ -230,8 +230,13 @@ public class PlayerHealth : NetworkBehaviour {
 		if ((this._gameOverText == null) || (this._spectateImage == null) || (this._spectateText == null) || (message.rank < 1) || message.win)
             return;
 
-        this._gameOver            = message;
-        this._gameOverText.text   = string.Format("YOU WERE KILLED BY {0}\nKills: {1}   Rank: #{2}", this._gameOver.killer, this._gameOver.kills, this._gameOver.rank);
+        this._gameOver = message;
+
+        if (this._gameOver.killer != "")
+            this._gameOverText.text = string.Format("YOU WERE KILLED BY {0}\nKills: {1}   Rank: #{2}", this._gameOver.killer, this._gameOver.kills, this._gameOver.rank);
+        else
+            this._gameOverText.text = string.Format("YOU DIED\nKills: {0}   Rank: #{1}", this._gameOver.kills, this._gameOver.rank);
+
         this._gameOverText.color  = new Color(this._gameOverText.color.r,  this._gameOverText.color.g,  this._gameOverText.color.b,  1.0f);
         this._spectateImage.color = new Color(this._spectateImage.color.r, this._spectateImage.color.g, this._spectateImage.color.b, 1.0f);
         this._spectateText.color  = new Color(this._spectateText.color.r,  this._spectateText.color.g,  this._spectateText.color.b,  1.0f);

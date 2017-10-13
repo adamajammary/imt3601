@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -12,7 +13,7 @@ using UnityEngine.UI;
   */
 public class LobbyHUD : MonoBehaviour {
 
-    private NetworkManager _manager;
+    private NetworkPlayerSelect _manager;
 
     private GameObject _panel1;
     private GameObject _serverCreationPanel;
@@ -27,23 +28,18 @@ public class LobbyHUD : MonoBehaviour {
 
 
     void Start() {
-        this._manager             = GameObject.Find("LobbyManager").GetComponent<NetworkPlayerSelect>();
-        this._panel1              = this.transform.GetChild(0).gameObject;
+        this._manager = GameObject.Find("LobbyManager").GetComponent<NetworkPlayerSelect>();
+        this._panel1 = this.transform.GetChild(0).gameObject;
         this._serverCreationPanel = this.transform.GetChild(1).gameObject;
-        this._serverFindPanel     = this.transform.GetChild(2).gameObject;
-        this._lobbyPanel          = this.transform.GetChild(3).gameObject;
-        this._isHost = false;
+        this._serverFindPanel = this.transform.GetChild(2).gameObject;
+        this._lobbyPanel = this.transform.GetChild(3).gameObject;
 
         this._panel1.SetActive(true);
         this._serverCreationPanel.SetActive(false);
         this._serverFindPanel.SetActive(false);
         this._lobbyPanel.SetActive(false);
-    }
 
-    private void Update()
-    {
     }
-
     /**
      * Panel 1
      * 
@@ -87,7 +83,6 @@ public class LobbyHUD : MonoBehaviour {
     public void onCreateServer() {
         this._serverCreationPanel.SetActive(false);
         this._lobbyPanel.SetActive(true);
-        this._isHost = true;
 
         if (this._localhost) {
             createLocalServer();
@@ -207,7 +202,7 @@ public class LobbyHUD : MonoBehaviour {
 
                     NetworkInstanceId playerNetId = player.GetComponent<NetworkLobbyPlayer>().netId;
 
-                    string name = this._manager.GetComponent<NetworkPlayerSelect>().getName(index).Trim();
+                    string name = this._manager.getName(index).Trim();
 
                     if (name != "")
                         listing.transform.GetChild(0).GetComponent<Text>().text = name;
@@ -244,15 +239,6 @@ public class LobbyHUD : MonoBehaviour {
         _inRoom = false;
         this._lobbyPanel.SetActive(false);
         this._panel1.SetActive(true);
-
-        this._manager.matchMaker.DropConnection(this._manager.matchInfo.networkId, this._manager.matchInfo.nodeId, 0, this._manager.OnDropConnection);
-        if (this._isHost) {
-            this._manager.matchMaker.DestroyMatch(this._manager.matchInfo.networkId, 0, this._manager.OnDestroyMatch);
-            //this._manager.StopServer();
-            this._isHost = false;
-        }
-        this._manager.StopClient();
-        this._manager.StopMatchMaker();
     }
 
 

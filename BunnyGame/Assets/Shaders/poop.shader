@@ -1,7 +1,6 @@
 ﻿Shader "Unlit/poop" {
 	Properties {
 		_Col ("Color", Color) = (0.54, 0.27, 0.07, 1.0)
-		_NoiseSeed("Noise seed", float) = 1.0
 	}
 	SubShader {
 		/*
@@ -33,12 +32,11 @@
 			};
 
 			uniform float4 _Col;
-			uniform float _NoiseSeed;
 			
 			v2f vert (appdata_base v) {
 				v2f o;
 				//Vertex manipulation for the wobbly effect
-				float3 samplePos = v.vertex.xyz + _NoiseSeed;
+				float3 samplePos = v.vertex.xyz + _Time.y * 1.2;
 				samplePos.xyz *= 2.2;
 				float3 modifiedVertex = v.vertex + v.normal * noise(samplePos) * 0.6;
 				//Usuefull data

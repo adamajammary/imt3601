@@ -8,24 +8,12 @@ public class Water : MonoBehaviour {
     private float _waterForceStrength = 12.0f;
     private float _waterSurfaceHeight;
 
-    private const float _noiseSpeed = 0.25f;
-    private float _noiseSeed;
-    private Material _shader;
-
-    private void Start() {
-        this._noiseSeed = 0;
-        this._shader = GetComponentInChildren<Renderer>().material;
-       
+    private void Start() {       
         this._waterSurfaceHeight = transform.position.y;
 
         Material mat = GetComponentInChildren<Renderer>().material;
         //mat.SetInt("_ZWrite", 1);
         mat.renderQueue = 3000;
-    }
-
-    private void Update() {
-        this._noiseSeed += _noiseSpeed * Time.deltaTime;
-        this._shader.SetFloat("_NoiseSeed", this._noiseSeed);
     }
 
     void OnTriggerStay(Collider other) { 

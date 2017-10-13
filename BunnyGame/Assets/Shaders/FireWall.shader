@@ -1,6 +1,5 @@
 ﻿Shader "Unlit/FireWall" {
 	Properties {
-		_NoiseSeed ("Noise seed", float) = 1.0
 	}
 	SubShader {
 		AlphaToMask On
@@ -15,8 +14,6 @@
 			#pragma fragment frag			
 			#include "UnityCG.cginc"
 			#include "noise.hlsl"
-
-			uniform float _NoiseSeed;
 
 			struct appdata {
 				float4 vertex : POSITION;
@@ -37,7 +34,7 @@
 			
 			fixed4 frag (v2f i) : SV_Target{
 				float3 samplePos = i.worldPos;
-				samplePos.y = samplePos.y + _NoiseSeed * 10; //Only move noise plane in y dir, so that fire rises
+				samplePos.y = samplePos.y - _Time.y * 400; //Only move noise plane in y dir, so that fire rises
 				samplePos.xz /= 23.7;
 				samplePos.y /= 102.3;
 

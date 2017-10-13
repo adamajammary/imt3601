@@ -226,12 +226,18 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     }
 
     private void setName(int id, string name) {
-        if (name == "")
-            return;
-
         if (!this._names.ContainsKey(id))
             this._names.Add(id, name);
         else
             this._names[id] = name;
+    }
+
+    public string getName(int id)
+    {
+        return this._names[id];
+    }
+
+    public int getSelection(int id) {
+        return this._selections[id];
     }
 }

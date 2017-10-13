@@ -188,16 +188,15 @@ public class LobbyHUD : MonoBehaviour {
 
     //TODO : Don't redraw everythin every time, but only when there is something new
     private IEnumerator updateRoom(){
-        //List<NetworkLobbyPlayer> players = new List<NetworkLobbyPlayer>();
         GameObject template = this._lobbyPanel.transform.GetChild(0).GetChild(1).gameObject;
         RectTransform rt;
         while (_inRoom) {
-            int index = 0;
 
             if (this._lobbyPanel != null) {
                 for (int i = 2; i < this._lobbyPanel.transform.GetChild(0).childCount; i++)
                     Destroy(this._lobbyPanel.transform.GetChild(0).GetChild(i).gameObject);
-
+                
+                int index = 0;
                 foreach(GameObject player in GameObject.FindGameObjectsWithTag("lobbyplayer")) {
                     //players.Add(player.GetComponent<NetworkLobbyPlayer>());
                     GameObject listing = Instantiate(template);
@@ -207,7 +206,14 @@ public class LobbyHUD : MonoBehaviour {
                     rt.offsetMax = new Vector2(192, (index + 1) * -45 - 20);
                     rt.offsetMin = new Vector2(0, (index + 2) * -45 - 20);
 
-                    listing.transform.GetChild(0).GetComponent<Text>().text = "Player [" + player.GetComponent<NetworkLobbyPlayer>().netId + "]";
+                    NetworkInstanceId playerNetId = player.GetComponent<NetworkLobbyPlayer>().netId;
+                    string name = this._manager.GetComponent<NetworkPlayerSelect>().getName(index).Trim();
+
+                    if (name != "")
+                        listing.transform.GetChild(0).GetComponent<Text>().text = name;
+                    else
+                        listing.transform.GetChild(0).GetComponent<Text>().text = "Player [" + playerNetId + "]";
+
                     listing.transform.GetChild(1).GetComponent<Text>().text = (player.GetComponent<NetworkLobbyPlayer>().readyToBegin ? "Ready" : "Not ready");
 
                     ++index;

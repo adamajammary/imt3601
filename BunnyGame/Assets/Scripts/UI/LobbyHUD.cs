@@ -23,6 +23,7 @@ public class LobbyHUD : MonoBehaviour {
 
     private bool _localhost;
     private bool _inRoom;
+    private bool _isHost;
 
 
     void Start() {
@@ -31,6 +32,7 @@ public class LobbyHUD : MonoBehaviour {
         this._serverCreationPanel = this.transform.GetChild(1).gameObject;
         this._serverFindPanel     = this.transform.GetChild(2).gameObject;
         this._lobbyPanel          = this.transform.GetChild(3).gameObject;
+        this._isHost = false;
 
         this._panel1.SetActive(true);
         this._serverCreationPanel.SetActive(false);
@@ -85,6 +87,7 @@ public class LobbyHUD : MonoBehaviour {
     public void onCreateServer() {
         this._serverCreationPanel.SetActive(false);
         this._lobbyPanel.SetActive(true);
+        this._isHost = true;
 
         if (this._localhost) {
             createLocalServer();
@@ -157,23 +160,19 @@ public class LobbyHUD : MonoBehaviour {
             (bool b, string s, MatchInfo mi) => { this._manager.OnMatchJoined(b, s, mi); onJoinLobby(); });
     }
 
-
     public void onJoinLocalServer() {
         this._manager.StopMatchMaker();
-
-
     }
 
     public void onCancelFindServer() {
         this._panel1.SetActive(true);
         this._serverFindPanel.SetActive(false);
-        // reset whatever is in the localhost ip slot
+        // todo: reset whatever is in the localhost ip slot
         this._manager.StopMatchMaker();
 
         for(int i = 2; i < this._serverFindPanel.transform.GetChild(1).childCount; i++)
             Destroy(this._serverFindPanel.transform.GetChild(1).GetChild(i).gameObject);
     }
-    
 
 
     /**
@@ -207,12 +206,14 @@ public class LobbyHUD : MonoBehaviour {
                     rt.offsetMin = new Vector2(0, (index + 2) * -45 - 20);
 
                     NetworkInstanceId playerNetId = player.GetComponent<NetworkLobbyPlayer>().netId;
+
                     string name = this._manager.GetComponent<NetworkPlayerSelect>().getName(index).Trim();
 
                     if (name != "")
                         listing.transform.GetChild(0).GetComponent<Text>().text = name;
                     else
                         listing.transform.GetChild(0).GetComponent<Text>().text = "Player [" + playerNetId + "]";
+
 
                     listing.transform.GetChild(1).GetComponent<Text>().text = (player.GetComponent<NetworkLobbyPlayer>().readyToBegin ? "Ready" : "Not ready");
 
@@ -243,6 +244,15 @@ public class LobbyHUD : MonoBehaviour {
         _inRoom = false;
         this._lobbyPanel.SetActive(false);
         this._panel1.SetActive(true);
+
+        this._manager.matchMaker.DropConnection(this._manager.matchInfo.networkId, this._manager.matchInfo.nodeId, 0, this._manager.OnDropConnection);
+        if (this._isHost) {
+            this._manager.matchMaker.DestroyMatch(this._manager.matchInfo.networkId, 0, this._manager.OnDestroyMatch);
+            //this._manager.StopServer();
+            this._isHost = false;
+        }
+        this._manager.StopClient();
+        this._manager.StopMatchMaker();
     }
 
 

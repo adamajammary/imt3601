@@ -3,7 +3,6 @@
 Shader "Custom/Water" {
 	Properties {
 		_Col ("Color", Color) = (1, 1, 1, 1)
-		_NoiseSeed("Noise seed", float) = 1.0
 		_Wavyness("Wavyness", float) = 0.5
 	}
 	SubShader{
@@ -44,13 +43,12 @@ Shader "Custom/Water" {
 			};
 
 			uniform float4 _Col;
-			uniform float _NoiseSeed;
 			uniform float _Wavyness;
 
 			v2f vert(appdata v) {
 				v2f o;
 				//Vertex manipulation for wavy effect
-				float3 samplePos = v.vertex.xyz + _NoiseSeed;
+				float3 samplePos = v.vertex.xyz - _Time.y * 0.25;
 				samplePos.xyz *= 11.2;
 				float3 modifiedVertex = v.vertex + float3(0, 0, 1) * noise(samplePos)*_Wavyness;
 				//Usefull data
@@ -85,7 +83,6 @@ Shader "Custom/Water" {
 				float dotSpecular = saturate(dot(eyeReflection, posToViewer));
 				float3 specular = pow((dotSpecular), 10) *_LightColor0;
 				fixed3 light = (i.diff*2 + specular) * shadow + i.ambient*2;
-				//fixed3 light = specular;
 				//Combine into final color
 				fixed4 c = _Col;
 				c.rgb = skyColor;

@@ -40,8 +40,7 @@ public class FireWall : NetworkBehaviour {
             }
         }
     }
-
-    private const float _noiseSpeed     = -40.25f;   //The rate at which the seed changes for perlin   
+ 
     private const float _wallShrinkTime = 60.0f;//Time in seconds between _wall shrinking
     private const float _wallShrinkRate = 0.04f; //The rate at which the wall shrinks
 
@@ -49,51 +48,48 @@ public class FireWall : NetworkBehaviour {
     private WallMapRenderer _targetWallRenderer;//Renders the target fire wall
     private RectTransform   _wallTransitionUI;  //The little onscreen bar indicating when the wall will shrink
     private Image           _outsideWallEffect; //A red transparent UI panel indicating that the player is outside the wall
-    private Material        _fs;                //fs = fireshader
     private Circle          _current;           //The current circle
     private Circle          _target;            //The target circle
     private System.Random   _RNG;               //Number generator, will be seeded the same across all clients
-    [SyncVar]
+    [SyncVar(hook="init")]
     private int             _rngSeed;
-    private float           _noiseSeed;         //seed for perlin
     private float           _wallShrinkTimer;   //Timer for when to shrink _wall   
     private bool            _wallIsShrinking;   //Keeps track of wheter or not the wall is shrinking
+    private bool            _ready = false;     //Wall ready
 
-    // Use this for initialization
-    void Start () {
+    void Start() {
+        if (this.isServer)
+            this._rngSeed = UnityEngine.Random.Range(0, 9999999);
+    }
+
+    private void init(int seed) {
         this._wallTransitionUI = GameObject.Find("wallTransitionUI").GetComponent<RectTransform>();
         this._outsideWallEffect = GameObject.Find("OutsideWallEffect").GetComponent<Image>();
         this._targetWallRenderer = GameObject.Find("TargetWallMapRenderer").GetComponent<WallMapRenderer>();
         this._actualWallRenderer = GameObject.Find("FireWallMapRenderer").GetComponent<WallMapRenderer>();
 
-        this._fs = GetComponent<Renderer>().material;
         this._current = new Circle(250, Vector3.zero);
         this._target = new Circle(250, Vector3.zero);
 
-        this._noiseSeed = 0;
         this._wallShrinkTimer = 0;
-        this._wallIsShrinking = false;
+        this._wallIsShrinking = false;        
 
-        if (this.isServer)
-            this._rngSeed = UnityEngine.Random.Range(0, 9999999);
-        StartCoroutine(lateStart());
-    }
-
-    private IEnumerator lateStart() {
-        yield return new WaitForSeconds(1.0f); //Wait one second for _rngSeed to sync (kinda hacky)
+        this._rngSeed = seed;
         this._RNG = new System.Random(this._rngSeed);
         this.recalculateWalls();
         this._targetWallRenderer.draw(this._target.wall.transform);
+        this._ready = true;
     }
 
     // Update is called once per frame
     void Update() {
-        this.generateWallTexture();
+        if (!this._ready) return;
 
         if (this._wallShrinkTimer > _wallShrinkTime) {
             StartCoroutine(interpolateWall());
             this._wallShrinkTimer = 0;
         }
+
         if (!this._wallIsShrinking) {
             this._wallShrinkTimer += Time.deltaTime;
             this.UpdateWallUI();
@@ -117,12 +113,6 @@ public class FireWall : NetworkBehaviour {
         this._target.pos = this._current.pos + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * currentWallOffset;
     }
 
-    private void generateWallTexture() {
-        this._fs.SetFloat("_NoiseSeed", this._noiseSeed);
-        // This will change where noise is sampled from the noise plane
-        this._noiseSeed += _noiseSpeed * Time.deltaTime;
-    }
-
     // Transitions the wall from current state to target state
     private IEnumerator interpolateWall() {
         float t = 0;
@@ -141,15 +131,21 @@ public class FireWall : NetworkBehaviour {
     }
 
     void OnTriggerExit(Collider other) {
+        if (!this._ready) return;
+
         if (other.tag == "Player") {
             _outsideWallEffect.enabled = true;
             other.GetComponent<PlayerEffects>().insideWall = false;
         }else if (other.tag == "Enemy") {
             other.GetComponent<PlayerEffects>().insideWall = false;
+        } else if (other.tag == "npc") {
+            other.GetComponent<NPC>().burn();
         }
     }
 
     void OnTriggerEnter(Collider other) {
+        if (!this._ready) return;
+
         if (other.tag == "Player") {
             _outsideWallEffect.enabled = false;
             other.GetComponent<PlayerEffects>().insideWall = true;

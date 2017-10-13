@@ -19,6 +19,7 @@ public class NPC : NetworkBehaviour {
     private Vector3             _moveDir;
     private CharacterController _cc;
     private GameObject          _blood;
+    private GameObject          _fire;
     private float               _yVel;
 
     private Animator _ani;
@@ -27,6 +28,7 @@ public class NPC : NetworkBehaviour {
     void Start() {
         this._cc    = GetComponent<CharacterController>();
         this._blood = Resources.Load<GameObject>("Prefabs/Blood");
+        this._fire = Resources.Load<GameObject>("Prefabs/Fire");
         this._yVel  = 0;
         this._ani   = GetComponentInChildren<Animator>();
 
@@ -105,6 +107,7 @@ public class NPC : NetworkBehaviour {
     }
     
     public void burn() {
+        CmdBurn(this.transform.position);
         Destroy(this.gameObject);
     }
 
@@ -131,5 +134,13 @@ public class NPC : NetworkBehaviour {
 
         NetworkServer.Spawn(blood);
         Destroy(blood, 5.0f);
+    }
+
+    [Command]
+    public void CmdBurn(Vector3 pos) {
+        GameObject fire = Instantiate(this._fire);
+        fire.transform.position = pos;
+        NetworkServer.Spawn(fire);
+        Destroy(fire, 10.0f);
     }
 }

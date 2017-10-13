@@ -83,7 +83,6 @@ Shader "Custom/Water" {
 				float dotSpecular = saturate(dot(eyeReflection, posToViewer));
 				float3 specular = pow((dotSpecular), 10) *_LightColor0;
 				fixed3 light = (i.diff*2 + specular) * shadow + i.ambient*2;
-				//fixed3 light = specular;
 				//Combine into final color
 				fixed4 c = _Col;
 				c.rgb = skyColor;

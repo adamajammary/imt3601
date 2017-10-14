@@ -225,6 +225,8 @@ public class PlayerHealth : NetworkBehaviour {
         this._gameOver           = message;
         this._gameOverText.text  = string.Format("WINNER WINNER {0} DINNER!\nKills: {1}   Rank: #1", this._gameOver.name, this._gameOver.kills);
         this._gameOverText.color = new Color(this._gameOverText.color.r, this._gameOverText.color.g, this._gameOverText.color.b, 1.0f);
+
+        this.showRankings(message);
     }
 
     // Show the death screen.
@@ -245,6 +247,8 @@ public class PlayerHealth : NetworkBehaviour {
         this._gameOverText.color  = new Color(this._gameOverText.color.r,  this._gameOverText.color.g,  this._gameOverText.color.b,  1.0f);
         this._spectateImage.color = new Color(this._spectateImage.color.r, this._spectateImage.color.g, this._spectateImage.color.b, 1.0f);
         this._spectateText.color  = new Color(this._spectateText.color.r,  this._spectateText.color.g,  this._spectateText.color.b,  1.0f);
+
+        this.showRankings(message);
 
         this._spectateButton.onClick.AddListener(this.spectate); // TODO: see spectate method
     }
@@ -275,7 +279,7 @@ public class PlayerHealth : NetworkBehaviour {
         SceneManager.LoadScene("Lobby"); // Not sure if anything else should be done before leaving the scene?
     }
 
-    //
+    // Show a message saying who killed who that fades away over time.
     private IEnumerator showKilledText(float totalSeconds, float passedSeconds, Text killedText) {
         Color startColor = new Color(killedText.color.r, killedText.color.g, killedText.color.b, 1.0f);
         Color endColor   = new Color(killedText.color.r, killedText.color.g, killedText.color.b, 0.0f);
@@ -285,6 +289,15 @@ public class PlayerHealth : NetworkBehaviour {
 
         if (passedSeconds < totalSeconds)
             StartCoroutine(this.showKilledText(5.0f, (passedSeconds + 0.01f), killedText));
+    }
+
+    // Show a list of all the player rankings and stats.
+    private void showRankings(GameOverMessage message) {
+
+        //foreach (Player player in message.rankings) {
+        //    print("#TEST: name=" + player.name + " - rank=" + player.rank + " - winner=" + player.win);
+        //}
+
     }
 
     // Update the HUD showing the player stats.

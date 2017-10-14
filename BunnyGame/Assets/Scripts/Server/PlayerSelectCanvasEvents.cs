@@ -34,7 +34,7 @@ public class PlayerSelectCanvasEvents : NetworkBehaviour {
     }
 
     private void Start() {
-        //if (NetworkClient.allClients.Count > 0)
+        if (NetworkClient.allClients.Count > 0)
             NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_NAME_AVAILABLE, this.recieveNetworkMessage);
     }
 
@@ -51,10 +51,6 @@ public class PlayerSelectCanvasEvents : NetworkBehaviour {
     public void onNameUpdate() {
         this.sendPlayerNameMessage(this._nameInput.text.Trim());
     }
-
-    //
-    // Network message handling, sends/receieves messages between clients and server.
-    //
 
     // Recieve and handle the network message.
     private void recieveNetworkMessage(NetworkMessage message) {

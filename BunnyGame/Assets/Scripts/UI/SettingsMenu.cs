@@ -78,7 +78,7 @@ public class SettingsMenu : MonoBehaviour {
 
     // Set up the content of the settings menu here
     private void generateMenu() {
-        GameObject panel = transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject; // Yep
+        GameObject panel = transform.GetChild(0).GetChild(1).GetChild(0).GetChild(0).gameObject; // Yep
        
 
         // VIDEO SETTINGS:

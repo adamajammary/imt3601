@@ -35,6 +35,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     private Dictionary<int, bool>   _isDead     = new Dictionary<int, bool>();
     private Dictionary<int, int>    _kills      = new Dictionary<int, int>();
 
+
     // This is called on the server when the server is started - including when a host is started.
     public override void OnLobbyStartServer() {
         base.OnLobbyStartServer();
@@ -250,5 +251,20 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             this._names.Add(id, name);
         else
             this._names[id] = name;
+    }
+
+    public string getName(int id)
+    {
+        if (this._names.ContainsKey(id))
+            return this._names[id];
+        else
+            return "";
+    }
+
+    public int getSelection(int id) {
+        if (this._selections.ContainsKey(id))
+            return this._selections[id];
+        else
+            return -1;
     }
 }

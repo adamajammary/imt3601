@@ -16,6 +16,7 @@ public class PlayerHealth : NetworkBehaviour {
     private Button        _spectateButton;
     private Image         _spectateImage;
     private Text          _spectateText;
+    private bool          _winner;
 
     [SyncVar(hook = "showGameOverScreen")]
     private GameOverMessage _gameOver = new GameOverMessage();
@@ -36,6 +37,7 @@ public class PlayerHealth : NetworkBehaviour {
         this._spectateImage  = GameObject.Find("Canvas/SpectateButton").GetComponent<Image>();
         this._spectateText   = GameObject.Find("Canvas/SpectateButton/SpectateButtonText").GetComponent<Text>();
         this._isDead         = false;
+        this._winner         = false;
         this._client         = NetworkClient.allClients[0];
 
         if (this._client != null) {
@@ -183,8 +185,7 @@ public class PlayerHealth : NetworkBehaviour {
     }
 
     private void updateGameOver2(GameOverMessage message) {
-        if (message.rank > 0)
-            this._gameOver = message;
+        this._gameOver = message;
     }
 
     [ClientRpc]
@@ -217,9 +218,10 @@ public class PlayerHealth : NetworkBehaviour {
 
     // Show the win screen.
     private void showWinScreen(GameOverMessage message) {
-		if ((this._gameOverText == null) || (message.rank < 1) || !message.win)
+		if ((this._gameOverText == null) || !message.win)
             return;
 
+        this._winner             = true;
         this._gameOver           = message;
         this._gameOverText.text  = string.Format("WINNER WINNER {0} DINNER!\nKills: {1}   Rank: #1", this._gameOver.name, this._gameOver.kills);
         this._gameOverText.color = new Color(this._gameOverText.color.r, this._gameOverText.color.g, this._gameOverText.color.b, 1.0f);
@@ -227,7 +229,10 @@ public class PlayerHealth : NetworkBehaviour {
 
     // Show the death screen.
     private void showDeathScreen(GameOverMessage message) {
-		if ((this._gameOverText == null) || (this._spectateImage == null) || (this._spectateText == null) || (message.rank < 1) || message.win)
+		if ((this._gameOverText == null) || (this._spectateImage == null) || (this._spectateText == null) || message.win)
+            return;
+
+        if (this._winner)
             return;
 
         this._gameOver = message;

@@ -120,11 +120,13 @@ public static class NPCWorldView {
     }
     //===============================================================================
     //===============================================================================
-    public const int cellCount = 160;
-    public const float cellSize = 2.3f;
+    public const int cellCount = 300;
+    public const float worldSize = 400;
+    public const float cellSize = worldSize/cellCount;
 
     private static Dictionary<int,GameCharacter> _npcs;
     private static Dictionary<int, GameCharacter> _players;
+    private static FireWall.Circle _fireWall;
     private static bool _runNPCThread;
 
     private static worldCellData[,] _land;
@@ -166,6 +168,7 @@ public static class NPCWorldView {
     public static Vector3 landOffset { get { return _landOffset; } }
     public static Vector3 waterOffset { get { return _waterOffset; } }
     public static bool ready { get { return _ready; } set { _ready = value; } }
+    public static FireWall.Circle FireWall { get { return _fireWall; } set { _fireWall = value; } }
     //===============================================================================
     public static void resetAStarData() {
         for (int y = 0; y < cellCount; y++) {
@@ -226,15 +229,20 @@ public static class NPCWorldView {
 
     delegate float Line(float x, float y);
     public static float rayCast(WorldPlane plane, Vector3 start, Vector3 end) {
+        //Check collisions against the firewall
+        float wallCollsion = lineWallCollision(start, (end - start).normalized);
+        if (wallCollsion <= Vector3.Distance(start, end))
+            return wallCollsion;
+        
         float a = (end.z - start.z) / (end.x - start.x + 0.000001f); //Don't want to divide by zero
         Line line = (x, y) => a * (x - start.x) - (y - start.z);
 
         int[] startIndex = convertWorld2Cell(start);
         int[] endIndex = convertWorld2Cell(end);
-        int xStart = clamp((startIndex[0] < endIndex[0]) ? startIndex[0] : endIndex[0] - 1);
-        int xEnd = clamp((startIndex[0] > endIndex[0]) ? startIndex[0] : endIndex[0] + 1);
-        int yStart = clamp((startIndex[1] < endIndex[1]) ? startIndex[1] : endIndex[1] - 1);
-        int yEnd = clamp((startIndex[1] > endIndex[1]) ? startIndex[1] : endIndex[1] + 1);
+        int xStart = clamp((startIndex[0] < endIndex[0]) ? startIndex[0] : endIndex[0]);
+        int xEnd = clamp(((startIndex[0] > endIndex[0]) ? startIndex[0] : endIndex[0]) + 1);
+        int yStart = clamp((startIndex[1] < endIndex[1]) ? startIndex[1] : endIndex[1]);
+        int yEnd = clamp(((startIndex[1] > endIndex[1]) ? startIndex[1] : endIndex[1]) + 1);
 
         for (int y = yStart; y < yEnd; y++) {
             for (int x = xStart; x < xEnd; x++) {
@@ -254,22 +262,40 @@ public static class NPCWorldView {
         return float.MaxValue;
     }
 
+    public static float lineWallCollision(Vector3 start, Vector3 dir) {
+        // Solving the quadratic equation obtained by the intersection of 
+        // a circle and a line. 
+        //Line = Start + t*dir
+        //Line.x = start.x + t*dir.x 
+        //Line.y = start.y + t*dir.y 
+        //intersection = (line.x - circle.x)^2 + (line.y - circle.y)^2 - r = 0
+        //The below lines are already expanded and grouped to form the components of the quadratic equation:
+        // ax^2 + bx + c = 0
+        float a = dir.x*dir.x + dir.y*dir.y;
+        float b = 2 * (start.x - FireWall.pos.x) * dir.x + 2 * (start.y - FireWall.pos.y) * dir.y;
+        float c = Mathf.Pow(start.x - FireWall.pos.x, 2) + Mathf.Pow(start.y - FireWall.pos.y, 2) - FireWall.radius;
+
+        float root = b * b - 4 * a * c;
+        if (root < 0) return float.MaxValue;
+        float t = (-b + Mathf.Sqrt(root)) / (2 * a);
+        return (start + dir * t).magnitude;
+    }
+
     public static bool writeToFile() {
-        bool success = true;
-        FileStream fsLand = new FileStream("./Assets/Data/land.nwl", FileMode.Create);
-        FileStream fsWater = new FileStream("./Assets/Data/water.nwl", FileMode.Create);
-        BinaryFormatter formatter = new BinaryFormatter();
+        bool success = true;       
         try {
+            FileStream fsLand = new FileStream("./Assets/Data/land.nwl", FileMode.Create);
+            FileStream fsWater = new FileStream("./Assets/Data/water.nwl", FileMode.Create);
+            BinaryFormatter formatter = new BinaryFormatter();
             formatter.Serialize(fsLand, getBlocked(_land));
             formatter.Serialize(fsWater, getBlocked(_water));
-        } catch (SerializationException e) {
+            fsLand.Close();
+            fsWater.Close();
+        } catch (Exception e) {
             success = false;
             Debug.Log("Failed to serialize. Reason: " + e.Message);
         }
-        finally {
-            fsLand.Close();
-            fsWater.Close();
-        }
+            
         return success;
     }
 
@@ -280,24 +306,17 @@ public static class NPCWorldView {
             FileStream fsWater = new FileStream("./Assets/Data/water.nwl", FileMode.Open);
 
             BinaryFormatter formatter = new BinaryFormatter();
-            try {
-                setBlocked((bool[,])formatter.Deserialize(fsLand), _land);
-                setBlocked((bool[,])formatter.Deserialize(fsWater), _water);
-            } catch (SerializationException e) {
-                success = false;
-                Debug.Log("Failed to deserialize. Reason: " + e.Message);
-            }
-            finally {
-                fsLand.Close();
-                fsWater.Close();
-            }
-        } catch(FileNotFoundException e) {
+    
+            setBlocked((bool[,])formatter.Deserialize(fsLand), _land);
+            setBlocked((bool[,])formatter.Deserialize(fsWater), _water);
+            
+            fsLand.Close();
+            fsWater.Close();            
+        } catch(Exception e) {
             Debug.Log("Failed to open file. Reason: " + e.Message);
             success = false;
-        } catch (EndOfStreamException e) {
-            Debug.Log("Failed to read file. Reason: " + e.Message);
-            success = false;
-        }       
+        }
+              
         return success;
     }
     //===============================================================================

@@ -28,6 +28,7 @@ public class BlockingQueue<T> {
     }
 
     public bool isEmpty() {
-        return empty;
+        lock (_queue)
+            return empty;
     }
 }

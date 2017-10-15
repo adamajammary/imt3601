@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 
 public enum NetworkMessageType {
-    MSG_PLAYER_SELECT = 1000, MSG_PLAYER_NAME, MSG_NAME_AVAILABLE, MSG_PLAYER_READY, MSG_KILLER_ID, MSG_PLAYER_STATS, MSG_GAME_OVER
+    MSG_PLAYER_SELECT = 1000, MSG_PLAYER_NAME, MSG_NAME_AVAILABLE, MSG_PLAYER_READY, MSG_KILLER_ID, MSG_PLAYER_STATS, MSG_GAME_OVER, MSG_RANKINGS
 }
 
 public class Player {
@@ -13,16 +13,16 @@ public class Player {
     public int    model  = 0;
     public bool   isDead = false;
     public int    kills  = 0;
-    public int    rank   = 0;
+    public int    rank   = 1;
     public bool   win    = false;
 }
 
 public class GameOverMessage : MessageBase {
-    public string    killer   = "";
-    public string    name     = "";
-    public int       rank     = 0;
-    public int       kills    = 0;
-    public bool      win      = false;
+    public string   killer = "";
+    public string   name   = "";
+    public int      rank   = 0;
+    public int      kills  = 0;
+    public bool     win    = false;
 }
 
 public class PlayerStatsMessage : MessageBase {
@@ -31,6 +31,10 @@ public class PlayerStatsMessage : MessageBase {
     public int    kills        = 0;
     public string killer       = "";
     public string dead         = "";
+}
+
+public class RankingsMessage : MessageBase {
+    public Player[] rankings;
 }
 
 //
@@ -115,15 +119,19 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
         Player winner = this.getWinner();
 
-        // Send updated stats to the remaining players in-game.
-        foreach (var conn2 in NetworkServer.connections) {
-            if ((conn2 != null) && conn2.isReady && (conn2.connectionId != conn.connectionId) && this._players.ContainsKey(conn2.connectionId))
-                this.sendPlayerStatsMessage(conn2.connectionId);
-        }
-
         // If there is a winner, tell them that they won.
-        if (winner != null) {
+        if (winner != null)
             this.sendGameOverMessage(winner.id);
+
+        // Send updated player/game stats to all players.
+        foreach (var conn2 in NetworkServer.connections) {
+            if ((conn2 == null) || !conn2.isReady || (conn2.connectionId == conn.connectionId) || !this._players.ContainsKey(conn2.connectionId))
+                continue;
+
+            this.sendPlayerStatsMessage(conn2.connectionId);
+
+            if (winner != null)
+                this.sendRankingsMessage(conn2.connectionId);
         }
     }
 
@@ -187,23 +195,27 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
                 this._players[killerID].kills++;
 
             this._players[message.conn.connectionId].isDead = true;
-            this._players[message.conn.connectionId].rank   = this._playersAlive;
+            this._players[message.conn.connectionId].rank   = Mathf.Max(1, this._playersAlive);
 
             this.sendGameOverMessage(message.conn.connectionId, killerID, false);
             this._playersAlive--;
         }
 
-        // Tell all the players how many players are left.
-        foreach (var conn in NetworkServer.connections) {
-            if ((conn != null) && conn.isReady || this._players.ContainsKey(conn.connectionId))
-                this.sendPlayerStatsMessage(conn.connectionId, killerID, message.conn.connectionId);
-        }
-
         Player winner = this.getWinner();
 
         // If there is a winner, tell them that they won.
-        if (winner != null) {
+        if (winner != null)
             this.sendGameOverMessage(winner.id);
+
+        // Send updated player/game stats to all players.
+        foreach (var conn in NetworkServer.connections) {
+            if ((conn == null) || !conn.isReady || !this._players.ContainsKey(conn.connectionId))
+                continue;
+
+            this.sendPlayerStatsMessage(conn.connectionId, killerID, message.conn.connectionId);
+
+            if (winner != null)
+                this.sendRankingsMessage(conn.connectionId);
         }
     }
 
@@ -217,7 +229,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         this.sendNameAvailableMessage(message.conn.connectionId, message.ReadMessage<StringMessage>().value);
     }
 
-    // Tells the player wether the name they chose is available or not.
+    // Tell the player wether the name they chose is available or not.
     private void sendNameAvailableMessage(int id, string name) {
         if (name == "") {
             name = ("Player [#" + (id + 1) + "]");
@@ -231,7 +243,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         }
     }
 
-    // Tells the player the end game stats.
+    // Tell the player the end game stats.
     private void sendGameOverMessage(int id, int killerID = -1, bool win = true) {
         GameOverMessage message = new GameOverMessage();
 
@@ -244,7 +256,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_GAME_OVER, message);
     }
 
-    // Tells the player how many players are still alive.
+    // Tell the player how many players are still alive.
     private void sendPlayerStatsMessage(int id, int killerID = -1, int deadID = -1) {
         PlayerStatsMessage message = new PlayerStatsMessage();
 
@@ -257,8 +269,36 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_PLAYER_STATS, message);
     }
 
-    public string getName(int id)
-    {
+    // Send a list of the end-game rankings to the player.
+    private void sendRankingsMessage(int id) {
+        RankingsMessage message = new RankingsMessage();
+
+        // Sort players by ranking.
+        List<Player> rankings = new List<Player>();
+
+        foreach (var player in this._players)
+            rankings.Add(player.Value);
+
+        rankings.Sort((p1, p2) => p1.rank.CompareTo(p2.rank));
+
+        // NB! Since we can't send dictionaries as network messages, we must send it as an array.
+        message.rankings = new Player[rankings.Count];
+
+        for (int i = 0; i < rankings.Count; i++) {
+            message.rankings[i]        = new Player();
+            message.rankings[i].id     = rankings[i].id;
+            message.rankings[i].name   = rankings[i].name;
+            message.rankings[i].model  = rankings[i].model;
+            message.rankings[i].isDead = rankings[i].isDead;
+            message.rankings[i].kills  = rankings[i].kills;
+            message.rankings[i].rank   = rankings[i].rank;
+            message.rankings[i].win    = rankings[i].win;
+        }
+
+        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_RANKINGS, message);
+    }
+
+    public string getName(int id) {
         if (this._players.ContainsKey(id))
             return this._players[id].name;
         else

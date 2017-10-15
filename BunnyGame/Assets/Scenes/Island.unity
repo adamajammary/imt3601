@@ -4931,7 +4931,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 800, y: 100}
+  m_SizeDelta: {x: 800, y: 400}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1809991307
 MonoBehaviour:
@@ -4982,10 +4982,10 @@ MonoBehaviour:
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 32
+    m_FontSize: 28
     m_FontStyle: 1
     m_BestFit: 0
-    m_MinSize: 3
+    m_MinSize: 0
     m_MaxSize: 40
     m_Alignment: 4
     m_AlignByGeometry: 0
@@ -4995,7 +4995,25 @@ MonoBehaviour:
     m_LineSpacing: 1
   m_Text: 'WINNER WINNER CHICKEN DINNER!
 
-    Kills: 0   Rank: #0'
+    Rank: #0   Kills: 0
+
+
+    --- RANKINGS ---
+
+
+    #1   Player [#4]   2 kills
+
+    #2   Player [#2]   1 kills
+
+    #3   Player [#5]   1 kills
+
+    #4   Player [#3]   0 kills
+
+    #5   Player [#1]   0 kills
+
+    #6   Player [#6]   0 kills
+
+'
 --- !u!222 &1809991310
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5127,11 +5145,11 @@ RectTransform:
   m_Father: {fileID: 1353435133}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -80}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: 0, y: 90}
   m_SizeDelta: {x: 160, y: 30}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &1843381383
 MonoBehaviour:
   m_ObjectHideFlags: 0

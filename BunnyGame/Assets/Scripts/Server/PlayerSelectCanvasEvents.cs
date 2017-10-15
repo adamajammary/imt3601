@@ -7,13 +7,15 @@ public class PlayerSelectCanvasEvents : NetworkBehaviour {
 
     public Button[]   _buttons;
     public InputField _nameInput;
+    private Text       _nameAvailableText;
 
     // This function is called when the object becomes enabled and active.
     // ISSUE #67: When the player re-connects in the lobby manager, the GUI is not refreshed if it re-uses the last connection.
     // SOLUTION:  Reset input text and button selections whenever the canvas object is re-enabled (re-connected).
     private void OnEnable() {
-        this._buttons   = this.transform.parent.GetChild(3).GetComponentsInChildren<Button>();
-        this._nameInput = this.transform.parent.GetChild(2).GetComponent<InputField>();
+        this._buttons           = this.transform.parent.GetChild(3).GetComponentsInChildren<Button>();
+        this._nameInput         = this.transform.parent.GetChild(2).GetComponent<InputField>();
+        this._nameAvailableText = this.transform.parent.GetChild(6).GetComponent<Text>();
 
         if (this._buttons != null) {
             // http://answers.unity3d.com/questions/908847/passing-a-temporary-variable-to-add-listener.html
@@ -27,8 +29,17 @@ public class PlayerSelectCanvasEvents : NetworkBehaviour {
             this.onClick(0);
         }
 
-        if (this._nameInput != null)
+        if (this._nameInput != null) {
+            this._nameInput.onValueChanged.RemoveAllListeners();
+            this._nameInput.onValueChanged.AddListener((c) => this.onNameUpdate());
+
             this._nameInput.text = "";
+        }
+    }
+
+    private void Start() {
+        if (NetworkClient.allClients.Count > 0)
+            NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_NAME_AVAILABLE, this.recieveNetworkMessage);
     }
 
     // Updates the model selection index based on which button the player clicked on.
@@ -38,24 +49,55 @@ public class PlayerSelectCanvasEvents : NetworkBehaviour {
         for (int i = 0; i < this._buttons.Length; i++)
             this._buttons[i].GetComponent<Image>().color = (i == model ? Color.yellow : Color.white);
 
-        this.SendPlayerSelectMessage(model);
+        this.sendPlayerSelectMessage(model);
     }
 
     public void onNameUpdate() {
-        this.SendPlayerNameMessage(this._nameInput.text.Trim());
+        this.sendPlayerNameMessage(this._nameInput.text.Trim());
+    }
+
+    // Recieve and handle the network message.
+    private void recieveNetworkMessage(NetworkMessage message) {
+        switch (message.msgType) {
+            case (short)NetworkMessageType.MSG_NAME_AVAILABLE:
+                this.updateNameAvailable(message.ReadMessage<IntegerMessage>());
+                break;
+            default:
+                Debug.Log("ERROR! Unknown message type: " + message.msgType);
+                break;
+        }
+    }
+
+    // Update the name availability.
+    private void updateNameAvailable(IntegerMessage message) {
+        if (this._nameAvailableText == null)
+            return;
+
+        if (this._nameInput.text.Trim() == "") {
+            this._nameAvailableText.text = "";
+            return;
+        }
+
+        if (message.value != 0) {
+            this._nameAvailableText.text = "name is available";
+            this._nameAvailableText.color = new Color(0.0f, 0.4f, 0.0f);
+        } else {
+            this._nameAvailableText.text = "name is NOT available";
+            this._nameAvailableText.color = Color.red;
+        }
     }
 
     // Create the player select message, and send it to the server.
-    private void SendPlayerSelectMessage(int model) {
-        this.SendNetworkMessage(NetworkMessageType.MSG_PLAYER_SELECT, new IntegerMessage(model));
+    private void sendPlayerSelectMessage(int model) {
+        this.sendNetworkMessage(NetworkMessageType.MSG_PLAYER_SELECT, new IntegerMessage(model));
     }
 
-    private void SendPlayerNameMessage(string name) {
-        this.SendNetworkMessage(NetworkMessageType.MSG_PLAYER_NAME, new StringMessage(name));
+    private void sendPlayerNameMessage(string name) {
+        this.sendNetworkMessage(NetworkMessageType.MSG_PLAYER_NAME, new StringMessage(name));
     }
 
     // Send the network message to the server.
-    private void SendNetworkMessage(NetworkMessageType messageType, MessageBase message) {
+    private void sendNetworkMessage(NetworkMessageType messageType, MessageBase message) {
         if (NetworkClient.allClients.Count < 1)
             return;
 

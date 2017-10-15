@@ -60,7 +60,7 @@ public class NPCWorldViewManager : MonoBehaviour {
     private IEnumerator findObstacles(NPCWorldView.WorldPlane plane, System.Action<float> progress) {
         int Iter = 0;
         int totalIter = 2 * _cellCount * _cellCount;
-        int yieldRate = 2 * _cellCount; 
+        int yieldRate = _cellCount; 
 
         for (int y = 0; y < _cellCount; y++) {
             for (int x = 0; x < _cellCount; x++) {

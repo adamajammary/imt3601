@@ -98,7 +98,7 @@ public class NPCThread {
     }
 
     private Vector3 avoidObstacle(NPCWorldView.GameCharacter npc) {
-        float viewDist = 10.0f;
+        float viewDist = 7.5f;
         float turnAngle = 10;
         Vector3 dir = npc.getDir();
         if (detectObstacle(npc)) {
@@ -114,7 +114,7 @@ public class NPCThread {
     }
 
     private bool detectObstacle(NPCWorldView.GameCharacter npc) {
-        float viewDist = 5.0f;
+        float viewDist = 7.5f;
         float fov = 45;
         Vector3 dir = npc.getDir();
         Vector3[] eyes = new Vector3[3];

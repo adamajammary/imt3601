@@ -120,8 +120,9 @@ public static class NPCWorldView {
     }
     //===============================================================================
     //===============================================================================
-    public const int cellCount = 160;
-    public const float cellSize = 2.3f;
+    public const int cellCount = 300;
+    public const float worldSize = 400;
+    public const float cellSize = worldSize/cellCount;
 
     private static Dictionary<int,GameCharacter> _npcs;
     private static Dictionary<int, GameCharacter> _players;

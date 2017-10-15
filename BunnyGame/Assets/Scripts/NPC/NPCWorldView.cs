@@ -282,21 +282,20 @@ public static class NPCWorldView {
     }
 
     public static bool writeToFile() {
-        bool success = true;
-        FileStream fsLand = new FileStream("./Assets/Data/land.nwl", FileMode.Create);
-        FileStream fsWater = new FileStream("./Assets/Data/water.nwl", FileMode.Create);
-        BinaryFormatter formatter = new BinaryFormatter();
+        bool success = true;       
         try {
+            FileStream fsLand = new FileStream("./Assets/Data/land.nwl", FileMode.Create);
+            FileStream fsWater = new FileStream("./Assets/Data/water.nwl", FileMode.Create);
+            BinaryFormatter formatter = new BinaryFormatter();
             formatter.Serialize(fsLand, getBlocked(_land));
             formatter.Serialize(fsWater, getBlocked(_water));
-        } catch (SerializationException e) {
+            fsLand.Close();
+            fsWater.Close();
+        } catch (Exception e) {
             success = false;
             Debug.Log("Failed to serialize. Reason: " + e.Message);
         }
-        finally {
-            fsLand.Close();
-            fsWater.Close();
-        }
+            
         return success;
     }
 
@@ -307,24 +306,17 @@ public static class NPCWorldView {
             FileStream fsWater = new FileStream("./Assets/Data/water.nwl", FileMode.Open);
 
             BinaryFormatter formatter = new BinaryFormatter();
-            try {
-                setBlocked((bool[,])formatter.Deserialize(fsLand), _land);
-                setBlocked((bool[,])formatter.Deserialize(fsWater), _water);
-            } catch (SerializationException e) {
-                success = false;
-                Debug.Log("Failed to deserialize. Reason: " + e.Message);
-            }
-            finally {
-                fsLand.Close();
-                fsWater.Close();
-            }
-        } catch(FileNotFoundException e) {
+    
+            setBlocked((bool[,])formatter.Deserialize(fsLand), _land);
+            setBlocked((bool[,])formatter.Deserialize(fsWater), _water);
+            
+            fsLand.Close();
+            fsWater.Close();            
+        } catch(Exception e) {
             Debug.Log("Failed to open file. Reason: " + e.Message);
             success = false;
-        } catch (EndOfStreamException e) {
-            Debug.Log("Failed to read file. Reason: " + e.Message);
-            success = false;
-        }       
+        }
+              
         return success;
     }
     //===============================================================================

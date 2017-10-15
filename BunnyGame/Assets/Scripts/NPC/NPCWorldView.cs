@@ -126,6 +126,7 @@ public static class NPCWorldView {
 
     private static Dictionary<int,GameCharacter> _npcs;
     private static Dictionary<int, GameCharacter> _players;
+    private static FireWall.Circle _fireWall;
     private static bool _runNPCThread;
 
     private static worldCellData[,] _land;
@@ -167,6 +168,7 @@ public static class NPCWorldView {
     public static Vector3 landOffset { get { return _landOffset; } }
     public static Vector3 waterOffset { get { return _waterOffset; } }
     public static bool ready { get { return _ready; } set { _ready = value; } }
+    public static FireWall.Circle FireWall { get { return _fireWall; } set { _fireWall = value; } }
     //===============================================================================
     public static void resetAStarData() {
         for (int y = 0; y < cellCount; y++) {

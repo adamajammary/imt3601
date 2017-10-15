@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.Networking;
 
 public class FireWall : NetworkBehaviour {
-    class Circle {
+    public class Circle {
         public Vector3 _pos;
         private float _radius;
         public GameObject wall;
@@ -70,6 +70,7 @@ public class FireWall : NetworkBehaviour {
 
         this._current = new Circle(250, Vector3.zero);
         this._target = new Circle(250, Vector3.zero);
+        NPCWorldView.FireWall = new Circle(250, Vector3.zero);
 
         this._wallShrinkTimer = 0;
         this._wallIsShrinking = false;        
@@ -78,6 +79,7 @@ public class FireWall : NetworkBehaviour {
         this._RNG = new System.Random(this._rngSeed);
         this.recalculateWalls();
         this._targetWallRenderer.draw(this._target.wall.transform);
+       
         this._ready = true;
     }
 
@@ -121,6 +123,9 @@ public class FireWall : NetworkBehaviour {
         while (t <= 1) {
             transform.position = Vector3.Lerp(_current.wall.transform.position, _target.wall.transform.position, t);
             transform.localScale = Vector3.Lerp(_current.wall.transform.localScale, _target.wall.transform.localScale, t);
+
+            NPCWorldView.FireWall.pos = transform.position;
+            NPCWorldView.FireWall.radius = transform.localScale.x / 2;
 
             t += _wallShrinkRate * Time.deltaTime;
             yield return 0;

@@ -229,15 +229,20 @@ public static class NPCWorldView {
 
     delegate float Line(float x, float y);
     public static float rayCast(WorldPlane plane, Vector3 start, Vector3 end) {
+        //Check collisions against the firewall
+        float wallCollsion = lineWallCollision(start, (end - start).normalized);
+        if (wallCollsion <= Vector3.Distance(start, end))
+            return wallCollsion;
+        
         float a = (end.z - start.z) / (end.x - start.x + 0.000001f); //Don't want to divide by zero
         Line line = (x, y) => a * (x - start.x) - (y - start.z);
 
         int[] startIndex = convertWorld2Cell(start);
         int[] endIndex = convertWorld2Cell(end);
-        int xStart = clamp((startIndex[0] < endIndex[0]) ? startIndex[0] : endIndex[0] - 1);
-        int xEnd = clamp((startIndex[0] > endIndex[0]) ? startIndex[0] : endIndex[0] + 1);
-        int yStart = clamp((startIndex[1] < endIndex[1]) ? startIndex[1] : endIndex[1] - 1);
-        int yEnd = clamp((startIndex[1] > endIndex[1]) ? startIndex[1] : endIndex[1] + 1);
+        int xStart = clamp((startIndex[0] < endIndex[0]) ? startIndex[0] : endIndex[0]);
+        int xEnd = clamp(((startIndex[0] > endIndex[0]) ? startIndex[0] : endIndex[0]) + 1);
+        int yStart = clamp((startIndex[1] < endIndex[1]) ? startIndex[1] : endIndex[1]);
+        int yEnd = clamp(((startIndex[1] > endIndex[1]) ? startIndex[1] : endIndex[1]) + 1);
 
         for (int y = yStart; y < yEnd; y++) {
             for (int x = xStart; x < xEnd; x++) {
@@ -255,6 +260,25 @@ public static class NPCWorldView {
             }
         }
         return float.MaxValue;
+    }
+
+    public static float lineWallCollision(Vector3 start, Vector3 dir) {
+        // Solving the quadratic equation obtained by the intersection of 
+        // a circle and a line. 
+        //Line = Start + t*dir
+        //Line.x = start.x + t*dir.x 
+        //Line.y = start.y + t*dir.y 
+        //intersection = (line.x - circle.x)^2 + (line.y - circle.y)^2 - r = 0
+        //The below lines are already expanded and grouped to form the components of the quadratic equation:
+        // ax^2 + bx + c = 0
+        float a = dir.x*dir.x + dir.y*dir.y;
+        float b = 2 * (start.x - FireWall.pos.x) * dir.x + 2 * (start.y - FireWall.pos.y) * dir.y;
+        float c = Mathf.Pow(start.x - FireWall.pos.x, 2) + Mathf.Pow(start.y - FireWall.pos.y, 2) - FireWall.radius;
+
+        float root = b * b - 4 * a * c;
+        if (root < 0) return float.MaxValue;
+        float t = (-b + Mathf.Sqrt(root)) / (2 * a);
+        return (start + dir * t).magnitude;
     }
 
     public static bool writeToFile() {

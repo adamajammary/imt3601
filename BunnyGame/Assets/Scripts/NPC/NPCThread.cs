@@ -115,7 +115,7 @@ public class NPCThread {
         float viewDist = 15f;
         Vector3 dir = npc.getDir();
         if (detectObstacle(npc)) {
-            Vector3 bestDir = Vector3.forward;
+            Vector3 bestDir = -dir;
             float bestLen = 0;
             for (int i = 0; i < avoidSensors.Length; i++) {
                 float len = NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), npc.getPos() + avoidSensors[i] * viewDist);
@@ -124,7 +124,7 @@ public class NPCThread {
                     bestDir = avoidSensors[i];
                 }
             }
-            return turnTowards(bestDir);
+            return turnTowards(npc.getDir(), bestDir);
         }
         return Vector3.zero;
     }
@@ -157,7 +157,7 @@ public class NPCThread {
     private Vector3 avoidPlayer(NPCWorldView.GameCharacter npc, NPCWorldView.GameCharacter player) {
         Vector3 flee = npc.getPos() - player.getPos();
         flee.y = 0;
-        return  turnTowards(flee);
+        return  turnTowards(npc.getDir(), flee);
     }
 
     private NPCWorldView.GameCharacter closestPlayer(NPCWorldView.GameCharacter npc) {
@@ -181,16 +181,16 @@ public class NPCThread {
         if ((NPCWorldView.FireWall.radius - dist) < viewDist) {
             Vector3 fleeDir = NPCWorldView.FireWall.pos - npc.getPos();
             fleeDir.y = 0;
-            return turnTowards(fleeDir.normalized);
+            return turnTowards(npc.getDir(), fleeDir.normalized);
         } else
             return Vector3.zero;
     }
 
-    private Vector3 turnTowards(Vector3 dir) {
+    private Vector3 turnTowards(Vector3 current, Vector3 dir) {
         float turnAngle = 5;
 
-        Vector3 left = Quaternion.AngleAxis(turnAngle, Vector3.up) * dir;
-        Vector3 right = Quaternion.AngleAxis(-turnAngle, Vector3.up) * dir;
+        Vector3 left = Quaternion.AngleAxis(turnAngle, Vector3.up) * current;
+        Vector3 right = Quaternion.AngleAxis(-turnAngle, Vector3.up) * current;
         float leftAngle = angle(dir, left);
         float rightAngle = angle(dir, right);
         Vector3 retVec = (leftAngle <= rightAngle) ? left : right;

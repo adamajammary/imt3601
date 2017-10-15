@@ -1,12 +1,16 @@
 ﻿using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class NPCWorldViewManager : MonoBehaviour {
     public bool debugRenderLand;        //Should NPCWorldView be rendered in the editor?
     public bool debugRenderWater;
 
     public Transform[] waterBodies;
+    public RectTransform progressBar;
+    public GameObject progressUI;
 
     private float _cellSize;  //The size of cells in NPCWorldView
     private int _cellCount;   //Amount of cells in NPCWorldView
@@ -16,30 +20,57 @@ public class NPCWorldViewManager : MonoBehaviour {
         NPCWorldView.init();
         _cellSize = NPCWorldView.cellSize;
         _cellCount = NPCWorldView.cellCount;
-        if (!NPCWorldView.readFromFile()) {
-            calcNPCWorld();
-            NPCWorldView.writeToFile();
-        }
-        NPCWorldView.ready = true;
+        if (!NPCWorldView.readFromFile())
+            StartCoroutine(calcNPCWorld());
+        else
+            NPCWorldView.ready = true;
     }
 
     
 
-    private void calcNPCWorld() {
+    private IEnumerator calcNPCWorld() { //Really wish unity let us thread stuff, but courutines will have to do.
+        Time.timeScale = 0; //Freeze time
+        
+        progressUI.SetActive(true);
+
+        float landProg = 0;
+        float waterProg = 0;
+
+
         float time = Time.realtimeSinceStartup;
         Debug.Log("NPCManager: Setting up NPCWorldView by detecting obstacles!");
-        findObstacles(NPCWorldView.WorldPlane.LAND);
-        findObstacles(NPCWorldView.WorldPlane.WATER);
+        StartCoroutine(findObstacles(NPCWorldView.WorldPlane.LAND, (x) => landProg = x));
+        StartCoroutine(findObstacles(NPCWorldView.WorldPlane.WATER, (x) => waterProg = x));
+        while(landProg < 1 || waterProg < 1) {
+            progressBar.sizeDelta = new Vector2((landProg + waterProg) * 500, 100);
+            yield return 0;
+        }
         Debug.Log("NPCManager: Finished detecting obstacles for NPCWorldView, time elapsed: " + (Time.realtimeSinceStartup - time));
+
+        progressUI.SetActive(false);
+
+        Time.timeScale = 1; //resume game
+
+        NPCWorldView.writeToFile();
+        NPCWorldView.ready = true;
     }
 
     //Finds obstacles in every cell of NPCWorldView, and marks them as blocked
     //Areas that are closed off by blocked cells will also be blocked
-    private void findObstacles(NPCWorldView.WorldPlane plane) {
+    private IEnumerator findObstacles(NPCWorldView.WorldPlane plane, System.Action<float> progress) {
+        int Iter = 0;
+        int totalIter = 2 * _cellCount * _cellCount;
+        int yieldRate = _cellCount; 
+
         for (int y = 0; y < _cellCount; y++) {
             for (int x = 0; x < _cellCount; x++) {
                 var cell = NPCWorldView.getCell(plane, x, y);
                 cell.blocked = obstacleInCell(cell);
+                Iter++;
+                if (Iter % yieldRate == 0) {
+                    progress((float)Iter / (float)totalIter);
+                    yield return 0;
+                }
             }
         }
 
@@ -59,25 +90,24 @@ public class NPCWorldViewManager : MonoBehaviour {
         for (int y = 0; y < _cellCount; y++) {
             for (int x = 0; x < _cellCount; x++) {
                 var cell = NPCWorldView.getCell(plane, x, y);
-                if (!cell.blocked && lastCellBlocked) 
+                if (!cell.blocked && lastCellBlocked)
                     this.fillAreaIfBlocked(plane, cell, targets);
                 lastCellBlocked = cell.blocked;
+                Iter++;
+                if (Iter % yieldRate == 0) {
+                    progress((float)Iter / (float)totalIter);
+                    yield return 0;
+                }
             }
         }
+        progress(1);
     }
 
     //Determines if there are any colliders inside a cell
     bool obstacleInCell(NPCWorldView.worldCellData cell) {
-        bool obstacle = false;
         float modifier = 1.0f;
-        Vector3 halfExtents = new Vector3(_cellSize / 2, _cellSize / 2, 0) * modifier;
-        Vector3[] directions = { Vector3.forward, Vector3.back, Vector3.right, Vector3.left };
-        foreach (Vector3 dir in directions) {
-            Vector3 rayStart = cell.pos - dir * _cellSize / 2;
-            obstacle = Physics.BoxCast(rayStart, halfExtents, dir, Quaternion.identity, _cellSize * modifier);
-            if (obstacle) return obstacle;
-        }
-        return obstacle;
+        Vector3 halfExtents = new Vector3(_cellSize / 2, _cellSize / 2, _cellSize / 2) * modifier;
+        return Physics.CheckBox(cell.pos, halfExtents, Quaternion.identity, 1);
     }
 
     //This is basically a*, if it cant find a path from startPos to any target node, then all the nodes in

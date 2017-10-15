@@ -25,13 +25,6 @@ public class NPCManager : NetworkBehaviour {
         this._deadPlayers = new List<int>();
         this._deadNpcs = new List<int>();
         this._ready = false;
-
-        if (this.isServer) {
-            string[] npcPrefabNames = { "CatNPC", "DogNPC", "EagleNPC", "WhaleNPC", "ChikenNPC" };
-            List<GameObject> npcs = new List<GameObject>();
-            foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
-            for (int i = 0; i < 100; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
-        }
         StartCoroutine(lateStart());
     }
 
@@ -39,6 +32,14 @@ public class NPCManager : NetworkBehaviour {
     private IEnumerator lateStart() {
         yield return new WaitForSeconds(1.0f);
         while (!NPCWorldView.ready) yield return 0;
+
+        if (this.isServer) {
+            string[] npcPrefabNames = { "CatNPC", "DogNPC", "EagleNPC", "WhaleNPC", "ChikenNPC" };
+            List<GameObject> npcs = new List<GameObject>();
+            foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
+            for (int i = 0; i < 100; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
+        }
+
         //gather data about players for the NPCs
         GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");
         this._players.Add(0, localPlayer);
@@ -103,8 +104,14 @@ public class NPCManager : NetworkBehaviour {
 
     void removeDeadStuff() {
         if (this._deadNpcs.Count > 0 || this._deadNpcs.Count > 0) {
-            while (this._npcThread.isUpdating) { /*Wait for npc thread to catch up */}
-
+            if (this._npcs.Count <= 1) {
+                NPCWorldView.setRunNPCThread(false);
+                this._deadNpcs.Clear();
+                this._deadPlayers.Clear();
+                this._ready = false;              
+                return;
+            } else
+                while (this._npcThread.isUpdating) { /*Wait for npc thread to catch up */}
 
             var players = NPCWorldView.getPlayers();
             foreach (int dead in this._deadPlayers) {
@@ -123,10 +130,9 @@ public class NPCManager : NetworkBehaviour {
 
     void handleInstructions() {
         while (!this._instructions.isEmpty()) {
-            var instruction = this._instructions.Dequeue();            
-            if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null) // Filter param so that this test won't be done when not necessary
-                this._npcs[instruction.id].GetComponent<NPC>().setMoveDir(instruction.moveDir);
-            
+            var instruction = this._instructions.Dequeue();   
+            if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null) 
+                this._npcs[instruction.id].GetComponent<NPC>().setMoveDir(instruction.moveDir);            
         }
     }
 

@@ -13,9 +13,9 @@ public class PlayerSelectCanvasEvents : NetworkBehaviour {
     // ISSUE #67: When the player re-connects in the lobby manager, the GUI is not refreshed if it re-uses the last connection.
     // SOLUTION:  Reset input text and button selections whenever the canvas object is re-enabled (re-connected).
     private void OnEnable() {
-        this._buttons   = this.transform.parent.GetChild(3).GetComponentsInChildren<Button>();
-        this._nameInput = this.transform.parent.GetChild(2).GetComponent<InputField>();
-        this._nameAvailableText = GameObject.Find("PlayerSelectCanvas/NamePanel/NameAvailableText").GetComponent<Text>();
+        this._buttons           = this.transform.parent.GetChild(3).GetComponentsInChildren<Button>();
+        this._nameInput         = this.transform.parent.GetChild(2).GetComponent<InputField>();
+        this._nameAvailableText = this.transform.parent.GetChild(6).GetComponent<Text>();
 
         if (this._buttons != null) {
             // http://answers.unity3d.com/questions/908847/passing-a-temporary-variable-to-add-listener.html
@@ -29,8 +29,12 @@ public class PlayerSelectCanvasEvents : NetworkBehaviour {
             this.onClick(0);
         }
 
-        if (this._nameInput != null)
+        if (this._nameInput != null) {
+            this._nameInput.onValueChanged.RemoveAllListeners();
+            this._nameInput.onValueChanged.AddListener((c) => this.onNameUpdate());
+
             this._nameInput.text = "";
+        }
     }
 
     private void Start() {

@@ -233,6 +233,8 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     private void sendNameAvailableMessage(int id, string name) {
         if (name == "") {
             name = ("Player [#" + (id + 1) + "]");
+            
+            NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_NAME_AVAILABLE, new IntegerMessage(1));
         } else {
             bool available = this.isNameAvailable(id, name);
 

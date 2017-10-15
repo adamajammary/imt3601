@@ -5,16 +5,16 @@ using UnityEngine.UI;
 
 public class PlayerSelectCanvasEvents : NetworkBehaviour {
 
-    private Button[]   _buttons;
-    private InputField _nameInput;
+    public Button[]   _buttons;
+    public InputField _nameInput;
     private Text       _nameAvailableText;
 
     // This function is called when the object becomes enabled and active.
     // ISSUE #67: When the player re-connects in the lobby manager, the GUI is not refreshed if it re-uses the last connection.
     // SOLUTION:  Reset input text and button selections whenever the canvas object is re-enabled (re-connected).
     private void OnEnable() {
-        this._buttons           = this.GetComponentsInChildren<Button>();
-        this._nameInput         = this.GetComponentInChildren<InputField>();
+        this._buttons   = this.transform.parent.GetChild(3).GetComponentsInChildren<Button>();
+        this._nameInput = this.transform.parent.GetChild(2).GetComponent<InputField>();
         this._nameAvailableText = GameObject.Find("PlayerSelectCanvas/NamePanel/NameAvailableText").GetComponent<Text>();
 
         if (this._buttons != null) {

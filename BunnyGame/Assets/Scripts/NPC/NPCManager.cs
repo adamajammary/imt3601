@@ -104,8 +104,14 @@ public class NPCManager : NetworkBehaviour {
 
     void removeDeadStuff() {
         if (this._deadNpcs.Count > 0 || this._deadNpcs.Count > 0) {
-            while (this._npcThread.isUpdating) { /*Wait for npc thread to catch up */}
-
+            if (this._npcs.Count <= 1) {
+                NPCWorldView.setRunNPCThread(false);
+                this._deadNpcs.Clear();
+                this._deadPlayers.Clear();
+                this._ready = false;              
+                return;
+            } else
+                while (this._npcThread.isUpdating) { /*Wait for npc thread to catch up */}
 
             var players = NPCWorldView.getPlayers();
             foreach (int dead in this._deadPlayers) {
@@ -124,10 +130,9 @@ public class NPCManager : NetworkBehaviour {
 
     void handleInstructions() {
         while (!this._instructions.isEmpty()) {
-            var instruction = this._instructions.Dequeue();            
-            if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null) // Filter param so that this test won't be done when not necessary
-                this._npcs[instruction.id].GetComponent<NPC>().setMoveDir(instruction.moveDir);
-            
+            var instruction = this._instructions.Dequeue();   
+            if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null) 
+                this._npcs[instruction.id].GetComponent<NPC>().setMoveDir(instruction.moveDir);            
         }
     }
 

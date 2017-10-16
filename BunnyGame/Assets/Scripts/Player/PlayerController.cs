@@ -67,6 +67,13 @@ public class PlayerController : NetworkBehaviour {
         handleEscMenu();
     }
 
+
+	void OnTriggerEnter2D (Collider2D any) {
+
+		Debug.Log ("Overlap!");
+
+	}
+
     // Turn off and on MeshRenderer so FPS camera works
     private void HandleAiming(){
         if (Input.GetKeyDown(KeyCode.Mouse1)) {

@@ -9,7 +9,21 @@ public class BunnyController : NetworkBehaviour {
     private GameObject bunnyPoop;
     private PlayerInformation playerInfo;
 
+    public override void PreStartClient()
+    {
+        base.PreStartClient();
+        NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
+
+        for (int i = 0; i < GetComponent<Animator>().parameterCount; i++)
+            netAnimator.SetParameterAutoSend(i, true);
+    }
+
     void Start () {
+        NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
+
+        for (int i = 0; i < netAnimator.animator.parameterCount; i++)
+            netAnimator.SetParameterAutoSend(i, true);
+
         bunnyPoop = Resources.Load<GameObject>("Prefabs/poop");
         playerInfo = GetComponent<PlayerInformation>();
         if (!this.isLocalPlayer)
@@ -39,6 +53,8 @@ public class BunnyController : NetworkBehaviour {
     void Update () {
         if (!this.isLocalPlayer)
             return;
+
+        updateAnimator();
 
         if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1))
             this.shoot();
@@ -78,5 +94,14 @@ public class BunnyController : NetworkBehaviour {
         poopScript.shoot(direction, position, startVel);
 
         NetworkServer.Spawn(poop);
+    }
+
+    // Update the animator with current state
+    public void updateAnimator()
+    {
+        Animator animator = GetComponent<Animator>();
+
+        if (animator != null)
+            animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
     }
 }

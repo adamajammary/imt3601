@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class NPCThread {
+    //==============Member variables==================================================
     public struct instruction {
         public Vector3 moveDir;
         public int id;
@@ -14,7 +15,7 @@ public class NPCThread {
         }
     }
 
-    private enum State { FLEEING = 1, AVOIDING = 2, ROAMING = 4 }
+    private enum State { FLEEING = 1, AVOIDING = 2, FIREWALL = 4, ROAMING = 8 }
     private class NPCState {
         private int _id;
         private State _state;
@@ -35,10 +36,11 @@ public class NPCThread {
     private bool _isUpdating;
     private BlockingQueue<instruction> _instructions;
     private Dictionary<int, NPCState> _npcStates;
-    System.Random _rng;    
+    private Vector3[] avoidSensors;
+    System.Random _rng;
 
-	// Use this for initialization
-	public NPCThread (BlockingQueue<instruction> i) {
+    //==============Constructor==================================================
+    public NPCThread (BlockingQueue<instruction> i) {
         this._thread = new Thread(new ThreadStart(threadRunner)); //This starts running the update function
         this._instructions = i;
         this._rng = new System.Random(691337);
@@ -49,12 +51,17 @@ public class NPCThread {
             this._npcStates.Add(npc.getId(), new NPCState(npc.getId()));
         }
 
+        avoidSensors = new Vector3[8];
+        for (int j = 0; j < avoidSensors.Length; j++) {
+            avoidSensors[j] = Quaternion.AngleAxis(360 * ((float)j / (float)avoidSensors.Length), Vector3.up) * Vector3.forward;
+        }
+
         this._thread.Start();
 	}
 	
     public bool isUpdating { get { return this._isUpdating; } }
 
-	// Update is called once per frame
+	//==============NPC Loop==================================================
 	void threadRunner () {
         while (NPCWorldView.getRunNPCThread()) {
             if (this._instructions.isEmpty()) {
@@ -64,21 +71,27 @@ public class NPCThread {
                     float speed = 1.0f;
                     NPCState state;
                     this._npcStates.TryGetValue(npc.getId(), out state);
-                    Vector3 avoidDir, fleeDir;
+                    Vector3 avoidDir, fleeDir, fireWallDir;
 
                     avoidDir = this.avoidObstacle(npc);
                     if (avoidDir != Vector3.zero) state.add(State.AVOIDING);
                     else state.remove(State.AVOIDING);
+
+                    fireWallDir = fleeFireWall(npc);
+                    if (fireWallDir != Vector3.zero) state.add(State.FIREWALL);
+                    else state.remove(State.FIREWALL);
 
                     var player = this.closestPlayer(npc);
                     if (player != null) {
                         if (this.canSeePlayer(npc, player)) state.add(State.FLEEING);                                           
                     } else state.remove(State.FLEEING);
 
-                    if (state.contains(State.FLEEING)) speed = 3.0f;
+                    if (state.contains(State.FLEEING) || state.contains(State.FIREWALL)) speed = 3.0f;
 
                     if (state.contains(State.AVOIDING)) {
                         this.sendInstuction(npc, avoidDir.normalized * speed);
+                    } else if (state.contains(State.FIREWALL)) {
+                        this.sendInstuction(npc, fireWallDir.normalized * speed);
                     } else if (state.contains(State.FLEEING)) {
                         fleeDir = this.avoidPlayer(npc, player);
                         this.sendInstuction(npc, fleeDir.normalized * speed);
@@ -90,6 +103,7 @@ public class NPCThread {
         }
 	}
 
+    //==============Functions==================================================
     private void sendInstuction(NPCWorldView.GameCharacter npc, Vector3 dir) {
         if (dir == npc.getDir()) return;
         npc.update(npc.getPos(), dir); // Try to guess next pos
@@ -98,17 +112,19 @@ public class NPCThread {
     }
 
     private Vector3 avoidObstacle(NPCWorldView.GameCharacter npc) {
-        float viewDist = 10.0f;
-        float turnAngle = 10;
+        float viewDist = 15f;
         Vector3 dir = npc.getDir();
         if (detectObstacle(npc)) {
-            Vector3 left = Quaternion.AngleAxis(turnAngle, Vector3.up) * dir;
-            Vector3 right = Quaternion.AngleAxis(-turnAngle, Vector3.up) * dir;
-            Vector3 superLeft = Quaternion.AngleAxis(90, Vector3.up) * dir;
-            Vector3 superRight = Quaternion.AngleAxis(-90, Vector3.up) * dir;
-            float leftDist = NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), npc.getPos() + superLeft * viewDist);
-            float rightDist = NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), npc.getPos() + superRight * viewDist);
-            return (leftDist >= rightDist) ? left : right;
+            Vector3 bestDir = -dir;
+            float bestLen = 0;
+            for (int i = 0; i < avoidSensors.Length; i++) {
+                float len = NPCWorldView.rayCast(NPCWorldView.WorldPlane.LAND, npc.getPos(), npc.getPos() + avoidSensors[i] * viewDist);
+                if (len > bestLen) {
+                    bestLen = len;
+                    bestDir = avoidSensors[i];
+                }
+            }
+            return turnTowards(npc.getDir(), bestDir);
         }
         return Vector3.zero;
     }
@@ -139,18 +155,9 @@ public class NPCThread {
     }
 
     private Vector3 avoidPlayer(NPCWorldView.GameCharacter npc, NPCWorldView.GameCharacter player) {
-        float turnAngle = 5;
-        Vector3 dir = npc.getDir();
         Vector3 flee = npc.getPos() - player.getPos();
         flee.y = 0;
-
-        Vector3 left = Quaternion.AngleAxis(turnAngle, Vector3.up) * dir;
-        Vector3 right = Quaternion.AngleAxis(-turnAngle, Vector3.up) * dir;
-        float leftAngle = angle(flee, left);
-        float rightAngle = angle(flee, right);
-        //Only turn if the course error is greater than turnAngle, to avoid jerky movement
-        Vector3 retVec = (leftAngle <= rightAngle) ? left : right;
-        return  (leftAngle >= turnAngle || rightAngle >= turnAngle) ? retVec : dir;
+        return  turnTowards(npc.getDir(), flee);
     }
 
     private NPCWorldView.GameCharacter closestPlayer(NPCWorldView.GameCharacter npc) {
@@ -168,15 +175,26 @@ public class NPCThread {
         else return null;        
     }
 
-    private Vector3 randomDir(NPCWorldView.GameCharacter npc) {
-        if (this._rng.NextDouble() < 0.05f) {
-            Vector3 dir = npc.getDir();
-            if (this._rng.NextDouble() > 0.5f)
-                return Quaternion.AngleAxis(10, Vector3.up) * dir;
-            else
-                return Quaternion.AngleAxis(-10, Vector3.up) * dir;
-        }
-        return Vector3.zero;
+    private Vector3 fleeFireWall(NPCWorldView.GameCharacter npc) {
+        float dist = Vector3.Distance(npc.getPos(), NPCWorldView.FireWall.pos);
+        float viewDist = 20;
+        if ((NPCWorldView.FireWall.radius - dist) < viewDist) {
+            Vector3 fleeDir = NPCWorldView.FireWall.pos - npc.getPos();
+            fleeDir.y = 0;
+            return turnTowards(npc.getDir(), fleeDir.normalized);
+        } else
+            return Vector3.zero;
+    }
+
+    private Vector3 turnTowards(Vector3 current, Vector3 dir) {
+        float turnAngle = 5;
+
+        Vector3 left = Quaternion.AngleAxis(turnAngle, Vector3.up) * current;
+        Vector3 right = Quaternion.AngleAxis(-turnAngle, Vector3.up) * current;
+        float leftAngle = angle(dir, left);
+        float rightAngle = angle(dir, right);
+        Vector3 retVec = (leftAngle <= rightAngle) ? left : right;
+        return (leftAngle >= turnAngle || rightAngle >= turnAngle) ? retVec : dir;
     }
 
     float angle(Vector3 a3, Vector3 b3) {

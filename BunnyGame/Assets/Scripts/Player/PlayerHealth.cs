@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
@@ -16,9 +17,13 @@ public class PlayerHealth : NetworkBehaviour {
     private Button        _spectateButton;
     private Image         _spectateImage;
     private Text          _spectateText;
+    private bool          _winner;
 
     [SyncVar(hook = "showGameOverScreen")]
     private GameOverMessage _gameOver = new GameOverMessage();
+
+    [SyncVar(hook = "showRankings")]
+    private RankingsMessage _rankings = new RankingsMessage();
 
     [SyncVar(hook = "updatePlayerStatsText")]
     private PlayerStatsMessage _playerStats = new PlayerStatsMessage();
@@ -36,11 +41,13 @@ public class PlayerHealth : NetworkBehaviour {
         this._spectateImage  = GameObject.Find("Canvas/SpectateButton").GetComponent<Image>();
         this._spectateText   = GameObject.Find("Canvas/SpectateButton/SpectateButtonText").GetComponent<Text>();
         this._isDead         = false;
+        this._winner         = false;
         this._client         = NetworkClient.allClients[0];
 
         if (this._client != null) {
             this._client.RegisterHandler((short)NetworkMessageType.MSG_PLAYER_STATS, this.recieveNetworkMessage);
             this._client.RegisterHandler((short)NetworkMessageType.MSG_GAME_OVER,    this.recieveNetworkMessage);
+            this._client.RegisterHandler((short)NetworkMessageType.MSG_RANKINGS,     this.recieveNetworkMessage);
 
             this._client.Send((short)NetworkMessageType.MSG_PLAYER_READY, new IntegerMessage());
         }
@@ -141,6 +148,9 @@ public class PlayerHealth : NetworkBehaviour {
             case (short)NetworkMessageType.MSG_GAME_OVER:
                 this.updateGameOver(message.ReadMessage<GameOverMessage>());
                 break;
+            case (short)NetworkMessageType.MSG_RANKINGS:
+                this.updateRankings(message.ReadMessage<RankingsMessage>());
+                break;
             default:
                 Debug.Log("ERROR! Unknown message type: " + message.msgType);
                 break;
@@ -183,8 +193,7 @@ public class PlayerHealth : NetworkBehaviour {
     }
 
     private void updateGameOver2(GameOverMessage message) {
-        if (message.rank > 0)
-            this._gameOver = message;
+        this._gameOver = message;
     }
 
     [ClientRpc]
@@ -195,6 +204,30 @@ public class PlayerHealth : NetworkBehaviour {
     [Command]
     private void CmdUpdateGameOver(GameOverMessage message) {
         this.RpcUpdateGameOver(message);
+    }
+
+    // Update the game rankings.
+    private void updateRankings(RankingsMessage message) {
+        if (this.isServer && this.isClient)
+            this.updateRankings2(message);
+        else if (this.isServer)
+            this.RpcUpdateRankings(message);
+        else if (this.isClient)
+            this.CmdUpdateRankings(message);
+    }
+
+    private void updateRankings2(RankingsMessage message) {
+        this._rankings = message;
+    }
+
+    [ClientRpc]
+    private void RpcUpdateRankings(RankingsMessage message) {
+        this.updateRankings2(message);
+    }
+
+    [Command]
+    private void CmdUpdateRankings(RankingsMessage message) {
+        this.RpcUpdateRankings(message);
     }
 
     //
@@ -211,27 +244,35 @@ public class PlayerHealth : NetworkBehaviour {
         else
             this.showDeathScreen(message);
 
-        StartCoroutine(gameOverTimer(10));
+        //StartCoroutine(gameOverTimer(10));    // NB! Moved over to showRankings method
     }
-
 
     // Show the win screen.
     private void showWinScreen(GameOverMessage message) {
-		if ((this._gameOverText == null) || (message.rank < 1) || !message.win)
+		if ((this._gameOverText == null) || !message.win)
             return;
 
+        this._winner             = true;
         this._gameOver           = message;
-        this._gameOverText.text  = string.Format("WINNER WINNER {0} DINNER!\nKills: {1}   Rank: #1", this._gameOver.name, this._gameOver.kills);
+        this._gameOverText.text  = string.Format("WINNER WINNER {0} DINNER!\nRank: #1   Kills: {1}\n", this._gameOver.name, this._gameOver.kills);
         this._gameOverText.color = new Color(this._gameOverText.color.r, this._gameOverText.color.g, this._gameOverText.color.b, 1.0f);
     }
 
     // Show the death screen.
     private void showDeathScreen(GameOverMessage message) {
-		if ((this._gameOverText == null) || (this._spectateImage == null) || (this._spectateText == null) || (message.rank < 1) || message.win)
+		if ((this._gameOverText == null) || (this._spectateImage == null) || (this._spectateText == null) || message.win)
             return;
 
-        this._gameOver            = message;
-        this._gameOverText.text   = string.Format("YOU WERE KILLED BY {0}\nKills: {1}   Rank: #{2}", this._gameOver.killer, this._gameOver.kills, this._gameOver.rank);
+        if (this._winner)
+            return;
+
+        this._gameOver = message;
+
+        if (this._gameOver.killer != "")
+            this._gameOverText.text = string.Format("YOU WERE KILLED BY {0}\nRank: #{2}   Kills: {1}\n", this._gameOver.killer, this._gameOver.kills, this._gameOver.rank);
+        else
+            this._gameOverText.text = string.Format("YOU DIED\nRank: #{1}   Kills: {0}\n", this._gameOver.kills, this._gameOver.rank);
+
         this._gameOverText.color  = new Color(this._gameOverText.color.r,  this._gameOverText.color.g,  this._gameOverText.color.b,  1.0f);
         this._spectateImage.color = new Color(this._spectateImage.color.r, this._spectateImage.color.g, this._spectateImage.color.b, 1.0f);
         this._spectateText.color  = new Color(this._spectateText.color.r,  this._spectateText.color.g,  this._spectateText.color.b,  1.0f);
@@ -239,14 +280,13 @@ public class PlayerHealth : NetworkBehaviour {
         this._spectateButton.onClick.AddListener(this.spectate); // TODO: see spectate method
     }
 
-
     // Shows a countdown until you are automatically moved out of the server
     private IEnumerator gameOverTimer(float time) {
 
-        // Wait until all but one player is dead
-        while (this._playerStats.playersAlive > 1) {
-            yield return new WaitForSeconds(0.1f);
-        }
+        //// Wait until all but one player is dead
+        //while (this._playerStats.playersAlive > 1) {  // NB! Not necessary now since showRankings method
+        //    yield return new WaitForSeconds(0.1f);    //      happens only once when the last player wins.
+        //}
 
         string message = "Sending you back to lobby in: ";
 
@@ -265,7 +305,7 @@ public class PlayerHealth : NetworkBehaviour {
         SceneManager.LoadScene("Lobby"); // Not sure if anything else should be done before leaving the scene?
     }
 
-    //
+    // Show a message saying who killed who that fades away over time.
     private IEnumerator showKilledText(float totalSeconds, float passedSeconds, Text killedText) {
         Color startColor = new Color(killedText.color.r, killedText.color.g, killedText.color.b, 1.0f);
         Color endColor   = new Color(killedText.color.r, killedText.color.g, killedText.color.b, 0.0f);
@@ -275,6 +315,20 @@ public class PlayerHealth : NetworkBehaviour {
 
         if (passedSeconds < totalSeconds)
             StartCoroutine(this.showKilledText(5.0f, (passedSeconds + 0.01f), killedText));
+    }
+
+    // Show a list of all the player rankings and stats.
+    private void showRankings(RankingsMessage message) {
+        if (this._gameOverText == null)
+            return;
+
+        this._rankings           = message;
+        this._gameOverText.text += "\n--- RANKINGS ---\n\n";
+
+        foreach (Player player in this._rankings.rankings)
+            this._gameOverText.text += string.Format("#{0}   {1}   {2} kills\n", player.rank, player.name, player.kills);
+
+        StartCoroutine(gameOverTimer(10));
     }
 
     // Update the HUD showing the player stats.

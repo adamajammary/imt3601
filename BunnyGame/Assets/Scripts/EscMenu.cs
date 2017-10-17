@@ -12,14 +12,14 @@ public class EscMenu : NetworkBehaviour {
     public Button settings;
     public Button exitToMenu;
     public Button exitToDesktop;
-    private NetworkLobbyManager manager;
+    private NetworkPlayerSelect manager;
 
     private bool isPressed = false;
 
     // Use this for initialization
     void Start()
     {
-        manager = FindObjectOfType<NetworkLobbyManager>();
+        manager = FindObjectOfType<NetworkPlayerSelect>();
         escMenu       = escMenu.GetComponent<Canvas>();
         resumeButton  = resumeButton.GetComponent<Button>();
         settings      = settings.GetComponent<Button>();
@@ -53,6 +53,7 @@ public class EscMenu : NetworkBehaviour {
     public void ExitToMain()
     {
         // Need to disconnect from server
+        manager.disconnectFromServer();
         SceneManager.LoadScene("Lobby");
     }
 
@@ -64,12 +65,5 @@ public class EscMenu : NetworkBehaviour {
     public void rusumePressedReset()
     {
         isPressed = false;
-    }
-
-    public void DisconnectFromServer()
-    {
-        manager.GetComponent<NetworkManager>().StopServer();
-        manager.GetComponent<NetworkManager>().enabled = false;
-
     }
 }

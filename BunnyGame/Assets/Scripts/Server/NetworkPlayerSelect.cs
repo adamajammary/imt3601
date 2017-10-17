@@ -313,4 +313,14 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         else
             return -1;
     }
+
+
+    public void disconnectFromServer() {
+        Debug.Log("Disconnecting from server");
+
+        this.matchMaker.DestroyMatch(matchInfo.networkId, 0, OnDestroyMatch);
+        this.matchMaker.DropConnection(matchInfo.networkId, matchInfo.nodeId, 0, OnDropConnection);
+        StopHost();
+
+    }
 }

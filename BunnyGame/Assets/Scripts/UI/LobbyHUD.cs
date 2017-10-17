@@ -24,7 +24,6 @@ public class LobbyHUD : MonoBehaviour {
 
     private bool _localhost;
     private bool _inRoom;
-    private bool _isHost;
 
 
     void Start() {
@@ -39,7 +38,10 @@ public class LobbyHUD : MonoBehaviour {
         this._serverFindPanel.SetActive(false);
         this._lobbyPanel.SetActive(false);
 
+        this._manager.StartMatchMaker();
     }
+
+
     /**
      * Panel 1
      * 
@@ -64,8 +66,8 @@ public class LobbyHUD : MonoBehaviour {
         // Display screen for finding a server or entering a localhost ip
         this._panel1.SetActive(false);
         this._serverFindPanel.SetActive(true);
-        this._manager.StartMatchMaker();
 
+        // Get all available matches and callback the displayServer function
         _matchList = new List<MatchInfoSnapshot>();
         this._manager.matchMaker.ListMatches(0, 10, "", true, 0, 0, displayServers);
     }
@@ -73,6 +75,7 @@ public class LobbyHUD : MonoBehaviour {
     public void onBackToStart() {
         SceneManager.LoadScene("StartScreen");
     }
+
 
     /**
      * Server Creation panel
@@ -88,8 +91,8 @@ public class LobbyHUD : MonoBehaviour {
             createLocalServer();
             return;
         }
+
         // Create a matchmaking server using the user-set params in the servercreation panel
-        this._manager.StartMatchMaker();
         this._manager.matchName = _serverCreationPanel.transform.GetChild(0).GetChild(1).GetChild(2).gameObject.GetComponent<Text>().text;
         this._manager.matchMaker.CreateMatch(this._manager.matchName, this._manager.matchSize, true, "", "", "", 0, 0, 
             (bool b, string s, MatchInfo mi) => { this._manager.OnMatchCreate(b,s, mi); onJoinLobby(); });
@@ -103,7 +106,6 @@ public class LobbyHUD : MonoBehaviour {
         // Go back to panel1
         this._panel1.SetActive(true);
         this._serverCreationPanel.SetActive(false);
-        this._manager.StopMatchMaker();
     }
 
     /**
@@ -111,6 +113,8 @@ public class LobbyHUD : MonoBehaviour {
      * 
      **/
 
+    // TODO : Make it update automatically every so often, so the player doesn't have to go bacnk out to update the list.
+    //        potentially give them a refresh button
     public void displayServers(bool success, string extendedInfo, List<MatchInfoSnapshot> matchList)
     {
         this._manager.OnMatchList(success, extendedInfo, matchList);
@@ -148,7 +152,7 @@ public class LobbyHUD : MonoBehaviour {
     {
         this._serverFindPanel.SetActive(false);
         this._lobbyPanel.SetActive(true);
-
+        
         this._manager.matchName = this._matchList[serverIndex].name;
         this._manager.matchSize = (uint)this._matchList[serverIndex].currentSize;
         _manager.matchMaker.JoinMatch(this._matchList[serverIndex].networkId, "", "", "", 0, 0, 
@@ -156,16 +160,15 @@ public class LobbyHUD : MonoBehaviour {
     }
 
     public void onJoinLocalServer() {
-        this._manager.StopMatchMaker();
+
     }
 
     public void onCancelFindServer() {
         this._panel1.SetActive(true);
         this._serverFindPanel.SetActive(false);
         // todo: reset whatever is in the localhost ip slot
-        this._manager.StopMatchMaker();
 
-        for(int i = 2; i < this._serverFindPanel.transform.GetChild(1).childCount; i++)
+        for (int i = 2; i < this._serverFindPanel.transform.GetChild(1).childCount; i++)
             Destroy(this._serverFindPanel.transform.GetChild(1).GetChild(i).gameObject);
     }
 
@@ -239,6 +242,7 @@ public class LobbyHUD : MonoBehaviour {
         _inRoom = false;
         this._lobbyPanel.SetActive(false);
         this._panel1.SetActive(true);
+        this._manager.disconnectFromServer();
     }
 
 

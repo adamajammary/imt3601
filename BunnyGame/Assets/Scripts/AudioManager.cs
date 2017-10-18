@@ -13,15 +13,15 @@ public class AudioManager : MonoBehaviour {
     private float effectVolume;
 
 
-    // Ambience
+    // Ambient
     private AudioSource _ocean;
-    private AudioSource _underWater;
     private AudioSource _ambientNature;
-    private AudioSource _pond; 
+    private AudioSource _pond;
 
 
     // Firewall
-    private AudioSource fire;
+    private FireWall _firewall;
+    private AudioSource _fire;
 
     private bool _isUnderWater = false;
 
@@ -30,14 +30,24 @@ public class AudioManager : MonoBehaviour {
 	void Start () {
         updateVolume();
 
-        GameObject oceanObj = new GameObject();
-        oceanObj.name = "OceanSound";
+        // OCEAN:
+        GameObject oceanObj = new GameObject {
+            name = "OceanSound"
+        };
         _ocean = oceanObj.AddComponent<AudioSource>();
-        AudioClip oceanClip = Resources.Load<AudioClip>("Audio/water_lapping_sea_waves_sandy_beach_5_meters_01");
-        _ocean.clip = oceanClip;
-        _ocean.dopplerLevel = 0;
+        _ocean.clip = Resources.Load<AudioClip>("Audio/water_lapping_sea_waves_sandy_beach_5_meters_01");
         _ocean.Play();
         _ocean.loop = true;
+
+        // FIRE:
+        GameObject fireObj = new GameObject {
+            name = "FireSound"
+        };
+        _fire = fireObj.AddComponent<AudioSource>();
+        //_fire.clip = Resources.Load<AudioClip>("Audio/...");
+        _fire.Play();
+        _fire.loop = true;
+
 
 
 	}
@@ -46,22 +56,49 @@ public class AudioManager : MonoBehaviour {
         _isUnderWater = cameraTransform.position.y < waterLevel;
 
         updateOceanSound();
+        updateFireSound();
 
 	}
 
 
     private void updateOceanSound() {
-        float distFromCenter = Mathf.Sqrt(this.cameraTransform.position.x * this.cameraTransform.position.x + this.cameraTransform.position.z * this.cameraTransform.position.z);
+        float distFromCenter = Vector2.Distance(
+            new Vector2(this.cameraTransform.position.x, this.cameraTransform.position.z), 
+            Vector2.zero);
         float distFromOcean = mapRadius - distFromCenter;
-        _ocean.volume = Mathf.Max((distFromOcean > 0 ? 3f / distFromOcean : 1f), .05f) / 2f;
-        _ocean.volume *= effectVolume;
-        Debug.Log(_ocean.volume + " :: " + distFromOcean);
 
+        _ocean.volume = (Mathf.Max((distFromOcean > 0 ? 3f / distFromOcean : 1f), .05f) / 2f) * effectVolume;
         _ocean.pitch = _isUnderWater ? 0.2f : 1f;
 
 
         // TODO : Surround/Stereo?
         // _ocean.panStereo = ...
+    }
+
+    private void updateFireSound() {
+        // No updating if wall hasn't been created yet
+        if (_firewall == null) {
+            GameObject wall = GameObject.FindGameObjectWithTag("FireWall");
+            if (wall == null)
+                return;
+            else
+                _firewall = wall.GetComponent<FireWall>();
+        }
+
+
+        Vector2 firewallcenter = new Vector2(_firewall.transform.position.x, _firewall.transform.position.z);
+
+        float distFromCenter = Vector2.Distance(
+            new Vector2(cameraTransform.position.x, cameraTransform.position.z),
+            firewallcenter);
+
+        float distFromWall = Mathf.Abs(_firewall.transform.localScale.x/2 - distFromCenter);
+
+        _fire.volume = (Mathf.Max((distFromWall > 0 ? 0.5f / distFromWall : 0.5f), .0005f) / 2f) * effectVolume;
+        _fire.pitch = _isUnderWater ? 0.2f : 1f;
+
+        // TODO : Surround/Stereo?
+        // _fire.panStereo = ...
     }
 
 

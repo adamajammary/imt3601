@@ -501,6 +501,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1293235770}
   - component: {fileID: 1293235772}
+  - component: {fileID: 1293235771}
+  - component: {fileID: 1293235769}
   m_Layer: 0
   m_Name: LobbyManager
   m_TagString: Untagged
@@ -508,6 +510,17 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1293235769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1293235768}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9f1987fe5c326444a58f2ce31be475b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &1293235770
 Transform:
   m_ObjectHideFlags: 0
@@ -521,6 +534,21 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1293235771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1293235768}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 227461547, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  manager: {fileID: 0}
+  showGUI: 0
+  offsetX: 0
+  offsetY: 0
 --- !u!114 &1293235772
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -10,7 +10,6 @@ public class EscMenu : NetworkBehaviour {
     public Button settings;
     public Button exitToMenu;
     public Button exitToDesktop;
-    //private NetworkLobbyManager manager;
     private NetworkManager manager;
 
     private bool isPressed = false;
@@ -18,7 +17,6 @@ public class EscMenu : NetworkBehaviour {
     // Use this for initialization
     void Start()
     {
-        //manager       = FindObjectOfType<NetworkLobbyManager>();
         manager       = NetworkManager.singleton;
         escMenu       = escMenu.GetComponent<Canvas>();
         resumeButton  = resumeButton.GetComponent<Button>();

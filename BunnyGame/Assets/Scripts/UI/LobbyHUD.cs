@@ -12,7 +12,6 @@ using UnityEngine.UI;
   */
 public class LobbyHUD : MonoBehaviour {
 
-    //private NetworkPlayerSelect _manager;
     private NetworkManager _manager;
 
     private GameObject _panel1;
@@ -30,7 +29,6 @@ public class LobbyHUD : MonoBehaviour {
     private bool _waitingDrop = false;
 
     void Start() {
-        //this._manager = GameObject.Find("LobbyManager").GetComponent<NetworkPlayerSelect>();
         this._manager = NetworkManager.singleton;
         this._panel1 = this.transform.GetChild(0).gameObject;
         this._serverCreationPanel = this.transform.GetChild(1).gameObject;
@@ -53,8 +51,6 @@ public class LobbyHUD : MonoBehaviour {
     }
 
     public void onOpenServerCreation() {
-        print("onOpenServerCreation");
-
         if (this._localhost) {
             // Localhost server creation
         } else {
@@ -87,8 +83,6 @@ public class LobbyHUD : MonoBehaviour {
     
     // Create a server using the user-set parameters
     public void onCreateServer() {
-        print("onCreateServer");
-
         this._serverCreationPanel.SetActive(false);
         this._lobbyPanel.SetActive(true);
 
@@ -97,7 +91,6 @@ public class LobbyHUD : MonoBehaviour {
             return;
         }
 
-        //this._manager.matchName = this._serverCreationPanel.transform.GetChild(0).GetChild(1).GetChild(2).gameObject.GetComponent<Text>().text;
         this._matchName = this._serverCreationPanel.transform.GetChild(0).GetChild(1).GetChild(2).gameObject.GetComponent<Text>().text;
 
         // Create a matchmaking server using the user-set params in the servercreation panel
@@ -109,15 +102,10 @@ public class LobbyHUD : MonoBehaviour {
             (b, s, m) => { this._manager.OnMatchCreate(b, s, m); this.onJoinLobby(m); }
         );
 
-        print("onCreateServer::matchName2: " + _matchName);
-        print("onCreateServer::matchSize2: " + this._manager.matchSize);
-
         this._isHost = true;
     }
 
     public void createLocalServer() {
-        print("createLocalServer");
-
         // Create a local server using the user set parameters
     }
 
@@ -151,8 +139,6 @@ public class LobbyHUD : MonoBehaviour {
         RectTransform rt;
 
         for (int i = 0; i < matchList.Count; i++) {
-            print("matchList[" + i + "].name: " + matchList[i].name);
-
             string matchName = matchList[i].name;
             //NetworkID id = matchList[i].networkId;
             int currentSize = matchList[i].currentSize;
@@ -177,16 +163,11 @@ public class LobbyHUD : MonoBehaviour {
     }
 
     public void onJoinServer(int serverIndex) {
-        print("onJoinServer: " + serverIndex);
-
         this._serverFindPanel.SetActive(false);
         this._lobbyPanel.SetActive(true);
 
         this.disconnectMatch();
         this._manager.StartMatchMaker();
-
-        //this._manager.matchName = this._matchList[serverIndex].name;
-        //this._manager.matchSize = (uint)this._matchList[serverIndex].currentSize;
 
         this._matchName = this._matchList[serverIndex].name;
 
@@ -194,13 +175,9 @@ public class LobbyHUD : MonoBehaviour {
             this._matchList[serverIndex].networkId, "", "", "", 0, 0, 
             (b, s, m) => { this._manager.OnMatchJoined(b, s, m); this.onJoinLobby(m); }
         );
-
-        print("onJoinServer::matchName1: " + this._matchList[serverIndex].name + " / " + this._manager.matchName);
     }
 
     public void onJoinLocalServer() {
-        print("onJoinLocalServer");
-
         this.disconnectMatch();
     }
 
@@ -224,20 +201,15 @@ public class LobbyHUD : MonoBehaviour {
      **/
 
     public void onJoinLobby(MatchInfo match) {
-        print("onJoinLobby1: " + _isHost);
-
         this._inRoom      = true;
         this._joinedMatch = match;
 
-        print("onJoinLobby2: " + _isHost);
         if (NetworkClient.allClients.Count > 0) {
             NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_LOBBY_PLAYERS,    this.recieveNetworkMessage);
             NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_MATCH_DISCONNECT, this.recieveNetworkMessage);
         }
-        print("onJoinLobby3: " + _isHost);
 
         this.onRefreshLobby();
-        print("onJoinLobby4: " + _isHost);
     }
 
     public void onRefreshLobby() {
@@ -318,14 +290,10 @@ public class LobbyHUD : MonoBehaviour {
 
     // Disconnects from the match making lobby.
     private void disconnectMatch() {
-        print("disconnectMatch: " + _joinedMatch);
-
         if (this._joinedMatch != null) {
             if (this._isHost) {
                 StartCoroutine(this.dropMatchAndWait(1.0f));
             } else {
-                print("disconnectMatch::CLIENT");
-
                 if ((this._manager.matchMaker != null) && (this._joinedMatch.networkId != NetworkID.Invalid)) {
                     this._manager.matchMaker.DropConnection(
                         this._joinedMatch.networkId,
@@ -344,8 +312,6 @@ public class LobbyHUD : MonoBehaviour {
 
     // The host will wait x seconds to allow all clients to disconnect before destroying the match.
     private IEnumerator<WaitForSeconds> dropMatchAndWait(float waitInSeconds) {
-        print("disconnectMatch::HOST1");
-
         if (!this._waitingDrop) {
             if (NetworkClient.allClients.Count > 0)
                 NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_MATCH_DROP, new IntegerMessage());
@@ -357,8 +323,6 @@ public class LobbyHUD : MonoBehaviour {
         }
 
         yield return new WaitForSeconds(waitInSeconds);
-
-        print("disconnectMatch::HOST2");
 
         if ((this._manager.matchMaker != null) && (this._joinedMatch != null) && (this._joinedMatch.networkId != NetworkID.Invalid)) {
             this._manager.matchMaker.DestroyMatch(

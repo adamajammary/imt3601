@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 public class BunnyController : NetworkBehaviour {
 
@@ -9,7 +10,10 @@ public class BunnyController : NetworkBehaviour {
     private GameObject bunnyPoop;
     private PlayerInformation playerInfo;
 
-    void Start () {
+    void Start() {
+        if (SceneManager.GetActiveScene().name != "Island")
+            return;
+
         bunnyPoop = Resources.Load<GameObject>("Prefabs/poop");
         playerInfo = GetComponent<PlayerInformation>();
         if (!this.isLocalPlayer)
@@ -36,7 +40,7 @@ public class BunnyController : NetworkBehaviour {
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
     }
 
-    void Update () {
+    void Update() {
         if (!this.isLocalPlayer)
             return;
 

@@ -1,6 +1,6 @@
 ﻿//using System.Collections;
 //using System.Collections.Generic;
-using UnityEngine;
+//using UnityEngine;
 using UnityEngine.Networking;
 
 public class SetUpLocalPlayer : NetworkBehaviour {
@@ -9,7 +9,10 @@ public class SetUpLocalPlayer : NetworkBehaviour {
     void Start () {
         if (this.isLocalPlayer) {
             ThirdPersonCamera camera = FindObjectOfType<ThirdPersonCamera>();
-            camera.SetTarget(this.transform);
+
+            if (camera != null)
+                camera.SetTarget(this.transform);
+
             this.tag = "Player";
             transform.GetChild(0).gameObject.SetActive(true);
         } else

@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
@@ -8,7 +7,7 @@ using UnityEngine.UI;
 
 public class PlayerHealth : NetworkBehaviour {
 
-    private const float     MAX_HEALTH = 100;
+    private const float   MAX_HEALTH = 100;
     private NetworkClient _client;
     private Image         _damageImage;
     private bool          _damageImmune;
@@ -32,7 +31,7 @@ public class PlayerHealth : NetworkBehaviour {
     private float _currentHealth = MAX_HEALTH;
 
     void Start() {
-        if (!this.isLocalPlayer)
+        if (!this.isLocalPlayer || (SceneManager.GetActiveScene().name != "Island"))
             return;
 
         this._damageImage    = GameObject.Find("Canvas/BloodSplatterOverlay").GetComponent<Image>();
@@ -302,6 +301,7 @@ public class PlayerHealth : NetworkBehaviour {
             yield return null;
         }
 
+        NetworkManager.singleton.StopHost();
         SceneManager.LoadScene("Lobby"); // Not sure if anything else should be done before leaving the scene?
     }
 

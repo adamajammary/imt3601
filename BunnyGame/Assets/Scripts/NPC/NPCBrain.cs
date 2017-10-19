@@ -265,11 +265,14 @@ public class NPCBrain {
 
         override public void update() {
             var npc = this._brain._npc;
+            Debug.Log("1");
             Vector3 dir = fleeDir();
-            if (detectObstacle()) {
+            Debug.Log("2");
+            if (detectObstacle()) {                
                 AStar(npc.getCell(), findTargetCell(dir));
             }
-            if (this._path.Count > 1) {
+            Debug.Log("3");
+            if (this._path.Count > 1) {               
                 this._path.Pop();
                 dir = (this._path.Peek().pos - npc.getPos()).normalized;
                 dir.y = 0;
@@ -280,6 +283,7 @@ public class NPCBrain {
                 this._brain._speed = 1;
                 this._brain._state.Pop();
             }
+           Debug.Log("4");
         }
 
         private Vector3 fleeDir() {

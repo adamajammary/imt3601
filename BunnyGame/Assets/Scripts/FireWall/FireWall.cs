@@ -41,7 +41,7 @@ public class FireWall : NetworkBehaviour {
         }
     }
  
-    private const float _wallShrinkTime = 60.0f;//Time in seconds between _wall shrinking
+    private const float _wallShrinkTime = 1.0f;//Time in seconds between _wall shrinking
     private const float _wallShrinkRate = 0.04f; //The rate at which the wall shrinks
 
     private WallMapRenderer _actualWallRenderer;//Renders the actual fire wall

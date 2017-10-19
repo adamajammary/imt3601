@@ -153,6 +153,7 @@ public class NPCBrain {
         }
 
         protected void walkPath() {
+            if (this._path.Count == 0) return;
             recalcPath();
             var npc = this._brain._npc;
             Vector3 pathDir;
@@ -209,6 +210,7 @@ public class NPCBrain {
         }
 
         protected void AStar(NPCWorldView.worldCellData startCell, NPCWorldView.worldCellData goal) {
+            if (goal == null || startCell == null) return;
             Dictionary<Vector3, NPCWorldView.worldCellData> closed =
                 new Dictionary<Vector3, NPCWorldView.worldCellData>();                                             //For quickly looking up closed nodes
             SortedList<float, NPCWorldView.worldCellData> open =

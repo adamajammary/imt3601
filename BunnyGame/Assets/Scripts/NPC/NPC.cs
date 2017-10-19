@@ -8,15 +8,18 @@ public class NPC : NetworkBehaviour {
     public string type = "not set";
 
     [SyncVar(hook = "updateMasterPos")]
-    private Vector3             _masterPos;
+    private Vector3 _masterPos;
     [SyncVar(hook = "updateMasterDir")]
-    private Vector3             _masterDir;
+    private Vector3 _masterDir;
+    [SyncVar(hook = "updateGoal")]
+    private Vector3 _masterGoal;
 
     private const float         _gravity = -12;
     private const float         _syncRate = 1; //How many times to sync per second
 
     private float               _syncTimer;
     private Vector3             _moveDir;
+    private Vector3             _goal; //Used by the brain, need it here for syncing
     private CharacterController _cc;
     private GameObject          _blood;
     private GameObject          _fire;
@@ -57,27 +60,12 @@ public class NPC : NetworkBehaviour {
         }
     }
 
-    public void updateMasterPos(Vector3 masterPos) {
-        transform.position = masterPos;
+    public void setGoal(Vector3 goal) {
+        this._goal = goal;
     }
 
-    public void updateMasterDir(Vector3 masterDir) {
-        this._moveDir = masterDir;
-    }
-
-    public void setMoveDir(Vector3 moveDir) {
-        this._moveDir = moveDir;
-    }
-
-    public void spawn(Vector3 pos, Quaternion rot) {
-        this.transform.position = pos;
-        this.transform.rotation = rot;
-        this._moveDir = transform.forward;
-    }
-
-    public void syncClients() {
-        this._masterPos = transform.position;
-        this._masterDir = this._moveDir;
+    public Vector3 getGoal() {
+        return this._goal;
     }
 
     public void kill(GameObject killer, int id) {
@@ -109,6 +97,34 @@ public class NPC : NetworkBehaviour {
     public void burn() {
         CmdBurn(this.transform.position);
         Destroy(this.gameObject);
+    }
+
+    public void spawn(Vector3 pos, Vector3 dir) {
+        this.transform.position = pos;
+        this._moveDir = dir;
+    }
+
+    private void updateMasterPos(Vector3 masterPos) {
+        transform.position = masterPos;
+    }
+
+    private void updateMasterDir(Vector3 masterDir) {
+        this._moveDir = masterDir;
+    }
+
+    private void updateGoal(Vector3 masterGoal) {
+        this._goal = masterGoal;
+    }
+
+    public void update(Vector3 moveDir, Vector3 goal) {
+        this._moveDir = moveDir;
+        this._goal = goal;
+    }
+
+    private void syncClients() {
+        this._masterPos = transform.position;
+        this._masterDir = this._moveDir;
+        this._masterGoal = this._goal;
     }
 
     private void OnCollisionEnter(Collision other) {

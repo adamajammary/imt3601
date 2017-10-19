@@ -5,7 +5,6 @@ using UnityEngine;
 public class GrenadePoop : SpecialAbility {
     AbilityNetwork networkAbility;
     CharacterController controller;
-    BunnyController bc;
     PlayerInformation playerInfo;
 
     // Use this for initialization

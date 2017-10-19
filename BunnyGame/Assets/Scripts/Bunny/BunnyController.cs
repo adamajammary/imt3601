@@ -20,7 +20,8 @@ public class BunnyController : NetworkBehaviour {
     }
 
 
- 
+ void Start() { 
+
         if (SceneManager.GetActiveScene().name != "Island")
             return;
           NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();

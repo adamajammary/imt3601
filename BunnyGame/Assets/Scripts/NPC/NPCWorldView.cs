@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Serialization;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -24,16 +23,16 @@ public static class NPCWorldView {
         #endregion
     }
     //===============================================================================
-    public enum WorldPlane : int {
-        LAND = 0, 
-        WATER
-    }
+
     //===============================================================================
     // Not doing any locking here, if multiple NPCs were to do A* at the same time,
     // they would need their own copy anyways to get personal g, h, f values
     public class worldCellData {
         public int x, y;
         public bool blocked;
+        //Got "manhatten" plusNeighbours and diag plusNeighbours, because not all path finding will allow diag pathing.
+        public List<worldCellData> plusNeighbours;
+        public List<worldCellData> crossNeighbours;
         public List<worldCellData> neighbours;
         public Vector3[] corners = new Vector3[4];
 
@@ -126,6 +125,13 @@ public static class NPCWorldView {
             }
         }
 
+        public worldCellData getCell() {
+            lock (this) {
+                int[] index = convertWorld2Cell(this._pos);
+                return _land[index[0], index[1]];
+            }
+        }
+
         public Vector3 getDir() {
             lock (this) 
                 return this._dir;
@@ -138,7 +144,7 @@ public static class NPCWorldView {
     }
     //===============================================================================
     //===============================================================================
-    public const int cellCount = 300;
+    public const int cellCount = 150;
     public const float worldSize = 400;
     public const float cellSize = worldSize/cellCount;
 
@@ -203,11 +209,8 @@ public static class NPCWorldView {
 
     public static int[] convertWorld2Cell(Vector3 world) {
         int[] cellPos = { 0, 0 };
-        //new Vector3(x * cellSize + cellSize / 2, 0, y * cellSize + cellSize / 2) + _offset;
         world -= landOffset;
         world /= cellSize;
-        //world.x -= NPCWorldView.cellSize / 2;
-        //world.z -= NPCWorldView.cellSize / 2;
 
         cellPos[0] = clamp((int)world.x);
         cellPos[1] = clamp((int)world.z);
@@ -223,13 +226,11 @@ public static class NPCWorldView {
     // only be that the data that thread B reads is 1 frame old, which is better then having//
     // the threads block, slowing down the execution.                                       //                   
     //========================================================================================
-    public static worldCellData getCell(WorldPlane plane, int x, int y) {
-        if (plane == WorldPlane.LAND)
+    public static worldCellData getCell(bool land, int x, int y) {
+        if (land)
             return _land[x, y];
-        if (plane == WorldPlane.WATER)
-            return _water[x, y];
         else
-            return null;
+            return _water[x, y];
     }
 
     public static Dictionary<int, GameCharacter> getPlayers() {
@@ -248,12 +249,7 @@ public static class NPCWorldView {
     }
 
     delegate float Line(float x, float y);
-    public static float rayCast(WorldPlane plane, Vector3 start, Vector3 end) {
-        //Check collisions against the firewall
-        float wallCollsion = lineWallCollision(start, (end - start).normalized);
-        if (wallCollsion <= Vector3.Distance(start, end))
-            return wallCollsion;
-        
+    public static float rayCast(bool land, Vector3 start, Vector3 end) {        
         float a = (end.z - start.z) / (end.x - start.x + 0.000001f); //Don't want to divide by zero
         Line line = (x, y) => a * (x - start.x) - (y - start.z);
 
@@ -266,12 +262,12 @@ public static class NPCWorldView {
 
         for (int y = yStart; y < yEnd; y++) {
             for (int x = xStart; x < xEnd; x++) {
-                if (plane == WorldPlane.LAND) {
+                if (land) {
                     if (_land[x, y].blocked || !_water[x, y].blocked) {
                         if (cellLineCollision(line, _land[x, y]))
                             return Vector3.Distance(start, _land[x, y].pos);
                     }
-                } else if (plane == WorldPlane.WATER) {
+                } else {
                     if (!_land[x, y].blocked || _water[x, y].blocked) {
                         if (cellLineCollision(line, _land[x, y]))
                             return Vector3.Distance(start, _land[x, y].pos);
@@ -280,25 +276,6 @@ public static class NPCWorldView {
             }
         }
         return float.MaxValue;
-    }
-
-    public static float lineWallCollision(Vector3 start, Vector3 dir) {
-        // Solving the quadratic equation obtained by the intersection of 
-        // a circle and a line. 
-        //Line = Start + t*dir
-        //Line.x = start.x + t*dir.x 
-        //Line.y = start.y + t*dir.y 
-        //intersection = (line.x - circle.x)^2 + (line.y - circle.y)^2 - r = 0
-        //The below lines are already expanded and grouped to form the components of the quadratic equation:
-        // ax^2 + bx + c = 0
-        float a = dir.x*dir.x + dir.y*dir.y;
-        float b = 2 * (start.x - FireWall.pos.x) * dir.x + 2 * (start.y - FireWall.pos.y) * dir.y;
-        float c = Mathf.Pow(start.x - FireWall.pos.x, 2) + Mathf.Pow(start.y - FireWall.pos.y, 2) - FireWall.radius;
-
-        float root = b * b - 4 * a * c;
-        if (root < 0) return float.MaxValue;
-        float t = (-b + Mathf.Sqrt(root)) / (2 * a);
-        return (start + dir * t).magnitude;
     }
 
     public static bool writeToFile() {
@@ -362,15 +339,20 @@ public static class NPCWorldView {
             }
         }
 
-        // Add neighbours for the cells
         for (int y = 0; y < cellCount; y++) {
-            for (int x = 0; x < cellCount; x++) {
+            for (int x = 0; x < cellCount; x++) { 
+                plane[x, y].plusNeighbours = new List<worldCellData>();
+                plane[x, y].crossNeighbours = new List<worldCellData>();
                 plane[x, y].neighbours = new List<worldCellData>();
-                for (int i = -1; i < 2; i += 2) {
-                    if (x + i >= 0 && x + i < cellCount)
-                        plane[x, y].neighbours.Add(plane[x + i, y]);
-                    if (y + i >= 0 && y + i < cellCount)
-                        plane[x, y].neighbours.Add(plane[x, y + i]);
+                for (int yi = -1; yi < 2; yi++) {
+                    for (int xi = -1; xi < 2; xi++) {
+                        int xc = x + xi, yc = y + yi;
+                        if (bounds(xc) && bounds(yc) && !(xc == x && yc == y)) {
+                            if (xc != x && yc != y) plane[x, y].crossNeighbours.Add(plane[xc, yc]);
+                            else if (xc == x || yc == y) plane[x, y].plusNeighbours.Add(plane[xc, yc]);
+                            plane[x, y].neighbours.Add(plane[xc, yc]);
+                        }
+                    }
                 }
             }
         }
@@ -378,8 +360,12 @@ public static class NPCWorldView {
 
     private static int clamp(int input) {
         input = (input >= 0) ? input : 0;
-        input = (input < NPCWorldView.cellCount) ? input : NPCWorldView.cellCount - 1;
+        input = (input < cellCount) ? input : cellCount - 1;
         return input;
+    }
+
+    private static bool bounds(int input) {
+        return (input >= 0 && input < cellCount);
     }
 
     private static bool[,] getBlocked(worldCellData[,] plane) {

@@ -39,8 +39,8 @@ public class NPCWorldViewManager : MonoBehaviour {
 
         float time = Time.realtimeSinceStartup;
         Debug.Log("NPCManager: Setting up NPCWorldView by detecting obstacles!");
-        StartCoroutine(findObstacles(NPCWorldView.WorldPlane.LAND, (x) => landProg = x));
-        StartCoroutine(findObstacles(NPCWorldView.WorldPlane.WATER, (x) => waterProg = x));
+        StartCoroutine(findObstacles(true, (x) => landProg = x));
+        StartCoroutine(findObstacles(false, (x) => waterProg = x));
         while(landProg < 1 || waterProg < 1) {
             progressBar.sizeDelta = new Vector2((landProg + waterProg) * 500, 100);
             yield return 0;
@@ -57,14 +57,14 @@ public class NPCWorldViewManager : MonoBehaviour {
 
     //Finds obstacles in every cell of NPCWorldView, and marks them as blocked
     //Areas that are closed off by blocked cells will also be blocked
-    private IEnumerator findObstacles(NPCWorldView.WorldPlane plane, System.Action<float> progress) {
+    private IEnumerator findObstacles(bool land, System.Action<float> progress) {
         int Iter = 0;
         int totalIter = 2 * _cellCount * _cellCount;
         int yieldRate = _cellCount; 
 
         for (int y = 0; y < _cellCount; y++) {
             for (int x = 0; x < _cellCount; x++) {
-                var cell = NPCWorldView.getCell(plane, x, y);
+                var cell = NPCWorldView.getCell(land, x, y);
                 cell.blocked = obstacleInCell(cell);
                 Iter++;
                 if (Iter % yieldRate == 0) {
@@ -76,22 +76,22 @@ public class NPCWorldViewManager : MonoBehaviour {
 
         NPCWorldView.worldCellData[] targets;
         //Generate targets depending on plane type
-        if (plane == NPCWorldView.WorldPlane.LAND) {
-            targets = new NPCWorldView.worldCellData[] { NPCWorldView.getCell(plane, 20, 20) };
+        if (land) {
+            targets = new NPCWorldView.worldCellData[] { NPCWorldView.getCell(land, 20, 20) };
         } else {
             targets = new NPCWorldView.worldCellData[waterBodies.Length];
             for (int i = 0; i < waterBodies.Length; i++) {
                 int[] index = NPCWorldView.convertWorld2Cell(waterBodies[i].position);
-                targets[i] = NPCWorldView.getCell(plane, index[0], index[1]);
+                targets[i] = NPCWorldView.getCell(land, index[0], index[1]);
             }
         }
 
         bool lastCellBlocked = false;
         for (int y = 0; y < _cellCount; y++) {
             for (int x = 0; x < _cellCount; x++) {
-                var cell = NPCWorldView.getCell(plane, x, y);
+                var cell = NPCWorldView.getCell(land, x, y);
                 if (!cell.blocked && lastCellBlocked)
-                    this.fillAreaIfBlocked(plane, cell, targets);
+                    this.fillAreaIfBlocked(land, cell, targets);
                 lastCellBlocked = cell.blocked;
                 Iter++;
                 if (Iter % yieldRate == 0) {
@@ -112,7 +112,7 @@ public class NPCWorldViewManager : MonoBehaviour {
 
     //This is basically a*, if it cant find a path from startPos to any target node, then all the nodes in
     //  the closed list are blocked nodes.
-    void fillAreaIfBlocked(NPCWorldView.WorldPlane plane, NPCWorldView.worldCellData startCell, NPCWorldView.worldCellData[] targets) {
+    void fillAreaIfBlocked(bool land, NPCWorldView.worldCellData startCell, NPCWorldView.worldCellData[] targets) {
         Dictionary<Vector3, NPCWorldView.worldCellData> closed = null;
         foreach (var target in targets) {
             SortedList<float, NPCWorldView.worldCellData> open =
@@ -138,8 +138,8 @@ public class NPCWorldViewManager : MonoBehaviour {
                 //Close current tile
                 closed.Add(current.pos, current);
 
-                for (int i = 0; i < current.neighbours.Count; i++) {
-                    var cell = current.neighbours[i];
+                for (int i = 0; i < current.plusNeighbours.Count; i++) {
+                    var cell = current.plusNeighbours[i];
                     if (!closed.ContainsKey(cell.pos) && !cell.blocked) {
                         float g = current.g + 1;
                         if (g < cell.g) { //New and better G value?
@@ -158,10 +158,10 @@ public class NPCWorldViewManager : MonoBehaviour {
 
     void OnDrawGizmos() {
         if (debugRenderLand) {
-            drawGizmo(NPCWorldView.WorldPlane.LAND);
+            drawGizmo(true);
         }
         if (debugRenderWater) {
-            drawGizmo(NPCWorldView.WorldPlane.WATER);
+            drawGizmo(false);
             Vector3 offset = NPCWorldView.waterOffset;
             foreach (var waterbody in waterBodies) {
                 int[] fuck = NPCWorldView.convertWorld2Cell(waterbody.position);
@@ -172,14 +172,14 @@ public class NPCWorldViewManager : MonoBehaviour {
         }
     }
 
-    void drawGizmo(NPCWorldView.WorldPlane plane) {
+    void drawGizmo(bool land) {
         Vector3 offset = NPCWorldView.landOffset;
-        if (plane == NPCWorldView.WorldPlane.WATER)
+        if (!land)
             offset = NPCWorldView.waterOffset;
 
         for (int y = 0; y < _cellCount; y++) {
             for (int x = 0; x < _cellCount; x++) {
-                if (!NPCWorldView.getCell(plane, x, y).blocked)
+                if (!NPCWorldView.getCell(land, x, y).blocked)
                     Gizmos.color = Color.green;
                 else
                     Gizmos.color = Color.red;

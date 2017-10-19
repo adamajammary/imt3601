@@ -69,10 +69,9 @@ public class NPC : NetworkBehaviour {
         this._moveDir = moveDir;
     }
 
-    public void spawn(Vector3 pos, Quaternion rot) {
+    public void spawn(Vector3 pos, Vector3 dir) {
         this.transform.position = pos;
-        this.transform.rotation = rot;
-        this._moveDir = transform.forward;
+        this._moveDir = dir;
     }
 
     public void syncClients() {
@@ -142,5 +141,9 @@ public class NPC : NetworkBehaviour {
         fire.transform.position = pos;
         NetworkServer.Spawn(fire);
         Destroy(fire, 10.0f);
+    }
+
+    public void OnDestroy() {
+        Debug.Log("IM DEAD LOL");
     }
 }

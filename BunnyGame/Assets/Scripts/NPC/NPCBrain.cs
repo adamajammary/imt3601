@@ -31,7 +31,7 @@ public class NPCBrain {
 
     private void sendInstuction(Vector3 dir) {
         if (dir == Vector3.zero || dir == this._npc.getDir()) return;
-        NPCThread.instruction i = new NPCThread.instruction(this._npc.getId(), dir.normalized * this._speed, Vector3.negativeInfinity);
+        NPCThread.instruction i = new NPCThread.instruction(this._npc.getId(), dir.normalized * this._speed, Vector3.down);
         this._instructions.Enqueue(i);
     }
 
@@ -108,9 +108,9 @@ public class NPCBrain {
         override public void update() {
             roam();
             if (inDanger()) {
-                this._brain._state.Push(new FleeDanger(this._brain));
+               this._brain._state.Push(new FleeDanger(this._brain));
             } else if (detectObstacle()) {
-                this._brain._state.Push(new AvoidObstacle(this._brain));
+               this._brain._state.Push(new AvoidObstacle(this._brain));
             }
         }
 
@@ -137,14 +137,13 @@ public class NPCBrain {
         protected Stack<NPCWorldView.worldCellData> _path;
         protected Vector3 _goal;
         public AvoidObstacle(NPCBrain x) : base(x) {
-            this._goal = Vector3.negativeInfinity;
+            this._goal = Vector3.down;
             this._path = new Stack<NPCWorldView.worldCellData>();
             AStar(this._brain._npc.getCell(), findTargetCell(x._npc.getDir()));
         }
 
         override public void update() {
-            walkPath();           
-
+            walkPath();
             if (inDanger()) {
                 this._brain._state.Pop();
                 this._brain._state.Push(new FleeDanger(this._brain));
@@ -167,8 +166,9 @@ public class NPCBrain {
 
         protected void recalcPath() { 
             var npc = this._brain._npc;
+            if (npc.getGoal() == Vector3.down) return;
             if (npc.getGoal() != this._goal) { //This happends when a client is out of sync with master, and they calculate different paths
-                AStar(npc.getCell(), NPCWorldView.getCell(true, this._goal));
+                AStar(npc.getCell(), NPCWorldView.getCell(true, npc.getGoal()));
             }
         }
 

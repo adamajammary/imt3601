@@ -177,8 +177,8 @@ public class NPCBrain {
             NPCWorldView.worldCellData target = null;
             Vector3 testDir;
             float degInc = 180 / 8;
-            while (target == null) {
-                float start = 5;
+            float start = 5;
+            while (target == null && start < 200) {                
                 target = probeDir(prefDir, start);
                 if (target != null) break;
                 for (float deg = degInc; deg < 180; deg += degInc) {

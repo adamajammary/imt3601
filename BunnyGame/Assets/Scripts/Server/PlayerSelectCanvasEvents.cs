@@ -3,10 +3,10 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 using UnityEngine.UI;
 
-public class PlayerSelectCanvasEvents : NetworkBehaviour {
+public class PlayerSelectCanvasEvents : MonoBehaviour {
 
-    public Button[]   _buttons;
-    public InputField _nameInput;
+    private Button[]   _buttons;
+    private InputField _nameInput;
     private Text       _nameAvailableText;
 
     // This function is called when the object becomes enabled and active.
@@ -32,14 +32,10 @@ public class PlayerSelectCanvasEvents : NetworkBehaviour {
         if (this._nameInput != null) {
             this._nameInput.onValueChanged.RemoveAllListeners();
             this._nameInput.onValueChanged.AddListener((c) => this.onNameUpdate());
+            this._nameInput.onEndEdit.AddListener((c)      => this.onNameUpdate());
 
             this._nameInput.text = "";
         }
-    }
-
-    private void Start() {
-        if (NetworkClient.allClients.Count > 0)
-            NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_NAME_AVAILABLE, this.recieveNetworkMessage);
     }
 
     // Updates the model selection index based on which button the player clicked on.
@@ -53,7 +49,14 @@ public class PlayerSelectCanvasEvents : NetworkBehaviour {
     }
 
     public void onNameUpdate() {
+        this.registerNetworkHandlers();
         this.sendPlayerNameMessage(this._nameInput.text.Trim());
+    }
+
+    // Registers the network message types that this client will listen to.
+    private void registerNetworkHandlers() {
+        if ((NetworkClient.allClients.Count > 0) && !NetworkClient.allClients[0].connection.CheckHandler((short)NetworkMessageType.MSG_NAME_AVAILABLE))
+            NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_NAME_AVAILABLE, this.recieveNetworkMessage);
     }
 
     // Recieve and handle the network message.
@@ -80,7 +83,7 @@ public class PlayerSelectCanvasEvents : NetworkBehaviour {
 
         if (message.value != 0) {
             this._nameAvailableText.text = "name is available";
-            this._nameAvailableText.color = new Color(0.0f, 0.4f, 0.0f);
+            this._nameAvailableText.color = Color.green;
         } else {
             this._nameAvailableText.text = "name is NOT available";
             this._nameAvailableText.color = Color.red;

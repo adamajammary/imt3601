@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
@@ -12,14 +10,14 @@ public class EscMenu : NetworkBehaviour {
     public Button settings;
     public Button exitToMenu;
     public Button exitToDesktop;
-    private NetworkLobbyManager manager;
+    private NetworkManager manager;
 
     private bool isPressed = false;
 
     // Use this for initialization
     void Start()
     {
-        manager = FindObjectOfType<NetworkLobbyManager>();
+        manager       = NetworkManager.singleton;
         escMenu       = escMenu.GetComponent<Canvas>();
         resumeButton  = resumeButton.GetComponent<Button>();
         settings      = settings.GetComponent<Button>();
@@ -46,13 +44,13 @@ public class EscMenu : NetworkBehaviour {
 
     public void ExitToDesktop()
     {
-        // Need to disconnect from server
+        manager.StopHost();
         Application.Quit();
     }
 
     public void ExitToMain()
     {
-        // Need to disconnect from server
+        manager.StopHost();
         SceneManager.LoadScene("Lobby");
     }
 
@@ -66,10 +64,10 @@ public class EscMenu : NetworkBehaviour {
         isPressed = false;
     }
 
+    // Is this used?
     public void DisconnectFromServer()
     {
         manager.GetComponent<NetworkManager>().StopServer();
         manager.GetComponent<NetworkManager>().enabled = false;
-
     }
 }

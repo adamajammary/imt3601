@@ -9,6 +9,7 @@ public class NPCWorldViewManager : MonoBehaviour {
     public bool debugRenderWater;
 
     public Transform[] waterBodies;
+    public Transform landPos;
     public RectTransform progressBar;
     public GameObject progressUI;
 
@@ -33,16 +34,18 @@ public class NPCWorldViewManager : MonoBehaviour {
         
         progressUI.SetActive(true);
 
-        float landProg = 0;
         float waterProg = 0;
+        float blockWaterProg = 0;
+        float landProg = 0;      
 
 
         float time = Time.realtimeSinceStartup;
         Debug.Log("NPCManager: Setting up NPCWorldView by detecting obstacles!");
-        StartCoroutine(findObstacles(true, (x) => landProg = x));
         StartCoroutine(findObstacles(false, (x) => waterProg = x));
-        while(landProg < 1 || waterProg < 1) {
-            progressBar.sizeDelta = new Vector2((landProg + waterProg) * 500, 100);
+        while(landProg < 1 || waterProg < 1 || blockWaterProg < 1) {
+            if (waterProg == 1 && blockWaterProg == 0) StartCoroutine(blockWaterInLand((x) => blockWaterProg = x));
+            if (blockWaterProg == 1 && landProg == 0) StartCoroutine(findObstacles(true, (x) => landProg = x));        
+            progressBar.sizeDelta = new Vector2((landProg + waterProg + blockWaterProg) * 333, 100);
             yield return 0;
         }
         Debug.Log("NPCManager: Finished detecting obstacles for NPCWorldView, time elapsed: " + (Time.realtimeSinceStartup - time));
@@ -55,6 +58,29 @@ public class NPCWorldViewManager : MonoBehaviour {
         NPCWorldView.ready = true;
     }
 
+    //Quick way of blocking out water cells in land plane, also overextends to keep NPCs out of water
+    private IEnumerator blockWaterInLand(System.Action<float> progress) {
+        int Iter = 0;
+        int totalIter = _cellCount * _cellCount;
+        int yieldRate = 2 * _cellCount;
+        //LOOP DI LOOP
+        for (int y = 0; y < _cellCount; y++) {
+            for (int x = 0; x < _cellCount; x++) {
+                for(int i = -1; i < 2; i++) { //Over extend
+                    for (int j = -1; j < 2; j++) {
+                        if (!NPCWorldView.getCell(true, x + j, y + i).blocked)
+                            NPCWorldView.getCell(true, x + j, y + i).blocked = !NPCWorldView.getCell(false, x, y).blocked;
+                    }
+                }
+                Iter++;
+                if (Iter % yieldRate == 0) {
+                    progress((float)Iter / (float)totalIter);
+                    yield return 0;
+                }
+            }
+        }
+        progress(1);
+    }
     //Finds obstacles in every cell of NPCWorldView, and marks them as blocked
     //Areas that are closed off by blocked cells will also be blocked
     private IEnumerator findObstacles(bool land, System.Action<float> progress) {
@@ -65,7 +91,8 @@ public class NPCWorldViewManager : MonoBehaviour {
         for (int y = 0; y < _cellCount; y++) {
             for (int x = 0; x < _cellCount; x++) {
                 var cell = NPCWorldView.getCell(land, x, y);
-                cell.blocked = obstacleInCell(cell);
+                if (!cell.blocked)
+                    cell.blocked = obstacleInCell(cell);
                 Iter++;
                 if (Iter % yieldRate == 0) {
                     progress((float)Iter / (float)totalIter);
@@ -77,12 +104,11 @@ public class NPCWorldViewManager : MonoBehaviour {
         NPCWorldView.worldCellData[] targets;
         //Generate targets depending on plane type
         if (land) {
-            targets = new NPCWorldView.worldCellData[] { NPCWorldView.getCell(land, 20, 20) };
+            targets = new NPCWorldView.worldCellData[] { NPCWorldView.getCell(land, landPos.position) };
         } else {
             targets = new NPCWorldView.worldCellData[waterBodies.Length];
             for (int i = 0; i < waterBodies.Length; i++) {
-                int[] index = NPCWorldView.convertWorld2Cell(waterBodies[i].position);
-                targets[i] = NPCWorldView.getCell(land, index[0], index[1]);
+                targets[i] = NPCWorldView.getCell(land, waterBodies[i].position);
             }
         }
 

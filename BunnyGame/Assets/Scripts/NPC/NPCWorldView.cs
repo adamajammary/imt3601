@@ -93,12 +93,14 @@ public static class NPCWorldView {
     public class GameCharacter { //Representation of living creatures in the game, from NPCs to players
         private Vector3 _pos;
         private Vector3 _dir;
+        private Vector3 _goal;
         private int _id;
 
         public GameCharacter(int id) {
             this._id = id;
             this._pos = Vector3.zero;
             this._dir = Vector3.zero;
+            this._goal = Vector3.negativeInfinity;
         }
 
         public GameCharacter(int id, Vector3 pos, Vector3 dir) {
@@ -106,10 +108,11 @@ public static class NPCWorldView {
             this._pos = pos;
             this._dir = dir;
         }
-        public void update(Vector3 pos, Vector3 dir) {
+        public void update(Vector3 pos, Vector3 dir, Vector3 goal) {
             lock (this) {
                 this._dir = dir;
                 this._pos = pos;
+                this._goal = goal;
             }
         }   
         
@@ -140,6 +143,11 @@ public static class NPCWorldView {
         public int getId() {
             lock (this) 
                 return this._id;
+        }
+
+        public Vector3 getGoal() {
+            lock (this)
+                return this._goal;
         }
     }
     //===============================================================================
@@ -227,10 +235,19 @@ public static class NPCWorldView {
     // the threads block, slowing down the execution.                                       //                   
     //========================================================================================
     public static worldCellData getCell(bool land, int x, int y) {
+        x = clamp(x); y = clamp(y);
         if (land)
             return _land[x, y];
         else
             return _water[x, y];
+    }
+
+    public static worldCellData getCell(bool land, Vector3 pos) {
+        int[] index = convertWorld2Cell(pos);
+        if (land)
+            return _land[index[0], index[1]];
+        else
+            return _water[index[0], index[1]];
     }
 
     public static Dictionary<int, GameCharacter> getPlayers() {
@@ -263,12 +280,12 @@ public static class NPCWorldView {
         for (int y = yStart; y < yEnd; y++) {
             for (int x = xStart; x < xEnd; x++) {
                 if (land) {
-                    if (_land[x, y].blocked || !_water[x, y].blocked) {
+                    if (_land[x, y].blocked) {
                         if (cellLineCollision(line, _land[x, y]))
                             return Vector3.Distance(start, _land[x, y].pos);
                     }
                 } else {
-                    if (!_land[x, y].blocked || _water[x, y].blocked) {
+                    if (_water[x, y].blocked) {
                         if (cellLineCollision(line, _land[x, y]))
                             return Vector3.Distance(start, _land[x, y].pos);
                     }

@@ -6,11 +6,13 @@ public class NPCThread {
     //==============Member variables==================================================
     public struct instruction {
         public Vector3 moveDir;
+        public Vector3 goal;
         public int id;
 
-        public instruction(int id, Vector3 moveDir) {
+        public instruction(int id, Vector3 moveDir, Vector3 goal) {
             this.id = id;
             this.moveDir = moveDir;
+            this.goal = goal;
         }
     }
 

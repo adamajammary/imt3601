@@ -31,9 +31,15 @@ public class NPCBrain {
 
     private void sendInstuction(Vector3 dir) {
         if (dir == Vector3.zero || dir == this._npc.getDir()) return;
-        NPCThread.instruction i = new NPCThread.instruction(this._npc.getId(), dir.normalized * this._speed);
+        NPCThread.instruction i = new NPCThread.instruction(this._npc.getId(), dir.normalized * this._speed, Vector3.negativeInfinity);
         this._instructions.Enqueue(i);
-    }   
+    }
+
+    private void sendInstuction(Vector3 dir, Vector3 goal) {
+        if (dir == Vector3.zero || dir == this._npc.getDir()) return;
+        NPCThread.instruction i = new NPCThread.instruction(this._npc.getId(), dir.normalized * this._speed, goal);
+        this._instructions.Enqueue(i);
+    }
 
     //==============State super class==================================================
     private class State {
@@ -58,21 +64,35 @@ public class NPCBrain {
             return false;
         }
 
-        protected Vector3 turnTowards(Vector3 current, Vector3 dir) {
-            float turnAngle = 10;
+        //protected Vector3 turnTowards(Vector3 current, Vector3 dir) {
+        //    float turnAngle = 10;
 
-            Vector3 left = Quaternion.AngleAxis(turnAngle, Vector3.up) * current;
-            Vector3 right = Quaternion.AngleAxis(-turnAngle, Vector3.up) * current;
-            float leftAngle = angle(dir, left);
-            float rightAngle = angle(dir, right);
-            Vector3 retVec = (leftAngle <= rightAngle) ? left : right;
-            return (leftAngle >= turnAngle || rightAngle >= turnAngle) ? retVec : dir;
-        }
+        //    Vector3 left = Quaternion.AngleAxis(turnAngle, Vector3.up) * current;
+        //    Vector3 right = Quaternion.AngleAxis(-turnAngle, Vector3.up) * current;
+        //    float leftAngle = angle(dir, left);
+        //    float rightAngle = angle(dir, right);
+        //    Vector3 retVec = (leftAngle <= rightAngle) ? left : right;
+        //    return (leftAngle >= turnAngle || rightAngle >= turnAngle) ? retVec : dir;
+        //}
 
-        float angle(Vector3 a3, Vector3 b3) {
-            Vector2 a2 = new Vector2(a3.x, a3.z);
-            Vector2 b2 = new Vector2(b3.x, b3.z);
-            return Vector2.Angle(a2, b2);
+        //float angle(Vector3 a3, Vector3 b3) {
+        //    Vector2 a2 = new Vector2(a3.x, a3.z);
+        //    Vector2 b2 = new Vector2(b3.x, b3.z);
+        //    return Vector2.Angle(a2, b2);
+        //}
+
+        protected bool inDanger() {
+            var npc = this._brain._npc;
+            var players = NPCWorldView.getPlayers();
+            foreach (var player in players.Values)
+                if (Vector3.Distance(npc.getPos(), player.getPos()) < 20)
+                    return true;
+           
+            float dist = Vector3.Distance(npc.getPos(), NPCWorldView.FireWall.pos);
+            if ((NPCWorldView.FireWall.radius - dist) < 20)
+                return true;
+
+            return false;
         }
     }
 
@@ -87,8 +107,10 @@ public class NPCBrain {
 
         override public void update() {
             roam();
-            if (detectObstacle()) {
-                this._brain._state.Push(new AvoidObstacle(this._brain, this._brain._npc.getDir()));
+            if (inDanger()) {
+                this._brain._state.Push(new FleeDanger(this._brain));
+            } else if (detectObstacle()) {
+                this._brain._state.Push(new AvoidObstacle(this._brain));
             }
         }
 
@@ -112,32 +134,45 @@ public class NPCBrain {
 
     //==============Avoid obstacle state==================================================
     private class AvoidObstacle : State {
-        private Stack<NPCWorldView.worldCellData> _path;
-        public AvoidObstacle(NPCBrain x, Vector3 prefDir) : base(x) {
+        protected Stack<NPCWorldView.worldCellData> _path;
+        protected Vector3 _goal;
+        public AvoidObstacle(NPCBrain x) : base(x) {
+            this._goal = Vector3.negativeInfinity;
             this._path = new Stack<NPCWorldView.worldCellData>();
-            AStar(this._brain._npc.getCell(), findTargetCell(prefDir));
+            AStar(this._brain._npc.getCell(), findTargetCell(x._npc.getDir()));
         }
 
         override public void update() {
-            walkPath();
-            if (this._path.Count == 0) {
+            walkPath();           
+
+            if (inDanger()) {
+                this._brain._state.Pop();
+                this._brain._state.Push(new FleeDanger(this._brain));
+            } else if (this._path.Count == 0) {
                 this._brain._state.Pop(); // Return to previous state
-            }
-            
+            }            
         }
 
-        private void walkPath() {
+        protected void walkPath() {
+            recalcPath();
             var npc = this._brain._npc;
             Vector3 pathDir;
 
             pathDir = this._path.Peek().pos - npc.getPos();
             pathDir.y = 0;
             pathDir.Normalize();
-            this._brain.sendInstuction(pathDir);
+            this._brain.sendInstuction(pathDir, this._goal);
             if (npc.getCell() == this._path.Peek()) this._path.Pop();
         }
 
-        private NPCWorldView.worldCellData findTargetCell(Vector3 prefDir) {
+        protected void recalcPath() { 
+            var npc = this._brain._npc;
+            if (npc.getGoal() != this._goal) { //This happends when a client is out of sync with master, and they calculate different paths
+                AStar(npc.getCell(), NPCWorldView.getCell(true, this._goal));
+            }
+        }
+
+        protected NPCWorldView.worldCellData findTargetCell(Vector3 prefDir) {
             NPCWorldView.worldCellData target = null;
             Vector3 testDir;
             float degInc = 180 / 8;
@@ -165,22 +200,22 @@ public class NPCBrain {
             float cellSize = NPCWorldView.cellSize;
             for (mult = start; mult < probeLen; mult++) {
                 Vector3 rayEnd = pos + dir * cellSize * mult;
-                int[] i = NPCWorldView.convertWorld2Cell(rayEnd);
-                var cell = NPCWorldView.getCell(true, i[0], i[1]);
-                var waterCell = NPCWorldView.getCell(false, i[0], i[1]);
+                var cell = NPCWorldView.getCell(true, rayEnd);
+                var waterCell = NPCWorldView.getCell(false, rayEnd);
                 if (!cell.blocked && waterCell.blocked)
                     return cell;
             }
             return null;            
         }
 
-        void AStar(NPCWorldView.worldCellData startCell, NPCWorldView.worldCellData goal) {
+        protected void AStar(NPCWorldView.worldCellData startCell, NPCWorldView.worldCellData goal) {
             Dictionary<Vector3, NPCWorldView.worldCellData> closed =
                 new Dictionary<Vector3, NPCWorldView.worldCellData>();                                             //For quickly looking up closed nodes
             SortedList<float, NPCWorldView.worldCellData> open =
                 new SortedList<float, NPCWorldView.worldCellData>(new NPCWorldView.DuplicateKeyComparer<float>()); //For quickly finding best node to visit                                
 
             this._path.Clear(); //Clear any old paths
+            this._goal = goal.pos;
 
             var current = startCell;
 
@@ -221,47 +256,70 @@ public class NPCBrain {
         }
     }
 
+    //==============Flee Danger state==================================================
 
+    private class FleeDanger : AvoidObstacle {
+        public FleeDanger(NPCBrain x) : base(x) {
+            x._speed = 4;
+        }
 
-    //private bool canSeePlayer(NPCWorldView.GameCharacter npc, NPCWorldView.GameCharacter player) {
-    //    float a = angle(npc.getDir(), player.getPos() - npc.getPos());
-    //    if (a < 90) { // In field of view?
-    //        if (NPCWorldView.rayCast(true, npc.getPos(), player.getPos()) == float.MaxValue) { // in line of sight?
-    //            return true;
-    //        }
-    //    }
-    //    return false;
-    //}
+        override public void update() {
+            var npc = this._brain._npc;
+            Vector3 dir = fleeDir();
+            if (detectObstacle()) {
+                AStar(npc.getCell(), findTargetCell(dir));
+            }
+            if (this._path.Count > 1) {
+                this._path.Pop();
+                dir = (this._path.Peek().pos - npc.getPos()).normalized;
+                dir.y = 0;
+                dir.Normalize();
+            } 
+            this._brain.sendInstuction(dir);
+            if (dir == Vector3.zero) {
+                this._brain._speed = 1;
+                this._brain._state.Pop();
+            }
+        }
 
-    //private Vector3 avoidPlayer(NPCWorldView.GameCharacter npc, NPCWorldView.GameCharacter player) {
-    //    Vector3 flee = npc.getPos() - player.getPos();
-    //    flee.y = 0;
-    //    return turnTowards(npc.getDir(), flee);
-    //}
+        private Vector3 fleeDir() {
+            Vector3 fleeDir = Vector3.zero;
+            fleeDir += playersFleeDir();
+            fleeDir += FireWallFleeDir();
+            return fleeDir.normalized;
+        }
 
-    //private NPCWorldView.GameCharacter closestPlayer(NPCWorldView.GameCharacter npc) {
-    //    var players = NPCWorldView.getPlayers();
-    //    NPCWorldView.GameCharacter closestPlayer = null;
-    //    float closestDist = float.MaxValue;
-    //    foreach (var player in players.Values) {
-    //        float dist = Vector3.Distance(npc.getPos(), player.getPos());
-    //        if (dist < closestDist) {
-    //            closestDist = dist;
-    //            closestPlayer = player;
-    //        }
-    //    }
-    //    if (closestDist < 15) return closestPlayer;
-    //    else return null;
-    //}
+        private Vector3 playersFleeDir() {
+            var npc = this._brain._npc;
+            var players = NPCWorldView.getPlayers();
+            Vector3 fleeDir = Vector3.zero;
+            foreach (var player in players.Values) {
+                if (canSeePlayer(player)) {
+                    fleeDir += (npc.getPos() - player.getPos()).normalized;
+                }
+            }
+            fleeDir.y = 0;
+            return fleeDir.normalized;
+        }
 
-    //private Vector3 fleeFireWall(NPCWorldView.GameCharacter npc) {
-    //    float dist = Vector3.Distance(npc.getPos(), NPCWorldView.FireWall.pos);
-    //    float viewDist = 20;
-    //    if ((NPCWorldView.FireWall.radius - dist) < viewDist) {
-    //        Vector3 fleeDir = NPCWorldView.FireWall.pos - npc.getPos();
-    //        fleeDir.y = 0;
-    //        return turnTowards(npc.getDir(), fleeDir.normalized);
-    //    } else
-    //        return Vector3.zero;
-    //}
+        private Vector3 FireWallFleeDir() {
+            var npc = this._brain._npc;
+            float dist = Vector3.Distance(npc.getPos(), NPCWorldView.FireWall.pos);
+            float viewDist = 20;
+            if ((NPCWorldView.FireWall.radius - dist) < viewDist) {
+                Vector3 fleeDir = NPCWorldView.FireWall.pos - npc.getPos();
+                fleeDir.y = 0;
+                return fleeDir.normalized;
+            } else
+                return Vector3.zero;
+        }       
+
+        private bool canSeePlayer(NPCWorldView.GameCharacter player) {
+            var npc = this._brain._npc;
+            if (Vector3.Distance(npc.getPos(), player.getPos()) < 20) 
+                return true;
+            return false;
+        }
+    }
+
 }

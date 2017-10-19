@@ -64,7 +64,8 @@ public class NPCManager : NetworkBehaviour {
         var npcs = NPCWorldView.getNpcs();
         foreach (var npc in this._npcs) {
             if (npc.Value != null) {
-                npcs[npc.Key].update(npc.Value.transform.position, npc.Value.transform.forward);
+                Vector3 goal = npc.Value.GetComponent<NPC>().getGoal();
+                npcs[npc.Key].update(npc.Value.transform.position, npc.Value.transform.forward, goal);
             } else
                 this._deadNpcs.Add(npc.Key);
         }
@@ -72,7 +73,7 @@ public class NPCManager : NetworkBehaviour {
         var players = NPCWorldView.getPlayers();
         foreach (var player in this._players) {
             if (player.Value != null) {
-                players[player.Key].update(player.Value.transform.position, player.Value.transform.forward);
+                players[player.Key].update(player.Value.transform.position, player.Value.transform.forward, Vector3.negativeInfinity);
             } else
                 this._deadPlayers.Add(player.Key);
         }
@@ -115,9 +116,9 @@ public class NPCManager : NetworkBehaviour {
 
     void handleInstructions() {
         while (!this._instructions.isEmpty()) {
-            var instruction = this._instructions.Dequeue();   
-            if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null) 
-                this._npcs[instruction.id].GetComponent<NPC>().setMoveDir(instruction.moveDir);            
+            var instruction = this._instructions.Dequeue();
+            if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null)
+                this._npcs[instruction.id].GetComponent<NPC>().update(instruction.moveDir, instruction.goal);
         }
     }
 

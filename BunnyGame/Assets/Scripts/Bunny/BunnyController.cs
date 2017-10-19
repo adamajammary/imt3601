@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 public class BunnyController : NetworkBehaviour {
 
@@ -9,7 +10,7 @@ public class BunnyController : NetworkBehaviour {
     private GameObject bunnyPoop;
     private PlayerInformation playerInfo;
 
-    public override void PreStartClient()
+   public override void PreStartClient()
     {
         base.PreStartClient();
         NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
@@ -18,8 +19,11 @@ public class BunnyController : NetworkBehaviour {
             netAnimator.SetParameterAutoSend(i, true);
     }
 
-    void Start () {
-        NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
+
+ 
+        if (SceneManager.GetActiveScene().name != "Island")
+            return;
+          NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
 
         for (int i = 0; i < netAnimator.animator.parameterCount; i++)
             netAnimator.SetParameterAutoSend(i, true);
@@ -50,7 +54,8 @@ public class BunnyController : NetworkBehaviour {
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
     }
 
-    void Update () {
+ 
+    void Update() {
         if (!this.isLocalPlayer)
             return;
 

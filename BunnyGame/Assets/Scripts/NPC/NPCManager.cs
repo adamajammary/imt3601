@@ -59,7 +59,8 @@ public class NPCManager : NetworkBehaviour {
         this._ready = true;
     }
 
-    private void updateNPCWorldView() {        
+    private void updateNPCWorldView() {
+        if (this._npcThread.wait) return;
         //Update NPCS
         var npcs = NPCWorldView.getNpcs();
         foreach (var npc in this._npcs) {
@@ -76,8 +77,7 @@ public class NPCManager : NetworkBehaviour {
                 players[player.Key].update(player.Value.transform.position, player.Value.transform.forward, Vector3.negativeInfinity);
             } else
                 this._deadPlayers.Add(player.Key);
-        }
-        this.removeDeadStuff();        
+        }  
     }
 
     // Update is called once per frame
@@ -85,6 +85,7 @@ public class NPCManager : NetworkBehaviour {
         if (this._ready) {
             this.updateNPCWorldView();
             this.handleInstructions();
+            this.removeDeadStuff();
         }
     }
 
@@ -97,7 +98,7 @@ public class NPCManager : NetworkBehaviour {
                 this._ready = false;              
                 return;
             } else
-                while (this._npcThread.isUpdating) { /*Wait for npc thread to catch up */}
+                if (this._npcThread.isUpdating) { this._npcThread.wait = true; return; /*Wait for npc thread to catch up */}
 
             var players = NPCWorldView.getPlayers();
             foreach (int dead in this._deadPlayers) {
@@ -111,6 +112,7 @@ public class NPCManager : NetworkBehaviour {
             }
             this._deadNpcs.Clear();
             this._deadPlayers.Clear();
+            this._npcThread.wait = false;
         }
     }
 

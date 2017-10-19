@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class NPCManager : NetworkBehaviour { 
-    private float       _cellSize;  //The size of cells in NPCWorldView
     private int         _cellCount; //Amount of cells in NPCWorldView
 
     private Dictionary<int, GameObject> _players;
@@ -17,7 +16,6 @@ public class NPCManager : NetworkBehaviour {
 
     // Use this for initialization
     void Start() {
-        _cellSize = NPCWorldView.cellSize;
         _cellCount = NPCWorldView.cellCount;            
 
         this._players = new Dictionary<int, GameObject>();

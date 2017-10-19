@@ -38,9 +38,12 @@ public static class NPCWorldView {
         public Vector3[] corners = new Vector3[4];
 
         private Vector3 _pos;
+
+        // A* data
         private float _h;
         private float _g;
         private float _f;
+        private worldCellData _parent;
 
         public Vector3 pos {
             get {
@@ -78,6 +81,14 @@ public static class NPCWorldView {
                 return _f;
             }
         }
+        public worldCellData parent {
+            get {
+                return _parent;
+            }
+            set {
+                _parent = value;
+            }
+        }
     }
     //===============================================================================
     public class GameCharacter { //Representation of living creatures in the game, from NPCs to players
@@ -106,7 +117,14 @@ public static class NPCWorldView {
         public Vector3 getPos() {
             lock (this) 
                 return this._pos;
-        }    
+        }
+        
+        public Vector3 getMapPos() {
+            lock (this) {
+                int[] index = convertWorld2Cell(this._pos);
+                return _land[index[0], index[1]].pos;
+            }
+        }
 
         public Vector3 getDir() {
             lock (this) 
@@ -175,8 +193,10 @@ public static class NPCWorldView {
             for (int x = 0; x < cellCount; x++) {
                 _land[x, y].g = 9999999;
                 _land[x, y].h = 9999999;
+                _land[x, y].parent = null;
                 _water[x, y].g = 9999999;
                 _water[x, y].h = 9999999;
+                _water[x, y].parent = null;
             }
         }
     }

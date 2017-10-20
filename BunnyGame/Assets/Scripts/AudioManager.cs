@@ -9,9 +9,9 @@ public class AudioManager : MonoBehaviour {
     public float waterLevel;
     
     private float masterVolume;
-    private float musicVolume;
     private float effectVolume;
 
+    private bool _isUnderWater = false;
 
     // Ambient
     private AudioSource _ocean;
@@ -23,11 +23,15 @@ public class AudioManager : MonoBehaviour {
     private FireWall _firewall;
     private AudioSource _fire;
 
-    private bool _isUnderWater = false;
 
+    // Music
+    private AudioSource _music;
+    private AudioClip[] _musicPieces;
 
 
 	void Start () {
+        StartCoroutine(musicController());
+
         updateVolume();
 
         // OCEAN:
@@ -47,8 +51,6 @@ public class AudioManager : MonoBehaviour {
         //_fire.clip = Resources.Load<AudioClip>("Audio/...");
         _fire.Play();
         _fire.loop = true;
-
-
 
 	}
 	
@@ -101,13 +103,33 @@ public class AudioManager : MonoBehaviour {
         // _fire.panStereo = ...
     }
 
+    // Plays music tracks in a loop
+    private IEnumerator musicController() {
+        _musicPieces = Resources.LoadAll<AudioClip>("Audio/Music/");
+        GameObject musicObj = new GameObject() {
+            name = "Music"
+        };
+        _music = musicObj.AddComponent<AudioSource>();
+
+        updateVolume();
+
+        int clipIndex = Random.Range(0, _musicPieces.Length);
+        while (true) {
+            _music.PlayOneShot(_musicPieces[clipIndex]);
+            Debug.Log("Playing " + _musicPieces[clipIndex].name);
+            yield return new WaitForSeconds(_musicPieces[clipIndex].length);
+            clipIndex += 1;
+            clipIndex %= _musicPieces.Length;
+        }
+    }
+
 
 
     // Sets the volume values based on player settings
     public void updateVolume() {
         masterVolume = PlayerPrefs.GetFloat("Master Volume", 100) / 100f;
-        musicVolume = PlayerPrefs.GetFloat("Music Volume", 1)/100f * masterVolume;
         effectVolume = PlayerPrefs.GetFloat("Effect Volume", 100)/100f * masterVolume;
+        _music.volume = PlayerPrefs.GetFloat("Music Volume", 100)/500f * masterVolume;
     }
 
 }

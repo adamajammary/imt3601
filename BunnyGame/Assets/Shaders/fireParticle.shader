@@ -5,7 +5,7 @@
 	}
 	SubShader
 	{
-		Tags { "RenderType"="TransparentCutOut" "Queue" = "Transparent-5" }
+		Tags { "RenderType"="Transparent" "Queue" = "Transparent-5" }
 		Blend One OneMinusSrcAlpha // Premultiplied transparency
 		AlphaToMask On
 

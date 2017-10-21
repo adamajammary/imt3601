@@ -41,7 +41,7 @@ public class AudioManager : MonoBehaviour {
     // Plays music tracks in a loop
     private IEnumerator musicPlayer() {
         _musicClips = Resources.LoadAll<AudioClip>("Audio/Music/");
-        GameObject musicObj = new GameObject() {name = "Music"};
+        GameObject musicObj = new GameObject() {name = "MusicPlayer"};
         _music = musicObj.AddComponent<AudioSource>();
         _music.volume = 0;
 
@@ -60,7 +60,7 @@ public class AudioManager : MonoBehaviour {
     // Plays sound effects
     private IEnumerator effectPlayer() {
         // Set up ocean sound:
-        GameObject oceanObj = new GameObject { name = "OceanSound" };
+        GameObject oceanObj = new GameObject { name = "OceanSoundPlayer" };
         _ocean = oceanObj.AddComponent<AudioSource>();
         _ocean.clip = Resources.Load<AudioClip>("Audio/water_lapping_sea_waves_sandy_beach_5_meters_01");
         _ocean.loop = true;
@@ -68,10 +68,9 @@ public class AudioManager : MonoBehaviour {
         _ocean.Play();
 
         // Set up fire sound:
-        GameObject fireObj = new GameObject { name = "FireSound" };
+        GameObject fireObj = new GameObject { name = "FireSoundPlayer" };
         _fire = fireObj.AddComponent<AudioSource>();
         _fire.clip = Resources.Load<AudioClip>("Audio/nature_fire_big");
-        _fire.pitch = 2;
         _fire.loop = true;
         _fire.volume = 0;
         _fire.Play();

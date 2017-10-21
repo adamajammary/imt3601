@@ -15,11 +15,11 @@ public class PlayerEffects : NetworkBehaviour {
     private PlayerController    _pc;
     private CharacterController _cc;
     private PlayerHealth        _health;  
-
-    private float               _maxFallSpeed = 20; // How fast you can fall before starting to take fall damage
-    private int                 _fallDamage = 40;
-    private bool                _dealFallDamageOnCollision = false;
-    private bool                _fallDamageImmune = false;
+    
+    private int   _fallDamage = 40;
+    private bool  _fallDamageImmune = false;
+    private float _damageImpactVelocity = -20;
+    private float _currentImpactVelocity = 0;
 
     // Use this for initialization
     void Start () {
@@ -115,8 +115,6 @@ public class PlayerEffects : NetworkBehaviour {
         }
     }
 
-    
-
     private void wallDamage() {
         this.GetComponent<PlayerHealth>().TakeDamage(10 * Time.deltaTime, -1);
     }
@@ -126,14 +124,12 @@ public class PlayerEffects : NetworkBehaviour {
     }
 
     private void handleFallDamage() {
-        if (_fallDamageImmune) { // Cannot take damage while immune
-            _dealFallDamageOnCollision = false;
-        } else if (-this._pc.velocityY > _maxFallSpeed && !_dealFallDamageOnCollision)
-            _dealFallDamageOnCollision = true;
-        else if (-this._pc.velocityY < 1 && _dealFallDamageOnCollision) {
-            this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage, -1);
-            _dealFallDamageOnCollision = false;
+        if (!_fallDamageImmune && _cc.isGrounded && _currentImpactVelocity < _damageImpactVelocity) {
+            this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage * (_currentImpactVelocity / _damageImpactVelocity), -1);
+            Debug.Log("Impact vel: " + _currentImpactVelocity + " :: Damage: " + (_fallDamage * (_currentImpactVelocity / _damageImpactVelocity)));
+            _currentImpactVelocity = 0;
         }
+        else _currentImpactVelocity = _cc.velocity.y;
     }
 
     private void OnTriggerExit(Collider other) {

@@ -34,6 +34,9 @@ public class PlayerController : NetworkBehaviour {
     bool escMenu = false;
     public bool running = false;
 
+    private bool _directionLocked = false;
+    private float _targetRotation = 0;
+
     void Start() {
 		CorrectRenderingMode(); // Calling this here to fix the rendering order of the model, because materials have rendering mode fade
 
@@ -56,6 +59,7 @@ public class PlayerController : NetworkBehaviour {
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         Vector2 inputDir = input.normalized;
         running = Input.GetKey(KeyCode.LeftShift);
+        _directionLocked = Input.GetKey(KeyCode.LeftAlt);
 
         handleSpecialAbilities();
         Move(inputDir);
@@ -96,18 +100,25 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
-    public void Move(Vector2 inputDir) {     
-        float targetRotation = _cameraTransform.eulerAngles.y;
-        transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation,
+    public void Move(Vector2 inputDir) {
+        if(!_directionLocked)
+            _targetRotation = _cameraTransform.eulerAngles.y;
+
+        transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation,
                                                     ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
 
         float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
         this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
 
         this.velocityY += Time.deltaTime * gravity;
+        Vector3 moveDir;
 
-		Vector3 moveDir = _cameraTransform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
+        if (!_directionLocked)
+            moveDir = _cameraTransform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
+        else
+            moveDir = transform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
         moveDir.y = 0;
+        
         
         Vector3 velocity = moveDir.normalized * currentSpeed * playerEffects.getSpeed() + Vector3.up * velocityY;
 

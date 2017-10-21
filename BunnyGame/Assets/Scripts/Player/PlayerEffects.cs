@@ -18,8 +18,8 @@ public class PlayerEffects : NetworkBehaviour {
     
     private int   _fallDamage = 40;
     private bool  _fallDamageImmune = false;
-    private float _maxAirTime = 1.65f;
-    private float _airTime = 0;
+    private float _damageImpactVelocity = -20;
+    private float _currentImpactVelocity = 0;
 
     // Use this for initialization
     void Start () {
@@ -115,8 +115,6 @@ public class PlayerEffects : NetworkBehaviour {
         }
     }
 
-    
-
     private void wallDamage() {
         this.GetComponent<PlayerHealth>().TakeDamage(10 * Time.deltaTime, -1);
     }
@@ -126,16 +124,12 @@ public class PlayerEffects : NetworkBehaviour {
     }
 
     private void handleFallDamage() {
-        if (!_cc.isGrounded && _cc.velocity.y < 0) {
-            _airTime += Time.deltaTime;
-
-        } else if(_cc.isGrounded && _airTime != 0) {
-            if(!_fallDamageImmune && _airTime > _maxAirTime) {
-                this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage * (_airTime/_maxAirTime), -1);
-                Debug.Log("You fell for " + _airTime + "s, taking " + (_fallDamage * (_airTime / _maxAirTime)) + " damage");
-            }
-            _airTime = 0;
+        if (!_fallDamageImmune && _cc.isGrounded && _currentImpactVelocity < _damageImpactVelocity) {
+            this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage * (_currentImpactVelocity / _damageImpactVelocity), -1);
+            Debug.Log("Impact vel: " + _currentImpactVelocity + " :: Damage: " + (_fallDamage * (_currentImpactVelocity / _damageImpactVelocity)));
+            _currentImpactVelocity = 0;
         }
+        else _currentImpactVelocity = _cc.velocity.y;
     }
 
     private void OnTriggerExit(Collider other) {

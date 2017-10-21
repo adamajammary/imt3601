@@ -64,7 +64,7 @@ public class RankingsMessage : MessageBase {
 //
 public class NetworkPlayerSelect : NetworkLobbyManager {
 
-    private string[]                _models       = { "PlayerCharacterBunny", "PlayerCharacterFox" };
+    private string[]                _models       = { "PlayerCharacterBunny", "PlayerCharacterFox", "PlayerCharacterBird" };
     private int                     _playersAlive = 0;
     private Dictionary<int, Player> _players      = new Dictionary<int, Player>();
     
@@ -202,7 +202,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
         Vector3                position       = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
         int                    selectedModel  = this._players[conn.connectionId].model;
-        GameObject             playerPrefab   = Resources.Load<GameObject>("Prefabs/" + this._models[selectedModel]);
+        GameObject             playerPrefab   = Resources.Load<GameObject>("Prefabs/Players/" + this._models[selectedModel]);
         GameObject             playerInstance = Instantiate(playerPrefab, position, playerPrefab.transform.rotation);
         PlayerInformation      playerInfo     = playerInstance.GetComponent<PlayerInformation>();
 

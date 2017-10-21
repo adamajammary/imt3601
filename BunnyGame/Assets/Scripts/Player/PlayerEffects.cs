@@ -15,11 +15,11 @@ public class PlayerEffects : NetworkBehaviour {
     private PlayerController    _pc;
     private CharacterController _cc;
     private PlayerHealth        _health;  
-
-    private float               _maxFallSpeed = 20; // How fast you can fall before starting to take fall damage
-    private int                 _fallDamage = 40;
-    private bool                _dealFallDamageOnCollision = false;
-    private bool                _fallDamageImmune = false;
+    
+    private int   _fallDamage = 40;
+    private bool  _fallDamageImmune = false;
+    private float _maxAirTime = 1.65f;
+    private float _airTime = 0;
 
     // Use this for initialization
     void Start () {
@@ -126,13 +126,15 @@ public class PlayerEffects : NetworkBehaviour {
     }
 
     private void handleFallDamage() {
-        if (_fallDamageImmune) { // Cannot take damage while immune
-            _dealFallDamageOnCollision = false;
-        } else if (-this._pc.velocityY > _maxFallSpeed && !_dealFallDamageOnCollision)
-            _dealFallDamageOnCollision = true;
-        else if (-this._pc.velocityY < 1 && _dealFallDamageOnCollision) {
-            this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage, -1);
-            _dealFallDamageOnCollision = false;
+        if (!_cc.isGrounded && _cc.velocity.y < 0) {
+            _airTime += Time.deltaTime;
+
+        } else if(_cc.isGrounded && _airTime != 0) {
+            if(!_fallDamageImmune && _airTime > _maxAirTime) {
+                this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage * (_airTime/_maxAirTime), -1);
+                Debug.Log("You fell for " + _airTime + "s, taking " + (_fallDamage * (_airTime / _maxAirTime)) + " damage");
+            }
+            _airTime = 0;
         }
     }
 

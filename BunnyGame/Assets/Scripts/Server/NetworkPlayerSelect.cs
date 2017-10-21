@@ -23,8 +23,9 @@ public class Player {
     public string name       = "";
     public int    model      = 0;
     public bool   isDead     = false;
-    public int    kills      = 0;
     public int    rank       = 1;
+    public int    kills      = 0;
+    public int    score      = 0;
     public bool   win        = false;
     public bool   readyGame  = false;
     public bool   readyLobby = false;
@@ -38,6 +39,7 @@ public class LobbyPlayer {
 public class GameOverMessage : MessageBase {
     public string   killer = "";
     public string   name   = "";
+    public int      model  = 0;
     public int      rank   = 0;
     public int      kills  = 0;
     public bool     win    = false;
@@ -338,6 +340,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
         message.killer = (killerID >= 0 ? this._players[killerID].name : "");
         message.name   = this._players[id].name;
+        message.model  = this._players[id].model;
         message.rank   = this._players[id].rank;
         message.kills  = this._players[id].kills;
         message.win    = this._players[id].win;
@@ -391,13 +394,18 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     private void sendRankingsMessage(int id) {
         RankingsMessage message = new RankingsMessage();
 
-        // Sort players by ranking.
+        // Sort/rank players by score.
         List<Player> rankings = new List<Player>();
 
-        foreach (var player in this._players)
-            rankings.Add(player.Value);
+        foreach (var player in this._players) {
+            player.Value.score  = 0;
+            player.Value.score += ((7 - player.Value.rank) * 1000);
+            player.Value.score += (player.Value.kills * 600);
 
-        rankings.Sort((p1, p2) => p1.rank.CompareTo(p2.rank));
+            rankings.Add(player.Value);
+        }
+
+        rankings.Sort((p1, p2) => p2.score.CompareTo(p1.score));
 
         // NB! Since we can't send dictionaries as network messages, we must send it as an array.
         message.rankings = new Player[rankings.Count];
@@ -408,8 +416,9 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             message.rankings[i].name   = rankings[i].name;
             message.rankings[i].model  = rankings[i].model;
             message.rankings[i].isDead = rankings[i].isDead;
+            message.rankings[i].rank   = (i + 1);
             message.rankings[i].kills  = rankings[i].kills;
-            message.rankings[i].rank   = rankings[i].rank;
+            message.rankings[i].score  = rankings[i].score;
             message.rankings[i].win    = rankings[i].win;
         }
 

@@ -141,8 +141,14 @@ public class SettingsMenu : MonoBehaviour {
         // AUDIO SETTINGS:
         GameObject soundSection = addSection("Sound", panel);
 
-        GameObject masterVolume = addSliderOption("Master Volume", soundSection, 0, 100);
+        GameObject masterVolume = addSliderOption("Master Volume", soundSection, 0, 100,
+            () => {
+                if (GameObject.Find("AudioManager"))
+                    GameObject.Find("AudioManager").GetComponent<AudioManager>().updateVolume();
+                return null;
+            });
         GameObject musicVolume = addSliderOption("Music Volume", soundSection, 0, 100);
+        GameObject effectVolume = addSliderOption("Effect Volume", soundSection, 0, 100);
 
 
 

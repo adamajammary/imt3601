@@ -211,6 +211,7 @@ public class NPCBrain {
 
         protected void AStar(NPCWorldView.worldCellData startCell, NPCWorldView.worldCellData goal) {
             if (goal == null || startCell == null) return;
+            //if (this._goal == goal.pos) return;
             Dictionary<Vector3, NPCWorldView.worldCellData> closed =
                 new Dictionary<Vector3, NPCWorldView.worldCellData>();                                             //For quickly looking up closed nodes
             SortedList<float, NPCWorldView.worldCellData> open =

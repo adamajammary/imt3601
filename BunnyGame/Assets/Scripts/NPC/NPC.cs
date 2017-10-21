@@ -35,8 +35,8 @@ public class NPC : NetworkBehaviour {
         this._yVel  = 0;
         this._ani   = GetComponentInChildren<Animator>();
 
-        if (this.isServer) this._syncTimer = 0;
-    }
+        if (this.isServer) { this._syncTimer = 0; this.syncClients(); }
+        }
 
     // Update is called once per frame
     void Update() {

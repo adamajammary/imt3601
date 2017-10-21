@@ -13,7 +13,6 @@ public class SetUpLocalPlayer : NetworkBehaviour {
             this.tag = "Player";
             transform.GetChild(0).gameObject.SetActive(true);
         } else
-            this.tag = "Enemy";
-        
+            this.tag = "Enemy";        
     }
 }

@@ -67,7 +67,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     private string[]                _models       = { "PlayerCharacterBunny", "PlayerCharacterFox" };
     private int                     _playersAlive = 0;
     private Dictionary<int, Player> _players      = new Dictionary<int, Player>();
-
+    
     // Returns the winner if there is one, otherwise it returns null.
     private Player getWinner() {
         if (this._playersAlive > 1)

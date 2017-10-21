@@ -9,7 +9,7 @@ public class NPCWorldViewManager : MonoBehaviour {
     public bool debugRenderWater;
 
     public Transform[] waterBodies;
-    public Transform difficultSpot;
+    public Transform[] difficultSpots;
     public Transform landPos;
     public RectTransform progressBar;
     public GameObject progressUI;
@@ -43,9 +43,11 @@ public class NPCWorldViewManager : MonoBehaviour {
         float time = Time.realtimeSinceStartup;
         Debug.Log("NPCManager: Setting up NPCWorldView by detecting obstacles!");
         //NPCs were having a tough time with this cell
-        var difficultCell = NPCWorldView.getCell(true, difficultSpot.transform.position); ;
-        foreach (var cell in difficultCell.neighbours)
-            cell.blocked = true;
+        foreach (var toughSpot in difficultSpots) {
+            var difficultCell = NPCWorldView.getCell(true, toughSpot.transform.position); ;
+            foreach (var cell in difficultCell.neighbours)
+                cell.blocked = true;
+        }
 
         StartCoroutine(findObstacles(false, (x) => waterProg = x));
         while(landProg < 1 || waterProg < 1 || blockWaterProg < 1) {

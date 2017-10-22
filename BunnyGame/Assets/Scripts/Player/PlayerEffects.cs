@@ -110,7 +110,7 @@ public class PlayerEffects : NetworkBehaviour {
             }
 
             Destroy(other.gameObject);
-        } else if (other.gameObject.tag == "pecker" && other.gameObject.tag == "Enemy") {
+        } else if (other.gameObject.tag == "pecker" && other.transform.parent.tag == "Enemy") {
             Debug.Log("DASDA");
             pecker p = other.gameObject.GetComponent<pecker>();
             PlayerInformation otherInfo = p.owner.GetComponent<PlayerInformation>();

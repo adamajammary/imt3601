@@ -276,7 +276,7 @@ GameObject:
   - component: {fileID: 33463349203031028}
   - component: {fileID: 136231559193171980}
   - component: {fileID: 23729330153065242}
-  m_Layer: 8
+  m_Layer: 12
   m_Name: minimap icon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -402,7 +402,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1097900092829770}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4824371401852152}

@@ -48,7 +48,7 @@ public class BirdController : NetworkBehaviour {
         updateAnimator();
 
         if (Input.GetMouseButtonDown(0) && !this._pecking) {
-            StartCoroutine(peck());
+            CmdPeck();
         }
     }
 
@@ -56,13 +56,23 @@ public class BirdController : NetworkBehaviour {
         return 0;
     }
 
+    [Command]
+    private void CmdPeck() {
+        RpcPeck();
+    }
+
+    [ClientRpc]
+    private void RpcPeck() {
+        StartCoroutine(peck());
+    }
+
     private IEnumerator peck() { //Animation is 1 sec long
         this._pecking = true;
         pecker.enabled = true;
         this._animator.SetTrigger("peck");
-        yield return new WaitForSeconds(0.6f); //Peak of the peck
+        yield return new WaitForSeconds(0.8f); //Peak of the peck
         pecker.enabled = false;
-        yield return new WaitForSeconds(0.4f); //Turning back
+        yield return new WaitForSeconds(0.2f); //Turning back
         this._pecking = false;                 //Peck done
     }
 

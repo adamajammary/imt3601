@@ -23,9 +23,7 @@ public class AttributeUI : MonoBehaviour {
 	void Update () {
         if (player == null) {
             tryGetPlayer();
-            Debug.Log("Shit");
         } else {
-            Debug.Log("FUCK");
             t.sizeDelta = new Vector2(20, player.getToughness() * 100);
             d.sizeDelta = new Vector2(20, player.getDamage() * 100);
             s.sizeDelta = new Vector2(20, player.getSpeed() * 100);
@@ -35,7 +33,6 @@ public class AttributeUI : MonoBehaviour {
 
     void tryGetPlayer() { //Due to networking, this is needed because this gameobject will spawn before the player
         GameObject obj = GameObject.FindGameObjectWithTag("Player");
-        if (obj == null) Debug.Log("FUUUCK");
         if (obj != null) player = obj.GetComponent<PlayerEffects>();
     }
 }

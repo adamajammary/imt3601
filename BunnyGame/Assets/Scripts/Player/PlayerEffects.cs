@@ -35,7 +35,6 @@ public class PlayerEffects : NetworkBehaviour {
         if (!this.isLocalPlayer) return;
         if (!this.insideWall) wallDamage();
         handleFallDamage();
-        Debug.Log(this._damage);
     }
 
     //=========Attrbutes=====================================================================================================================
@@ -112,6 +111,7 @@ public class PlayerEffects : NetworkBehaviour {
 
             Destroy(other.gameObject);
         } else if (other.gameObject.tag == "pecker" && other.gameObject.tag == "Enemy") {
+            Debug.Log("DASDA");
             pecker p = other.gameObject.GetComponent<pecker>();
             PlayerInformation otherInfo = p.owner.GetComponent<PlayerInformation>();
             if ((this._health != null) && !this._health.IsDead()) {

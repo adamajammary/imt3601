@@ -187,6 +187,7 @@ GameObject:
   - component: {fileID: 4241218062921330}
   - component: {fileID: 65561374399031036}
   - component: {fileID: 114338138868947958}
+  - component: {fileID: 54112513142777222}
   m_Layer: 8
   m_Name: PeckCollider
   m_TagString: pecker
@@ -367,7 +368,7 @@ Transform:
   m_GameObject: {fileID: 1933905308223610}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 109, z: 0}
-  m_LocalScale: {x: 33, y: 1, z: 33}
+  m_LocalScale: {x: 20, y: 1, z: 20}
   m_Children: []
   m_Father: {fileID: 4446828283485696}
   m_RootOrder: 0
@@ -502,7 +503,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1513430975508516}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -91.219925, y: -14.039405, z: -17.63132}
   m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
   m_Children:
   - {fileID: 4032401880563470}
@@ -679,6 +680,21 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1933905308223610}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!54 &54112513142777222
+Rigidbody:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1500626200089572}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 1
 --- !u!65 &65561374399031036
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -714,7 +730,7 @@ Animator:
   m_Avatar: {fileID: 9000000, guid: 2388efb9e52b6ff46af60499f0db98f0, type: 3}
   m_Controller: {fileID: 9100000, guid: 958b73457b8d8a343a1e06909a32d536, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 1
+  m_UpdateMode: 0
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_WarningMessage: 
@@ -732,7 +748,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Animator: {fileID: 95643120566951948}
-  m_ParameterSendBits: 3
+  m_ParameterSendBits: 1
   param0: 
   param1: 
   param2: 

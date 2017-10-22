@@ -12,6 +12,7 @@ TagManager:
   - npc
   - FireWall
   - lobbyplayer
+  - pecker
   layers:
   - Default
   - TransparentFX

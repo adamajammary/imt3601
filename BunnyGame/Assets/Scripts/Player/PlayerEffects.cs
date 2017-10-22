@@ -4,10 +4,10 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class PlayerEffects : NetworkBehaviour {
-    public bool                 insideWall;
+    public bool insideWall;
 
-    [SyncVar] private float     _toughness;
-    [SyncVar] private float     _damage;
+    [SyncVar] private float _toughness;
+    [SyncVar] private float _damage;
     [SyncVar] private float _speed;
     [SyncVar] private float _jump;
 
@@ -35,6 +35,7 @@ public class PlayerEffects : NetworkBehaviour {
         if (!this.isLocalPlayer) return;
         if (!this.insideWall) wallDamage();
         handleFallDamage();
+        Debug.Log(this._damage);
     }
 
     //=========Attrbutes=====================================================================================================================
@@ -110,6 +111,13 @@ public class PlayerEffects : NetworkBehaviour {
             }
 
             Destroy(other.gameObject);
+        } else if (other.gameObject.tag == "pecker" && other.gameObject.tag == "Enemy") {
+            pecker p = other.gameObject.GetComponent<pecker>();
+            PlayerInformation otherInfo = p.owner.GetComponent<PlayerInformation>();
+            if ((this._health != null) && !this._health.IsDead()) {
+                this.CmdBloodParticle(other.gameObject.transform.position);
+                this._health.TakeDamage(calcDamage(p.owner, p.GetDamage()), otherInfo.ConnectionID);
+            }
         } else if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
         }

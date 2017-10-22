@@ -6,6 +6,7 @@ public class FoxController : NetworkBehaviour {
 
     private GameObject biteArea;
     private int _biteDamage = 15;
+    private bool _isAttackingAnim = false;
     
 
     public override void PreStartClient() {
@@ -78,9 +79,11 @@ public class FoxController : NetworkBehaviour {
 
     // Biting is enabled for 1 tick after called
     private IEnumerator toggleBite() {
+        _isAttackingAnim = true;
         biteArea.GetComponent<BoxCollider>().enabled = true; 
         yield return 0;
         biteArea.GetComponent<BoxCollider>().enabled = false;
+        _isAttackingAnim = false;
     }
 
     public int GetDamage() {
@@ -92,7 +95,12 @@ public class FoxController : NetworkBehaviour {
         Animator animator = GetComponent<Animator>();
 
         if (animator != null)
+        {
             animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
+            animator.SetBool("isJumping", !GetComponent<CharacterController>().isGrounded);
+            animator.SetBool("isAttacking", _isAttackingAnim);
+
+        }
     }
 
     public Vector3 biteImpact() {

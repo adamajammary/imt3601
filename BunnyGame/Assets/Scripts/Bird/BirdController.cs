@@ -49,7 +49,11 @@ public class BirdController : NetworkBehaviour {
     public void updateAnimator() {
         Animator animator = GetComponent<Animator>();
 
-        if (animator != null)
+        if (animator != null) {
             animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
+            if (Input.GetMouseButtonDown(0)) {
+                animator.SetTrigger("peck");
+            }            
+        }
     }
 }

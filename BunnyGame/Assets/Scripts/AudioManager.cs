@@ -29,9 +29,11 @@ public class AudioManager : MonoBehaviour {
     private AudioClip[] _musicClips;
 
 
-	void Start () {
+    private void Awake() {
         StartCoroutine(musicPlayer());
+    }
 
+    void Start () {
         if(GameObject.Find("AbilityPanel")) // Only start effectPlayer if we are in the game (not lobby). Checking for abilitypanel because it only exists in the game scene
             StartCoroutine(effectPlayer());
 

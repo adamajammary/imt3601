@@ -316,8 +316,8 @@ public static class NPCWorldView {
     public static bool readFromFile() {
         bool success = true;
         try {
-            FileStream fsLand = new FileStream("./Assets/Data/land.nwl", FileMode.Open, FileAccess.Read);
-            FileStream fsWater = new FileStream("./Assets/Data/water.nwl", FileMode.Open, FileAccess.Read);
+            FileStream fsLand = new FileStream("./Assets/Data/land.nwl", FileMode.Open, FileAccess.Read, FileShare.Read);
+            FileStream fsWater = new FileStream("./Assets/Data/water.nwl", FileMode.Open, FileAccess.Read, FileShare.Read);
 
             BinaryFormatter formatter = new BinaryFormatter();
     

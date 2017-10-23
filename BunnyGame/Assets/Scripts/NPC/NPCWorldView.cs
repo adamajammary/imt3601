@@ -298,8 +298,8 @@ public static class NPCWorldView {
     public static bool writeToFile() {
         bool success = true;       
         try {
-            FileStream fsLand = new FileStream("./Assets/Data/land.nwl", FileMode.Create);
-            FileStream fsWater = new FileStream("./Assets/Data/water.nwl", FileMode.Create);
+            FileStream fsLand = new FileStream("./Assets/Data/land.nwl", FileMode.Create, FileAccess.Write);
+            FileStream fsWater = new FileStream("./Assets/Data/water.nwl", FileMode.Create, FileAccess.Write);
             BinaryFormatter formatter = new BinaryFormatter();
             formatter.Serialize(fsLand, getBlocked(_land));
             formatter.Serialize(fsWater, getBlocked(_water));
@@ -316,8 +316,8 @@ public static class NPCWorldView {
     public static bool readFromFile() {
         bool success = true;
         try {
-            FileStream fsLand = new FileStream("./Assets/Data/land.nwl", FileMode.Open);
-            FileStream fsWater = new FileStream("./Assets/Data/water.nwl", FileMode.Open);
+            FileStream fsLand = new FileStream("./Assets/Data/land.nwl", FileMode.Open, FileAccess.Read, FileShare.Read);
+            FileStream fsWater = new FileStream("./Assets/Data/water.nwl", FileMode.Open, FileAccess.Read, FileShare.Read);
 
             BinaryFormatter formatter = new BinaryFormatter();
     

@@ -33,6 +33,7 @@ public class Player {
 
 public class LobbyPlayer {
     public string name  = "";
+    public int animal   = 0;
     public bool   ready = false;
 }
 
@@ -305,6 +306,11 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     // Parse the player select message, and select the player model.
     private void recievePlayerSelectMessage(NetworkMessage message) {
         this._players[message.conn.connectionId].model = message.ReadMessage<IntegerMessage>().value;
+
+        foreach (var conn in NetworkServer.connections) {
+            if (conn != null)
+                this.sendLobbyPlayersMessage(conn.connectionId);
+        }
     }
 
     // Parse the player name message, and update the player name.
@@ -369,9 +375,10 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         int i = 0;
 
         foreach (var player in this._players) {
-            message.players[i]       = new LobbyPlayer();
-            message.players[i].name  = player.Value.name;
-            message.players[i].ready = player.Value.readyLobby;
+            message.players[i]        = new LobbyPlayer();
+            message.players[i].name   = player.Value.name;
+            message.players[i].animal = player.Value.model;
+            message.players[i].ready  = player.Value.readyLobby;
             i++;
         }
 

@@ -107,7 +107,6 @@ public class PlayerEffects : NetworkBehaviour {
             if ((this._health != null) && (poopScript != null) && !this._health.IsDead() && poopScript.owner.gameObject != this.gameObject) {
                 this.CmdBloodParticle(other.gameObject.transform.position);
                 this._health.TakeDamage(calcDamage(poopScript.owner, poopScript.GetDamage()), otherInfo.ConnectionID);
-                Debug.Log("Git hit");
             }
 
             Destroy(other.gameObject);

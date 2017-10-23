@@ -197,6 +197,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     // NB! Prefabs for this has to be stored in "Assets/Resources/Prefabs/".
     //
     public override GameObject OnLobbyServerCreateGamePlayer(NetworkConnection conn, short playerControllerId) {
+        matchMaker.SetMatchAttributes(matchInfo.networkId, false, 0, OnSetMatchAttributes);
         NetworkStartPosition[] spawnPoints = FindObjectsOfType<NetworkStartPosition>();
 
         if (spawnPoints.Length <= 0)

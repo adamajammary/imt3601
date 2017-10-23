@@ -58,9 +58,21 @@ public class FireWall : NetworkBehaviour {
     private bool            _ready = false;     //Wall ready
 
     void Start() {
-        if (this.isServer)
-            this._rngSeed = UnityEngine.Random.Range(0, 9999999);
+        if (this.isServer) StartCoroutine(waitForClients());
     }
+
+    //Waits for clients, then syncs playercount, and spawns npcs
+    private IEnumerator waitForClients() {
+        if (this.isServer) {
+            int playerCount = UnityEngine.Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
+
+            while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
+                yield return 0;
+
+            this._rngSeed = UnityEngine.Random.Range(0, 9999999);
+        }
+    }
+
 
     private void init(int seed) {
         this._wallTransitionUI = GameObject.Find("wallTransitionUI").GetComponent<RectTransform>();
@@ -79,7 +91,6 @@ public class FireWall : NetworkBehaviour {
         this._RNG = new System.Random(this._rngSeed);
         this.recalculateWalls();
         this._targetWallRenderer.draw(this._target.wall.transform);
-       
         this._ready = true;
     }
 

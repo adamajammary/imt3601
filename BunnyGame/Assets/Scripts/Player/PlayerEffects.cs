@@ -104,14 +104,14 @@ public class PlayerEffects : NetworkBehaviour {
         } else if (other.gameObject.tag == "projectile") {
             BunnyPoop poopScript = other.gameObject.GetComponent<BunnyPoop>();
             PlayerInformation otherInfo = poopScript.owner.GetComponent<PlayerInformation>();
-            if ((this._health != null) && (poopScript != null) && !this._health.IsDead()) {
+            if ((this._health != null) && (poopScript != null) && !this._health.IsDead() && poopScript.owner.gameObject != this.gameObject) {
                 this.CmdBloodParticle(other.gameObject.transform.position);
                 this._health.TakeDamage(calcDamage(poopScript.owner, poopScript.GetDamage()), otherInfo.ConnectionID);
+                Debug.Log("Git hit");
             }
 
             Destroy(other.gameObject);
         } else if (other.gameObject.tag == "pecker" && other.transform.parent.tag == "Enemy") {
-            Debug.Log("DASDA");
             pecker p = other.gameObject.GetComponent<pecker>();
             PlayerInformation otherInfo = p.owner.GetComponent<PlayerInformation>();
             if ((this._health != null) && !this._health.IsDead()) {

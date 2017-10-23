@@ -18,58 +18,65 @@ public class NPCManager : NetworkBehaviour {
 
     // Use this for initialization
     void Start() {
+        this._playerCount = -1;
         _cellCount = NPCWorldView.cellCount;            
 
         this._players       = new Dictionary<int, GameObject>(); 
         this._npcs          = new Dictionary<int, GameObject>(); 
         this._deadPlayers   = new List<int>();                   
         this._deadNpcs      = new List<int>();                   
-        this._ready         = false;        
-        initNPCs();
-    }
-
-    private void initNPCs() {
-        StartCoroutine(spawnNPCs());
+        this._ready         = false;
+        if (this.isServer) StartCoroutine(waitForClients());
+        StartCoroutine(init());
     }
 
     private void setPlayerCount(int count) {
         this._playerCount = count;
     }
 
-    //Spawn NPCs, then register players/npcs in datastructures in this class, and NPCWorldView
-    private IEnumerator spawnNPCs() {
-        while (!NPCWorldView.ready) yield return 0;
-
+    //Waits for clients, then syncs playercount, and spawns npcs
+    private IEnumerator waitForClients() {
         if (this.isServer) {
-            this._playerCount       = Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers; //This is only accurate for the server, need to sync it
+            while (!NPCWorldView.ready) yield return 0;
             string[] npcPrefabNames = { "CatNPC", "DogNPC", "EagleNPC", "WhaleNPC", "ChikenNPC" };
-            List<GameObject> npcs   = new List<GameObject>();
+            List<GameObject> npcs = new List<GameObject>();
 
             foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
             for (int i = 0; i < 100; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
+
+
+            int playerCount = Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
+
+            while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
+                yield return 0;
+
+            this._playerCount = playerCount; //sync playerCount to clients, now that all are here
         }
-        StartCoroutine(registerGameCharacters());        
+
     }
 
+    //Spawn NPCs, then register players/npcs in datastructures in this class, and NPCWorldView
     //Populates the 4 key datastructures for this class and the NPCThread.
     //This class uses a list of players and a list of NPCs.
     //These lists are used to update a list of players and NPCs in NPCWorldView.
     //The need for keeping two list comes from the fact that the Unity API is not thread safe.
     //The NPCThread uses a thread safe representation of the World provided by NPCWorldView.
-    private IEnumerator registerGameCharacters() {
+    private IEnumerator init() {       
+        while (this._playerCount == -1) yield return 0;
+
         //Wait for all players to spawn, +1 for localplayer 
-        while (this._playerCount  != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1))
+        while (this._playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1))
             yield return 0;
         //Wait for all NPCs to spawn
         while (GameObject.FindGameObjectsWithTag("npc").Length != 100)
             yield return 0;
 
         //gather data about players for the NPCs
-        GameObject localPlayer  = GameObject.FindGameObjectWithTag("Player");
-        GameObject[] enemies    = GameObject.FindGameObjectsWithTag("Enemy");
+        GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
 
         //Add players to the list of players
-        this._players.Add(0, localPlayer);        
+        this._players.Add(0, localPlayer);
         for (int i = 0; i < enemies.Length; i++)
             this._players.Add(i + 1, enemies[i]);
 
@@ -84,10 +91,10 @@ public class NPCManager : NetworkBehaviour {
             NPCWorldView.getNpcs().Add(i, new NPCWorldView.GameCharacter(i));
         }
 
-        this._instructions  = new BlockingQueue<NPCThread.instruction>();
-        this._npcThread     = new NPCThread(this._instructions);
-        this._ready         = true;
-    }   
+        this._instructions = new BlockingQueue<NPCThread.instruction>();
+        this._npcThread = new NPCThread(this._instructions);
+        this._ready = true;
+    } 
 
     // Update is called once per frame
     void Update () {

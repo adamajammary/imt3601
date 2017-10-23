@@ -529,9 +529,9 @@ MonoBehaviour:
     m_MaxNetSimulatorTimeout: 12000
   m_Channels: 0500000000000000
   m_UseWebSockets: 0
-  m_UseSimulator: 0
-  m_SimulatedLatency: 1
-  m_PacketLossPercentage: 0
+  m_UseSimulator: 1
+  m_SimulatedLatency: 154
+  m_PacketLossPercentage: 1.1
   m_MaxBufferedPackets: 16
   m_AllowFragmentation: 1
   m_MatchHost: mm.unet.unity3d.com
@@ -561,12 +561,12 @@ Prefab:
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_LocalPosition.x
-      value: 649
+      value: 906.5
       objectReference: {fileID: 0}
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_LocalPosition.y
-      value: 303
+      value: 519
       objectReference: {fileID: 0}
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}

@@ -69,9 +69,13 @@ public class PlayerHealth : NetworkBehaviour {
         return this._isDead;
     }
 
-    // TODO: Implement spectating
+    // Start spectating
     private void spectate() {
-        Debug.Log("TODO: Implement spectating");
+        GameObject.Find("Main Camera").GetComponent<SpectatorController>().startSpectating();
+        GetComponent<PlayerController>().enabled = false;
+        GetComponent<PlayerEffects>().enabled = false;
+        for(int i = 0; i < transform.childCount; i++)
+            transform.GetChild(i).gameObject.SetActive(false);
     }
 
     //
@@ -282,7 +286,7 @@ public class PlayerHealth : NetworkBehaviour {
         this._spectateImage.color = new Color(this._spectateImage.color.r, this._spectateImage.color.g, this._spectateImage.color.b, 1.0f);
         this._spectateText.color  = new Color(this._spectateText.color.r,  this._spectateText.color.g,  this._spectateText.color.b,  1.0f);
 
-        this._spectateButton.onClick.AddListener(this.spectate); // TODO: see spectate method
+        this._spectateButton.onClick.AddListener(this.spectate);
     }
 
     // Shows a countdown until you are automatically moved out of the server

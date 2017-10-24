@@ -8,15 +8,17 @@ public class ThirdPersonCamera : MonoBehaviour {
     private float       _distanceFromTarget = 6;
     private float       _curDist;
     private Vector2     _pitchMinMax = new Vector2(-5, 85);
-    private float       _rotationSmoothTime = 0.0f;
+    public float       _rotationSmoothTime = 0.0f;
 
     private GameObject  _crosshair;
     private Transform   _target;
 
-    Vector3             _rotationSmoothVelocity;
+    public Vector3      _rotationSmoothVelocity;
     Vector3             _currentRotation;
     float               _yaw;
     float               _pitch;
+
+    public bool canFPS = true; // Used to disable fps-mode on spectators
   
 
     void Start()
@@ -52,7 +54,7 @@ public class ThirdPersonCamera : MonoBehaviour {
 
     private void HandleFpsAim()
     {
-        if (Input.GetKey(KeyCode.Mouse1))
+        if (Input.GetKey(KeyCode.Mouse1) && canFPS)
         {
             _crosshair.SetActive(true);
             this.transform.position = _target.position;
@@ -90,5 +92,13 @@ public class ThirdPersonCamera : MonoBehaviour {
             this._curDist = hit.distance;
         } else
             this._curDist = this._distanceFromTarget;
+    }
+
+    public float getSensitivity() {
+        return _mouseSensitivity;
+    }
+
+    public Transform getTarget() {
+        return _target;
     }
 }

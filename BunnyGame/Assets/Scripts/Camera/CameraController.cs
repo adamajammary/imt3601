@@ -13,7 +13,7 @@ public class CameraController : MonoBehaviour {
 
 		Vector3 pos = transform.position;
 
-		if (Input.GetKey ("w")) {
+		if (Input.GetKey(KeyCode.W)) {
 
 			pos.z += panSpeed * Time.deltaTime;
 		}

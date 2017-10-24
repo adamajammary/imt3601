@@ -44,13 +44,11 @@
 				samplePos *= 3.3;
 				float n = noise(samplePos);
 				n = noise(samplePos*n*0.01);
-				//n = noise(samplePos*n);
-				//n = noise(samplePos*n);
 
 				fixed3 black = { 0, 0, 0 };
 				fixed3 beige = { 0.92, 0.75, 0.49 };
 
-				fixed4 col = { 1, 1, 1, 0.8 };
+				fixed4 col = { 1, 1, 1, 0.9 };
 				col.rgb = lerp(beige, black, n);
 				return col;
 			}

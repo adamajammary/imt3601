@@ -93,8 +93,12 @@ public class PlayerEffects : NetworkBehaviour {
 
     //=========Dust Storm=====================================================================================================================
     public IEnumerator blind() {
-        this._blindEffect.enabled = true;
-        yield return new WaitForSeconds(10);
+        float timer = 0;
+        while (timer < 10) { // Incase multiple blinds overlap.
+            timer += Time.deltaTime; 
+            this._blindEffect.enabled = true;
+            yield return 0;
+        };
         this._blindEffect.enabled = false;
     }
 

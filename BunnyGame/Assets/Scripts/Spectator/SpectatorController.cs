@@ -130,7 +130,7 @@ public class SpectatorController : MonoBehaviour {
             ref _thirdPersonCamera._rotationSmoothVelocity, _thirdPersonCamera._rotationSmoothTime);
 
 
-        this.currentSpeed = Mathf.SmoothDamp(currentSpeed, moveSpeed, ref _speedSmoothVelocity, 0.2f);
+        this.currentSpeed = Mathf.SmoothDamp(currentSpeed, (Input.GetKey(KeyCode.LeftShift) ? moveSpeed * 2 : moveSpeed), ref _speedSmoothVelocity, 0.2f);
 
         // MOVE:
         Vector3 direction = new Vector3(

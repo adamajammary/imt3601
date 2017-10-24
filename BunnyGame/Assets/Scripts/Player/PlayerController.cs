@@ -61,10 +61,14 @@ public class PlayerController : NetworkBehaviour {
         handleSpecialAbilities();
         Move(inputDir);
 
-        if (Input.GetAxisRaw("Jump") > 0)
+        if (Input.GetKeyDown(KeyCode.Space))
             this.jump();
 
         HandleAiming();
+    }
+
+    public bool getGrounded() {
+        return controller.isGrounded;
     }
 
     // Turn off and on MeshRenderer so FPS camera works

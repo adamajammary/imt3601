@@ -55,18 +55,25 @@ public class SpectatorController : MonoBehaviour {
                 switchPlayerView(_currentPlayerIdx - 1);
         }
 
-        // Switch spectating mode with P
-        if (Input.GetKeyDown(KeyCode.P))
+        // Switch spectating mode with Home-key
+        if (Input.GetKeyDown(KeyCode.Home))
             setSpectatorMode((SpectatorMode)((int)~_spectatorMode & 1));
 	}
 
     // This should be called when the players dies and wants to go into spectating mode
     public void startSpectating() {
-        Debug.Log("Start spectating");
-
         this.enabled = true;
         setSpectatorMode(SpectatorMode.FREE);
 
+        _thirdPersonCamera.canFPS = false;
+
+
+        // Disable ui elements that aren't necessary to keep after going into spectate mode
+        foreach (string str in "SpectateButton BloodSplatterOverlay".Split(' '))
+            GameObject.Find(str).SetActive(false);
+
+
+        // Get all players(enemies) and update it to only include living ones
         _players = new List<GameObject>(GameObject.FindGameObjectsWithTag("Enemy"));
         updatePlayers();
     }
@@ -101,24 +108,23 @@ public class SpectatorController : MonoBehaviour {
      **/
 
     private void setFreeCameraMode() {
-        Debug.Log("Set spectator mode to free mode");
 
         _spectatorMode = SpectatorMode.FREE;
         _thirdPersonCamera.enabled = false;
 
         _freeCameraTarget.SetActive(true);
-        _freeCameraTarget.transform.position = _thirdPersonCamera.getTarget().position;
+        _freeCameraTarget.transform.position = transform.position;// _thirdPersonCamera.getTarget().position;
         transform.SetParent(_freeCameraTarget.transform);
+
         transform.localPosition = Vector3.zero;
-        Debug.Log("Setting " + _freeCameraTarget.name + " as parent for " + name);
     }
 
 
     private void freeMove() {
         // ROTATE:
         _yaw += Input.GetAxis("Mouse X") * _thirdPersonCamera.getSensitivity();
-        _pitch -= Mathf.Clamp(Input.GetAxis("Mouse Y") * _thirdPersonCamera.getSensitivity(),
-                              -89, 89);
+        _pitch -= Input.GetAxis("Mouse Y") * _thirdPersonCamera.getSensitivity();
+        _pitch = Mathf.Clamp(_pitch, -80, 80);
 
         transform.eulerAngles = Vector3.SmoothDamp(transform.eulerAngles, new Vector3(_pitch, _yaw), 
             ref _thirdPersonCamera._rotationSmoothVelocity, _thirdPersonCamera._rotationSmoothTime);
@@ -147,8 +153,6 @@ public class SpectatorController : MonoBehaviour {
      **/
 
     private void setFollowCameraMode() {
-        Debug.Log("Set spectator mode to follow mode");
-
         _spectatorMode = SpectatorMode.FOLLOW;
         _thirdPersonCamera.enabled = true;
         switchPlayerView(_currentPlayerIdx);
@@ -159,7 +163,6 @@ public class SpectatorController : MonoBehaviour {
     // index: index of the player to view
     private void switchPlayerView(int index) {
         _currentPlayerIdx = (index + _players.Count) % _players.Count;
-        Debug.Log("Switch player view to player " + _currentPlayerIdx + " -- " + _players.Count + " players alive");
         updatePlayers();
         transform.localPosition = new Vector3(0, 0, 0);
         _thirdPersonCamera.enabled = true;

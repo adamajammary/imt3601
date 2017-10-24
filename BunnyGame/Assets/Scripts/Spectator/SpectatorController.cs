@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public enum SpectatorMode
@@ -15,7 +16,7 @@ public class SpectatorController : MonoBehaviour {
 
     private ThirdPersonCamera _thirdPersonCamera;
     private int _currentPlayerIdx = 0;
-    List<GameObject> _players = new List<GameObject>(); // Should contain only live players
+    public List<GameObject> _players = new List<GameObject>(); // Should contain only live players
     
     private float moveSpeed = 10;
     private float currentSpeed = 0;
@@ -25,8 +26,6 @@ public class SpectatorController : MonoBehaviour {
     private float _yaw = 0;
     private float _pitch = 0;
     private float _speedSmoothVelocity;
-
-    bool aaa = false;
 
 
     // Use this for initialization
@@ -39,23 +38,19 @@ public class SpectatorController : MonoBehaviour {
         _freeCameraTarget.AddComponent<CharacterController>();
 
 
-        //this.enabled = false; // ONLY DISABLED FOR TESTING
+        this.enabled = false;
     }
 	
 	// Update is called once per frame
 	void Update () {
-        if(_thirdPersonCamera.getTarget() != null && !aaa) { // ONLY HERE FOR TESTING
-            aaa = true;
-            startSpectating();
-        }
 
         if (_spectatorMode == SpectatorMode.FREE) {
             freeMove();
 
         } else if (_spectatorMode == SpectatorMode.FOLLOW) {
-            if (Input.GetKeyDown(KeyCode.UpArrow))
+            if (Input.GetKeyDown(KeyCode.PageUp))
                 switchPlayerView(_currentPlayerIdx + 1);
-            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            else if (Input.GetKeyDown(KeyCode.PageDown))
                 switchPlayerView(_currentPlayerIdx - 1);
         }
 
@@ -71,7 +66,16 @@ public class SpectatorController : MonoBehaviour {
         this.enabled = true;
         setSpectatorMode(SpectatorMode.FREE);
 
+        _players = new List<GameObject>(GameObject.FindGameObjectsWithTag("Enemy"));
+        updatePlayers();
     }
+
+
+    // Update the list of players to only include living ones
+    private void updatePlayers() {
+        _players = _players.Where(player => !player.GetComponent<PlayerHealth>().IsDead()).ToList();
+    }
+
 
 
     private void setSpectatorMode(SpectatorMode mode) {
@@ -107,6 +111,7 @@ public class SpectatorController : MonoBehaviour {
         transform.localPosition = Vector3.zero;
         Debug.Log("Setting " + _freeCameraTarget.name + " as parent for " + name);
     }
+
 
     private void freeMove() {
         // ROTATE:
@@ -152,10 +157,11 @@ public class SpectatorController : MonoBehaviour {
     // Switch what player you're following
     // index: index of the player to view
     private void switchPlayerView(int index) {
-        index %= _players.Count;
-        transform.SetParent(_players[index].transform);
+        _currentPlayerIdx = index % _players.Count;
+        Debug.Log("Switch player view to player " + _currentPlayerIdx + " -- " + _players.Count + " players alive");
+        updatePlayers();
         transform.localPosition = new Vector3(0, 0, 0);
         _thirdPersonCamera.enabled = true;
-        Debug.Log("Switch player view to player " + index);
+        _thirdPersonCamera.SetTarget(_players[_currentPlayerIdx].transform);
     }
 }

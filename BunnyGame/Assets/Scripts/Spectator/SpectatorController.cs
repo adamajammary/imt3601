@@ -28,10 +28,6 @@ public class SpectatorController : MonoBehaviour {
     private float _pitch = 0;
     private float _speedSmoothVelocity;
 
-    private bool escMenu;
-    private bool lockCursor;
-    private EscMenu escButtonPress;
-
 
     // Use this for initialization
     void Start () {
@@ -44,8 +40,6 @@ public class SpectatorController : MonoBehaviour {
 
 
         this.enabled = false;
-
-        this.escButtonPress = FindObjectOfType<EscMenu>();
     }
 
     // Update is called once per frame
@@ -61,8 +55,8 @@ public class SpectatorController : MonoBehaviour {
                 switchPlayerView(_currentPlayerIdx - 1);
         }
 
-        // Switch spectating mode with space
-        if (Input.GetKeyDown(KeyCode.Space))
+        // Switch spectating mode with P
+        if (Input.GetKeyDown(KeyCode.P))
             setSpectatorMode((SpectatorMode)((int)~_spectatorMode & 1));
 	}
 
@@ -164,31 +158,11 @@ public class SpectatorController : MonoBehaviour {
     // Switch what player you're following
     // index: index of the player to view
     private void switchPlayerView(int index) {
-        _currentPlayerIdx = index % _players.Count;
+        _currentPlayerIdx = (index + _players.Count) % _players.Count;
         Debug.Log("Switch player view to player " + _currentPlayerIdx + " -- " + _players.Count + " players alive");
         updatePlayers();
         transform.localPosition = new Vector3(0, 0, 0);
         _thirdPersonCamera.enabled = true;
         _thirdPersonCamera.SetTarget(_players[_currentPlayerIdx].transform);
-    }
-
-
-
-
-    private void handleEscMenu()
-    {
-        if (SceneManager.GetActiveScene().name != "Island")
-            return;
-
-        if (Input.GetKeyDown(KeyCode.Escape))
-            escMenu = !escMenu;
-
-        escButtonPress.EscPress(escMenu);
-
-        if (escButtonPress.resumePressed()) {
-            escMenu = false;
-            escButtonPress.rusumePressedReset();
-            lockCursor = true;
-        }
     }
 }

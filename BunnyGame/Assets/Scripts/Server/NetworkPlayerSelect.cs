@@ -67,7 +67,7 @@ public class RankingsMessage : MessageBase {
 //
 public class NetworkPlayerSelect : NetworkLobbyManager {
 
-    private string[]                _models       = { "PlayerCharacterBunny", "PlayerCharacterFox", "PlayerCharacterBird" };
+    private string[]                _models       = { "PlayerCharacterBunny", "PlayerCharacterFox", "PlayerCharacterBird", "PlayerCharacterMoose" };
     private int                     _playersAlive = 0;
     private Dictionary<int, Player> _players      = new Dictionary<int, Player>();
     

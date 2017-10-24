@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum SpectatorMode
 {
@@ -27,6 +28,10 @@ public class SpectatorController : MonoBehaviour {
     private float _pitch = 0;
     private float _speedSmoothVelocity;
 
+    private bool escMenu;
+    private bool lockCursor;
+    private EscMenu escButtonPress;
+
 
     // Use this for initialization
     void Start () {
@@ -39,10 +44,12 @@ public class SpectatorController : MonoBehaviour {
 
 
         this.enabled = false;
+
+        this.escButtonPress = FindObjectOfType<EscMenu>();
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    // Update is called once per frame
+    void Update () {
 
         if (_spectatorMode == SpectatorMode.FREE) {
             freeMove();
@@ -163,5 +170,25 @@ public class SpectatorController : MonoBehaviour {
         transform.localPosition = new Vector3(0, 0, 0);
         _thirdPersonCamera.enabled = true;
         _thirdPersonCamera.SetTarget(_players[_currentPlayerIdx].transform);
+    }
+
+
+
+
+    private void handleEscMenu()
+    {
+        if (SceneManager.GetActiveScene().name != "Island")
+            return;
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+            escMenu = !escMenu;
+
+        escButtonPress.EscPress(escMenu);
+
+        if (escButtonPress.resumePressed()) {
+            escMenu = false;
+            escButtonPress.rusumePressedReset();
+            lockCursor = true;
+        }
     }
 }

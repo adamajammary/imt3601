@@ -27,11 +27,8 @@ public class PlayerController : NetworkBehaviour {
 
     private Transform _cameraTransform;
     public CharacterController controller;
-    private EscMenu escButtonPress;
     private PlayerEffects playerEffects;
-
-    bool lockCursor = true;
-    bool escMenu = false;
+    
     public bool running = false;
 
     private bool _moveDirectionLocked = false;
@@ -44,8 +41,7 @@ public class PlayerController : NetworkBehaviour {
 
         if (!this.isLocalPlayer)
             return;
-
-        this.escButtonPress = FindObjectOfType<EscMenu>();
+        
         this._cameraTransform = Camera.main.transform;
         this.controller = this.GetComponent<CharacterController>();
         this.playerEffects = GetComponent<PlayerEffects>();
@@ -69,8 +65,6 @@ public class PlayerController : NetworkBehaviour {
             this.jump();
 
         HandleAiming();
-        handleMouse();
-        handleEscMenu();
     }
 
     // Turn off and on MeshRenderer so FPS camera works
@@ -143,19 +137,6 @@ public class PlayerController : NetworkBehaviour {
         return smoothTime / airControlPercent;
     }
 
-    void handleMouse() {
-        if (Input.GetKeyDown(KeyCode.Escape))
-            lockCursor = !lockCursor;
-
-        if (lockCursor) {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        } else {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-    }
-
     private void OnDestroy() {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -177,22 +158,5 @@ public class PlayerController : NetworkBehaviour {
                 mat.renderQueue = 2000;
             }
         }
-    }
-
-    private void handleEscMenu() {
-        if (SceneManager.GetActiveScene().name != "Island")
-            return;
-
-        if (Input.GetKeyDown(KeyCode.Escape))
-            escMenu = !escMenu;
-          
-        escButtonPress.EscPress(escMenu);
-
-        if(escButtonPress.resumePressed())
-        {
-            escMenu = false;
-            escButtonPress.rusumePressedReset();
-            lockCursor = true;
-        }  
     }
 }

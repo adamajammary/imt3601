@@ -16,9 +16,11 @@ public class DustStorm : SpecialAbility {
     }
 
     public override IEnumerator useAbility() {
-        if (this._cooldown == 0 && !this._bc.getPecking()) {
+        RaycastHit hit;
+        Physics.Raycast(transform.position, Vector3.down, out hit);
+        if (this._cooldown == 0 && !this._bc.getPecking() && hit.distance < 10) {
             StartCoroutine(this.doCoolDown());
-            this._an.CmdDustStorm(transform.position, GetComponent<PlayerInformation>().ConnectionID);
+            this._an.CmdDustStorm(hit.point, GetComponent<PlayerInformation>().ConnectionID);
         }
         yield return 0;
     }

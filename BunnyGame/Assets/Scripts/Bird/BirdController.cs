@@ -4,9 +4,11 @@ using UnityEngine.Networking;
 
 public class BirdController : NetworkBehaviour {
     public BoxCollider pecker;
-    private bool _pecking;
 
+    private const float glideSpeed = -4.0f;
+    private bool _pecking;
     private Animator _animator;
+    private PlayerController _pc;
 
     public override void PreStartClient() {
         base.PreStartClient();
@@ -33,11 +35,11 @@ public class BirdController : NetworkBehaviour {
         pe.CmdSetAttributes(0.7f, 1.0f, 1.5f, 1.0f);
 
         // Add abilities to class:
-        PlayerController playerController = GetComponent<PlayerController>();
+        this._pc = GetComponent<PlayerController>();
         var ds = gameObject.AddComponent<DustStorm>();
         ds.init();
-        playerController.abilities.Add(ds);
-        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
+        this._pc.abilities.Add(ds);
+        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(this._pc);
 
         this._pecking = false;
     }
@@ -49,9 +51,10 @@ public class BirdController : NetworkBehaviour {
 
         updateAnimator();
 
-        if (Input.GetMouseButtonDown(0) && !this._pecking) {
+        if (Input.GetKey(KeyCode.Space))
+            glide();
+        else if (Input.GetMouseButtonDown(0) && !this._pecking) 
             CmdPeck();
-        }
     }
 
     public int GetDamage() {
@@ -66,6 +69,14 @@ public class BirdController : NetworkBehaviour {
         this._animator.SetBool("flapLikeCrazy", true);
         yield return new WaitForSeconds(2.0f); //Peak of the peck
         this._animator.SetBool("flapLikeCrazy", false);
+    }
+
+    private void glide() {
+        if (!this._pc.getGrounded()) {
+            if (this._pc.velocityY < glideSpeed)
+                this._pc.velocityY = glideSpeed;                
+            this._animator.SetBool("glide", true);
+        }
     }
 
     [Command]
@@ -91,5 +102,6 @@ public class BirdController : NetworkBehaviour {
     // Update the animator with current state
     public void updateAnimator() {
         this._animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
+        this._animator.SetBool("glide", false);
     }
 }

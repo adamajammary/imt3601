@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 198370076443891552}
   - component: {fileID: 199064120227615762}
   - component: {fileID: 114867834360803140}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: DustStorm
   m_TagString: Untagged
   m_Icon: {fileID: 0}

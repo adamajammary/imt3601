@@ -127,10 +127,8 @@ public class AbilityNetwork : NetworkBehaviour {
     ///////////// Functions for DustStorm ability ///////////////////
     [Command]
     public void CmdDustStorm(Vector3 pos, int id) {
-        RaycastHit hit;
-        Physics.Raycast(pos, Vector3.down, out hit);
         GameObject dustStorm = Instantiate(this._dustParticles);
-        dustStorm.transform.position = hit.point;
+        dustStorm.transform.position = pos;
         NetworkServer.Spawn(dustStorm);
         Destroy(dustStorm, 10.0f);
         RpcBlind(pos, id);

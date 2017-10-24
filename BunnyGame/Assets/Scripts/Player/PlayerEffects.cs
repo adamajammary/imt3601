@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class PlayerEffects : NetworkBehaviour {
     public bool insideWall;
@@ -14,7 +15,8 @@ public class PlayerEffects : NetworkBehaviour {
     private GameObject          _blood;
     private PlayerController    _pc;
     private CharacterController _cc;
-    private PlayerHealth        _health;  
+    private PlayerHealth        _health;
+    private Image               _blindEffect;
     
     private int   _fallDamage = 40;
     private bool  _fallDamageImmune = false;
@@ -23,11 +25,12 @@ public class PlayerEffects : NetworkBehaviour {
 
     // Use this for initialization
     void Start () {
-        this.insideWall = true;
-        this._pc        = GetComponent<PlayerController>();
-        this._cc        = GetComponent<CharacterController>();
-        this._blood     = Resources.Load<GameObject>("Prefabs/Blood");
-        this._health    = this.GetComponent<PlayerHealth>();
+        this.insideWall     = true;
+        this._pc            = GetComponent<PlayerController>();
+        this._cc            = GetComponent<CharacterController>();
+        this._blood         = Resources.Load<GameObject>("Prefabs/Blood");
+        this._health        = this.GetComponent<PlayerHealth>();
+        this._blindEffect   = GameObject.Find("BlindOverlay").GetComponent<Image>();
     }
 	
 	// Update is called once per frame
@@ -86,6 +89,13 @@ public class PlayerEffects : NetworkBehaviour {
             curDir = Vector3.Lerp(dir, flatDir, i);
             yield return 0;
         }
+    }
+
+    //=========Dust Storm=====================================================================================================================
+    public IEnumerator blind() {
+        this._blindEffect.enabled = true;
+        yield return new WaitForSeconds(5);
+        this._blindEffect.enabled = false;
     }
 
     //=========Other==========================================================================================================================

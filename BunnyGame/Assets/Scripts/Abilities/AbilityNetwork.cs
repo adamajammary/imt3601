@@ -17,10 +17,12 @@ public class AbilityNetwork : NetworkBehaviour {
 
     private GameObject _poopGrenade;
     private GameObject _explosion;
+    private GameObject _dustParticles;
 
     void Start() {
         this._poopGrenade = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopGrenade");
         this._explosion = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopExplosion");
+        this._dustParticles = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustStorm");
     }
   
 
@@ -119,6 +121,26 @@ public class AbilityNetwork : NetworkBehaviour {
         explosion.transform.position = pos;
         NetworkServer.Spawn(explosion);
         Destroy(explosion, 1.1f);
+    }
+    /////////////////////////////////////////////////////////////////
+
+    ///////////// Functions for DustStorm ability ///////////////////
+    [Command]
+    public void CmdDustStorm(Vector3 pos, int id) {
+        GameObject dustStorm = Instantiate(this._dustParticles);
+        dustStorm.transform.position = pos;
+        NetworkServer.Spawn(dustStorm);
+        Destroy(dustStorm, 10.0f);
+        RpcBlind(pos, id);
+    }
+
+    [ClientRpc]
+    private void RpcBlind(Vector3 pos, int id) {
+        if (GetComponent<PlayerInformation>().ConnectionID != id) {
+            if (Vector3.Distance(transform.position, pos) < 20) {
+                StartCoroutine(GetComponent<PlayerEffects>().blind());
+            }
+        }        
     }
     /////////////////////////////////////////////////////////////////
 }

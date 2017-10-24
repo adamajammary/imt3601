@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 4118649235615276}
   - component: {fileID: 198370076443891552}
   - component: {fileID: 199064120227615762}
+  - component: {fileID: 114867834360803140}
   m_Layer: 0
   m_Name: DustStorm
   m_TagString: Untagged
@@ -35,12 +36,44 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1371219469558158}
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: -0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 647.9798, y: 576.7581, z: -838.54474}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 270, y: 0, z: 0}
+--- !u!114 &114867834360803140
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1371219469558158}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 120
+    i1: 104
+    i2: 37
+    i3: 91
+    i4: 1
+    i5: 240
+    i6: 143
+    i7: 116
+    i8: 186
+    i9: 71
+    i10: 124
+    i11: 135
+    i12: 225
+    i13: 241
+    i14: 117
+    i15: 150
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 0
 --- !u!198 &198370076443891552
 ParticleSystem:
   m_ObjectHideFlags: 1
@@ -101,7 +134,7 @@ ParticleSystem:
   moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: 507899784
+  randomSeed: -1838991148
   InitialModule:
     serializedVersion: 3
     enabled: 1
@@ -253,7 +286,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 2
+      scalar: 7.5
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -566,7 +599,7 @@ ParticleSystem:
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
-      value: 1
+      value: 5.57605
       mode: 0
       spread: 0
       speed:

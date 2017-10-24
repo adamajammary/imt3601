@@ -34,7 +34,9 @@ public class BirdController : NetworkBehaviour {
 
         // Add abilities to class:
         PlayerController playerController = GetComponent<PlayerController>();
-
+        var ds = gameObject.AddComponent<DustStorm>();
+        ds.init();
+        playerController.abilities.Add(ds);
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
 
         this._pecking = false;

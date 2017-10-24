@@ -563,6 +563,7 @@ MonoBehaviour:
   - {fileID: 1716396474440194, guid: 108828aea5f799a419c7de2f4540fa4b, type: 2}
   - {fileID: 1820163978652276, guid: 5725a37411ada814985ae7004f3f53a3, type: 2}
   - {fileID: 1706696129574582, guid: 51a8cfa560471104ab610f8a2f26bd71, type: 2}
+  - {fileID: 1371219469558158, guid: 7868255b01f08f74ba477c87e1f17596, type: 2}
   m_CustomConfig: 0
   m_MaxConnections: 4
   m_ConnectionConfig:
@@ -639,12 +640,12 @@ Prefab:
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_LocalPosition.x
-      value: 568.5
+      value: 638.5
       objectReference: {fileID: 0}
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_LocalPosition.y
-      value: 320
+      value: 338.5
       objectReference: {fileID: 0}
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}

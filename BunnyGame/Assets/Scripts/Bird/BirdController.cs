@@ -37,8 +37,13 @@ public class BirdController : NetworkBehaviour {
         // Add abilities to class:
         this._pc = GetComponent<PlayerController>();
         var ds = gameObject.AddComponent<DustStorm>();
+        var dt = gameObject.AddComponent<DustTornadoAbility>();
+
         ds.init();
+        dt.init();
+
         this._pc.abilities.Add(ds);
+        this._pc.abilities.Add(dt);
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(this._pc);
 
         this._pecking = false;

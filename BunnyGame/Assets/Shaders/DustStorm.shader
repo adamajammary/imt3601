@@ -40,7 +40,7 @@
 			fixed4 frag(v2f i) : SV_Target{
 				float seed = _Time * 75.3f;
 				float3 samplePos = i.worldPos;
-				float n = noise(samplePos / 0.4f + seed);
+				float n = noise(samplePos * 13.1f + seed);
 				n = noise(samplePos*n);
 
 				fixed3 black = { 0, 0, 0 };

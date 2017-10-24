@@ -111,6 +111,7 @@ public class BunnyController : NetworkBehaviour {
         {
             animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
             animator.SetBool("isJumping", !GetComponent<CharacterController>().isGrounded);
+            animator.SetFloat("height", GetComponent<PlayerController>().velocityY);
         }
 
     }

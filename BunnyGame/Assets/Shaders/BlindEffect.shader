@@ -50,7 +50,7 @@
 				fixed3 black = { 0, 0, 0 };
 				fixed3 beige = { 0.92, 0.75, 0.49 };
 
-				fixed4 col = { 1, 1, 1, 0.6 };
+				fixed4 col = { 1, 1, 1, 0.8 };
 				col.rgb = lerp(beige, black, n);
 				return col;
 			}

@@ -94,7 +94,7 @@ public class PlayerEffects : NetworkBehaviour {
     //=========Dust Storm=====================================================================================================================
     public IEnumerator blind() {
         this._blindEffect.enabled = true;
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(10);
         this._blindEffect.enabled = false;
     }
 

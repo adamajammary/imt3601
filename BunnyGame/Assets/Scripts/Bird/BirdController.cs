@@ -58,6 +58,16 @@ public class BirdController : NetworkBehaviour {
         return 0;
     }
 
+    public bool getPecking() {
+        return this._pecking;
+    }
+
+    public IEnumerator flapLikeCrazy() { //Animation is 1 sec long       
+        this._animator.SetBool("flapLikeCrazy", true);
+        yield return new WaitForSeconds(2.0f); //Peak of the peck
+        this._animator.SetBool("flapLikeCrazy", false);
+    }
+
     [Command]
     private void CmdPeck() {
         RpcPeck();

@@ -136,9 +136,11 @@ public class AbilityNetwork : NetworkBehaviour {
 
     [ClientRpc]
     private void RpcBlind(Vector3 pos, int id) {
-        if (GetComponent<PlayerInformation>().ConnectionID != id) {
+        StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
+        var player = GameObject.FindGameObjectWithTag("Player");
+        if (player.GetComponent<PlayerInformation>().ConnectionID != id) {
             if (Vector3.Distance(transform.position, pos) < 20) {
-                StartCoroutine(GetComponent<PlayerEffects>().blind());
+                StartCoroutine(player.GetComponent<PlayerEffects>().blind());
             }
         }        
     }

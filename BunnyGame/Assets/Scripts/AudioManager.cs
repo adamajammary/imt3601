@@ -127,6 +127,15 @@ public class AudioManager : MonoBehaviour {
         masterVolume = PlayerPrefs.GetFloat("Master Volume", 100) / 100f;
         effectVolume = PlayerPrefs.GetFloat("Effect Volume", 100)/100f * masterVolume;
         _music.volume = PlayerPrefs.GetFloat("Music Volume", 100)/500f * masterVolume;
+
+        // Update the volume on all players' PlayerAudio:
+
+        List<GameObject> players = new List<GameObject>();
+        players.AddRange(GameObject.FindGameObjectsWithTag("Player"));
+        players.AddRange(GameObject.FindGameObjectsWithTag("Enemy"));
+
+        foreach (GameObject player in players)
+            player.GetComponent<PlayerAudio>().updateVolume(effectVolume);
     }
 
 }

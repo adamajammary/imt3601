@@ -16,6 +16,7 @@ public class PlayerEffects : NetworkBehaviour {
     private PlayerController    _pc;
     private CharacterController _cc;
     private PlayerHealth        _health;
+    private PlayerAudio         _playerAudio;
     private Image               _blindEffect;
     
     private int   _fallDamage = 40;
@@ -30,14 +31,15 @@ public class PlayerEffects : NetworkBehaviour {
         this._cc            = GetComponent<CharacterController>();
         this._blood         = Resources.Load<GameObject>("Prefabs/Blood");
         this._health        = this.GetComponent<PlayerHealth>();
+        this._playerAudio   = GetComponent<PlayerAudio>();
         this._blindEffect   = GameObject.Find("BlindOverlay").GetComponent<Image>();
     }
 	
 	// Update is called once per frame
 	void Update () {
+        handleGroundHit();
         if (!this.isLocalPlayer) return;
         if (!this.insideWall) wallDamage();
-        handleFallDamage();
     }
 
     //=========Attrbutes=====================================================================================================================
@@ -144,13 +146,15 @@ public class PlayerEffects : NetworkBehaviour {
         this._pc.velocityY += waterForce * Time.deltaTime;
     }
 
-    private void handleFallDamage() {
+    private void handleGroundHit() {
         if (!_fallDamageImmune && _cc.isGrounded && _currentImpactVelocity < _damageImpactVelocity) {
-            this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage * (_currentImpactVelocity / _damageImpactVelocity), -1);
-            Debug.Log("Impact vel: " + _currentImpactVelocity + " :: Damage: " + (_fallDamage * (_currentImpactVelocity / _damageImpactVelocity)));
-            _currentImpactVelocity = 0;
+            _playerAudio.playGroundHit(_currentImpactVelocity);
+            if (isLocalPlayer) {
+                this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage * (_currentImpactVelocity / _damageImpactVelocity), -1);
+                _currentImpactVelocity = 0;
+            }
         }
-        else _currentImpactVelocity = _cc.velocity.y;
+        else if(isLocalPlayer) _currentImpactVelocity = _cc.velocity.y;
     }
 
     private void OnTriggerExit(Collider other) {

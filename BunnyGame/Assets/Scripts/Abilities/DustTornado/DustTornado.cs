@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 
 //Networking behaviour of this projectile:
 //If the tornado hits someone on the attackers client, then that will count as a hit.
+//It basically implements the reversed logic
 public class DustTornado : NetworkBehaviour {
     public Transform tornadoParticles;
 
@@ -49,20 +50,48 @@ public class DustTornado : NetworkBehaviour {
 
     private void updateEnemy(int i) {
         if (this._enemies[i] != null) {
-            Debug.Log("WORK FUCKIT");
             float dist = Vector3.Distance(transform.position, this._enemies[i].transform.position);
             if (dist < _AOE) {
-                Debug.Log("HOOK EM");
                 if (dist <= _spinLock && !this._trapped[i]) {
                     this._trapped[i] = true;
                     this._enemies[i].GetComponent<PlayerEffects>().CmdSetCC(false);
                 }
                 if (this._trapped[i])
-                    this._enemies[i].GetComponent<PlayerEffects>().CmdTornadoSpin(this.transform.position);
+                    CmdTornadoSpin(this._enemies[i]);
                 else
-                    this._enemies[i].GetComponent<PlayerEffects>().CmdTornadoPullIn(this.transform.position);
+                    CmdTornadoPullIn(this._enemies[i]);
             }
         }
+    }
+
+    [Command]
+    public void CmdTornadoPullIn(GameObject player) {
+        Debug.Log("PULL IN");
+        TargetTornadoPullIn(player.GetComponent<PlayerInformation>().connectionToClient, player);
+    }
+
+    [TargetRpc]
+    private void TargetTornadoPullIn(NetworkConnection target, GameObject player) {
+        Vector3 dir = this.transform.position - player.transform.position;
+        player.GetComponent<CharacterController>().Move(dir.normalized * 12 * Time.deltaTime);
+    }
+
+    [Command]
+    public void CmdTornadoSpin(GameObject player) {
+        Debug.Log("SPIN");
+        TargetTornadoSpin(player.GetComponent<PlayerInformation>().connectionToClient, player);
+    }
+
+    [TargetRpc]
+    private void TargetTornadoSpin(NetworkConnection target, GameObject player) {
+        Vector3 dir = player.transform.position - this.transform.position;
+        Vector3 spinDir = Quaternion.AngleAxis(10 * Time.deltaTime, Vector3.up) * dir;
+        spinDir.Normalize();
+        RaycastHit hit;
+        Physics.Raycast(transform.position, spinDir, out hit);
+        float len = 10;
+        len = (hit.distance < len) ? hit.distance : len;
+        player.transform.position = transform.position + spinDir * len;
     }
 
     //Cleanup is important, so Destroy(this, time) wont guarantee that this is the client that does the cleanup with OnDestroy

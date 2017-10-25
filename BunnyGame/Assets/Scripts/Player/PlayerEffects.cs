@@ -104,36 +104,7 @@ public class PlayerEffects : NetworkBehaviour {
         this._blindEffect.enabled = false;
     }
     //=========Dust Tornado===================================================================================================================
-    [Command]
-    public void CmdTornadoPullIn(Vector3 pos) {
-        Debug.Log("PULL IN");
-        TargetTornadoPullIn(this.connectionToClient, pos);      
-    }
-
-    [TargetRpc]
-    private void TargetTornadoPullIn(NetworkConnection target, Vector3 pos) {
-        Vector3 dir = pos - this.transform.position;
-        this._cc.Move(dir.normalized * 12 * Time.deltaTime);
-    }
-
-    [Command]
-    public void CmdTornadoSpin(Vector3 pos) {
-        Debug.Log("SPIN");
-        TargetTornadoSpin(this.connectionToClient, pos);
-    }
-
-    [TargetRpc]
-    private void TargetTornadoSpin(NetworkConnection target, Vector3 pos) {
-        Vector3 dir = this.transform.position - pos;
-        Vector3 spinDir = Quaternion.AngleAxis(10 * Time.deltaTime, Vector3.up) * dir;
-        spinDir.y += 5 * Time.deltaTime;
-        spinDir.Normalize();
-        RaycastHit hit;
-        Physics.Raycast(pos, spinDir, out hit);
-        float len = 10;
-        len = (hit.distance < len) ? hit.distance : len;
-        transform.position = pos + spinDir * len;
-    }
+    
 
     //=========CC=============================================================================================================================
     [Command]

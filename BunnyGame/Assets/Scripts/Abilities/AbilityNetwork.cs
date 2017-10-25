@@ -154,7 +154,7 @@ public class AbilityNetwork : NetworkBehaviour {
         GameObject dustTornado = Instantiate(this._dustTornado);
         dustTornado.transform.position = pos;
         dustTornado.GetComponent<DustTornado>().shoot(pos, dir, owner);
-        NetworkServer.Spawn(dustTornado);
+        NetworkServer.SpawnWithClientAuthority(dustTornado, owner.GetComponent<PlayerInformation>().connectionToClient);
     }
     /////////////////////////////////////////////////////////////////
 }

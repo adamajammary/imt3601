@@ -325,6 +325,7 @@ GameObject:
   - component: {fileID: 114234935192648348}
   - component: {fileID: 65787153161494126}
   - component: {fileID: 114831858758883044}
+  - component: {fileID: 114697687207183198}
   m_Layer: 8
   m_Name: PlayerCharacterFox
   m_TagString: Player
@@ -1087,6 +1088,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 137f3531404a4e4408c0c04a7a878685, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &114697687207183198
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1812289213968426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21b8b4f3f19632841ae3bc91e3232a83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  footStepFrequency: 1
 --- !u!114 &114831858758883044
 MonoBehaviour:
   m_ObjectHideFlags: 1

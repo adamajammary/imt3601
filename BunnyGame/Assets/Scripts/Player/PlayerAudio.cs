@@ -4,21 +4,30 @@ using UnityEngine;
 
 public class PlayerAudio : MonoBehaviour {
 
+    private CharacterController _characterController;
+    private float _volume;
+
+    // Animal sound
+    private AudioSource _animalSoundPlayer;
+    public AudioClip animalSound;
+
+    // Movement
+    private AudioSource _movementPlayer;
     private string _currentGroundType;
+    public float footStepFrequency = 1f;
     private Dictionary<string, AudioClip> _footStepClips = new Dictionary<string, AudioClip>();
     private Dictionary<string, AudioClip> _groundHitClips = new Dictionary<string, AudioClip>();
-    public float footStepFrequency = 1f;
-
-    private AudioSource _oneShotPlayer;
-
-    private CharacterController _characterController;
-
+    
 
     void Start () {
         _characterController.GetComponent<CharacterController>();
 
-        _oneShotPlayer = gameObject.AddComponent<AudioSource>();
-        _oneShotPlayer.volume = 0;
+        _movementPlayer = gameObject.AddComponent<AudioSource>();
+        _movementPlayer.volume = 0;
+
+        _animalSoundPlayer = gameObject.AddComponent<AudioSource>();
+        _animalSoundPlayer.clip = animalSound;
+        _animalSoundPlayer.volume = 0;
 
         foreach (string name in new string[] { "bush", "dirt", "rock", "wood" }) {
             _footStepClips.Add(name, Resources.Load<AudioClip>("Audio/move/" + name));
@@ -38,7 +47,13 @@ public class PlayerAudio : MonoBehaviour {
 	}
 
     public void updateVolume(float v) {
-        _oneShotPlayer.volume = v;
+        _volume = v;
+        _movementPlayer.volume = v;
+        _animalSoundPlayer.volume = v;
+    }
+
+    public float getVolume() {
+        return _volume;
     }
 
     // Figures out what type of ground the player is on
@@ -70,13 +85,18 @@ public class PlayerAudio : MonoBehaviour {
     private IEnumerator playFootSteps() {
         while (true) {
             if (_characterController.isGrounded)
-                _oneShotPlayer.PlayOneShot(_footStepClips[_currentGroundType]);
+                _movementPlayer.PlayOneShot(_footStepClips[_currentGroundType]);
             yield return new WaitForSeconds(footStepFrequency);
         }
     }
 
 
     public void playGroundHit(float vel) {
-        _oneShotPlayer.PlayOneShot(_groundHitClips[_currentGroundType]);
+        _movementPlayer.PlayOneShot(_groundHitClips[_currentGroundType]);
+    }
+
+    public void playWaterHit(float vel)
+    {
+
     }
 }

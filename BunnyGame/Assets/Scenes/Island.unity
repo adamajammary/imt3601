@@ -260,7 +260,7 @@ GameObject:
   - component: {fileID: 90591729}
   - component: {fileID: 90591732}
   - component: {fileID: 90591731}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -594,6 +594,15 @@ Prefab:
     - target: {fileID: 4414642452460478, guid: 38200d1e4880159418cb167513617c57, type: 2}
       propertyPath: m_LocalScale.z
       value: 750
+      objectReference: {fileID: 0}
+    - target: {fileID: 65595456925495630, guid: 38200d1e4880159418cb167513617c57,
+        type: 2}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1660406341655002, guid: 38200d1e4880159418cb167513617c57, type: 2}
+      propertyPath: m_Layer
+      value: 16
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 38200d1e4880159418cb167513617c57, type: 2}
@@ -3352,7 +3361,7 @@ GameObject:
   - component: {fileID: 1249191077}
   - component: {fileID: 1249191080}
   - component: {fileID: 1249191079}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: Cube (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3671,7 +3680,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 1315302367}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: World Border
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3685,8 +3694,8 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1315302366}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1230.8438, y: 533.8572, z: 85.095024}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -815.2, y: 327.8, z: 60.5}
+  m_LocalScale: {x: 0.62990236, y: 0.6299021, z: 0.6299021}
   m_Children:
   - {fileID: 90591729}
   - {fileID: 1681681843}
@@ -4560,7 +4569,7 @@ Camera:
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294938879
+    m_Bits: 4294709503
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 9858d8e2b5af0e74eaec6ebec11e7e8a, type: 2}
   m_TargetDisplay: 1
@@ -4773,7 +4782,7 @@ GameObject:
   - component: {fileID: 1681681843}
   - component: {fileID: 1681681846}
   - component: {fileID: 1681681845}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5937,7 +5946,7 @@ GameObject:
   - component: {fileID: 1979161875}
   - component: {fileID: 1979161878}
   - component: {fileID: 1979161877}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: Cube (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

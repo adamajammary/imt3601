@@ -24,7 +24,7 @@ public class DustTornadoAbility : SpecialAbility {
             Vector3 shootDir = Camera.main.transform.forward;
             shootDir.y = 0;
             shootDir.Normalize();
-            this._an.CmdDustTornado(hit.point, shootDir);
+            this._an.CmdDustTornado(hit.point, shootDir, this.gameObject);
         }
         yield return 0;
     }

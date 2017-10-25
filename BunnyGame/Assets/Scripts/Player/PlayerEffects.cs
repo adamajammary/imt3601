@@ -83,12 +83,14 @@ public class PlayerEffects : NetworkBehaviour {
         Vector3 curDir = dir;
         Vector3 pos = transform.position;
         pos.y += 2;
-        transform.position = pos;       
+        transform.position = pos;
+        this._pc.setCC(true);
         for (float i = 0; i < 1.0f; i += Time.deltaTime * 2) {
             this._cc.Move(curDir* force * Time.deltaTime);
             curDir = Vector3.Lerp(dir, flatDir, i);
             yield return 0;
         }
+        this._pc.setCC(false);
     }
 
     //=========Dust Storm=====================================================================================================================
@@ -101,7 +103,48 @@ public class PlayerEffects : NetworkBehaviour {
         };
         this._blindEffect.enabled = false;
     }
+    //=========Dust Tornado===================================================================================================================
+    [Command]
+    public void CmdTornadoPullIn(Vector3 pos) {
+        Debug.Log("PULL IN");
+        TargetTornadoPullIn(this.connectionToClient, pos);      
+    }
 
+    [TargetRpc]
+    private void TargetTornadoPullIn(NetworkConnection target, Vector3 pos) {
+        Vector3 dir = pos - this.transform.position;
+        this._cc.Move(dir.normalized * 12 * Time.deltaTime);
+    }
+
+    [Command]
+    public void CmdTornadoSpin(Vector3 pos) {
+        Debug.Log("SPIN");
+        TargetTornadoSpin(this.connectionToClient, pos);
+    }
+
+    [TargetRpc]
+    private void TargetTornadoSpin(NetworkConnection target, Vector3 pos) {
+        Vector3 dir = this.transform.position - pos;
+        Vector3 spinDir = Quaternion.AngleAxis(10 * Time.deltaTime, Vector3.up) * dir;
+        spinDir.y += 5 * Time.deltaTime;
+        spinDir.Normalize();
+        RaycastHit hit;
+        Physics.Raycast(pos, spinDir, out hit);
+        float len = 10;
+        len = (hit.distance < len) ? hit.distance : len;
+        transform.position = pos + spinDir * len;
+    }
+
+    //=========CC=============================================================================================================================
+    [Command]
+    public void CmdSetCC(bool value) {
+        TargetSetCC(this.connectionToClient, value);
+    }
+
+    [TargetRpc]
+    private void TargetSetCC(NetworkConnection target, bool value) {
+        this._pc.setCC(value);
+    }
     //=========Other==========================================================================================================================
     private void OnTriggerEnter(Collider other) {
         if (!this.isLocalPlayer)
@@ -141,7 +184,8 @@ public class PlayerEffects : NetworkBehaviour {
     }
 
     public void onWaterStay(float waterForce) {
-        this._pc.velocityY += waterForce * Time.deltaTime;
+        if (!this._pc.getCC())
+            this._pc.velocityY += waterForce * Time.deltaTime;
     }
 
     private void handleFallDamage() {

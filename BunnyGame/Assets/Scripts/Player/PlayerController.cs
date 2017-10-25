@@ -21,6 +21,8 @@ public class PlayerController : NetworkBehaviour {
     public float currentSpeed;
     public float velocityY;
 
+    private bool _CC = false; //Turns off players ability to control character, used for CC effects
+
     private float _turnSmoothVelocity;
     private float _speedSmoothVelocity;
 
@@ -59,16 +61,30 @@ public class PlayerController : NetworkBehaviour {
         _moveDirectionLocked = Input.GetKey(KeyCode.LeftAlt);
 
         handleSpecialAbilities();
-        Move(inputDir);
 
-        if (Input.GetKeyDown(KeyCode.Space))
-            this.jump();
+        if (!this._CC) {
+            Move(inputDir);
+            if (Input.GetKeyDown(KeyCode.Space))
+                this.jump();
+        }
 
         HandleAiming();
     }
 
     public bool getGrounded() {
         return controller.isGrounded;
+    }
+
+    public void setCC(bool value) {
+        this._CC = value;
+        if (value) {
+            this.currentSpeed = 0;
+            this.velocityY = 0;
+        }
+    }
+
+    public bool getCC() {
+        return this._CC;
     }
 
     // Turn off and on MeshRenderer so FPS camera works

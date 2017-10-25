@@ -38,9 +38,9 @@ GameObject:
   - component: {fileID: 4895862176557806}
   - component: {fileID: 54074632496725990}
   - component: {fileID: 136072446576762626}
-  - component: {fileID: 135670587525151562}
   - component: {fileID: 114882442315435934}
   - component: {fileID: 114277091186415910}
+  - component: {fileID: 114539250696609918}
   m_Layer: 13
   m_Name: DustTornado
   m_TagString: Untagged
@@ -121,7 +121,28 @@ MonoBehaviour:
     i14: 251
     i15: 215
   m_ServerOnly: 0
-  m_LocalPlayerAuthority: 0
+  m_LocalPlayerAuthority: 1
+--- !u!114 &114539250696609918
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1616204860125768}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1768714887, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TransformSyncMode: 3
+  m_SendInterval: 0
+  m_SyncRotationAxis: 7
+  m_RotationSyncCompression: 0
+  m_SyncSpin: 0
+  m_MovementTheshold: 0.001
+  m_VelocityThreshold: 0.0001
+  m_SnapThreshold: 5
+  m_InterpolateRotation: 1
+  m_InterpolateMovement: 1
 --- !u!114 &114882442315435934
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -134,18 +155,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tornadoParticles: {fileID: 4452141254946306}
---- !u!135 &135670587525151562
-SphereCollider:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1616204860125768}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 60
-  m_Center: {x: 0, y: 10, z: 0}
 --- !u!136 &136072446576762626
 CapsuleCollider:
   m_ObjectHideFlags: 1

@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 4452141254946306}
   - component: {fileID: 198713186173284888}
   - component: {fileID: 199805623973304690}
-  m_Layer: 13
+  m_Layer: 18
   m_Name: DustTornadoEffect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,9 +41,9 @@ GameObject:
   - component: {fileID: 114882442315435934}
   - component: {fileID: 114277091186415910}
   - component: {fileID: 114539250696609918}
-  m_Layer: 13
+  m_Layer: 18
   m_Name: DustTornado
-  m_TagString: Untagged
+  m_TagString: DustTornado
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -142,7 +142,7 @@ MonoBehaviour:
   m_VelocityThreshold: 0.0001
   m_SnapThreshold: 5
   m_InterpolateRotation: 1
-  m_InterpolateMovement: 1
+  m_InterpolateMovement: 0.35
 --- !u!114 &114882442315435934
 MonoBehaviour:
   m_ObjectHideFlags: 1

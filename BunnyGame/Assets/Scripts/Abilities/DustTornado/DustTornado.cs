@@ -7,24 +7,34 @@ using UnityEngine.Networking;
 //If the tornado hits someone on the attackers client, then that will count as a hit.
 //It basically implements the reversed logic
 public class DustTornado : NetworkBehaviour {
+    private class EnemyData {
+        public bool trapped;
+        public float yOffset;
+
+        public EnemyData() {
+            trapped = false;
+            yOffset = 0;
+        }
+    }
+
     public Transform tornadoParticles;
 
-    private const float _lifeSpan = 10;
+    private const float _lifeSpan = 6;
     private const float _AOE = 75;
     private const float _spinLock = 10;
     private const float _speed = 10;
     private float timer = 0;
     private GameObject _player; //The local player in this game instance
     private GameObject[] _enemies;
-    private bool[] _trapped;
+    private EnemyData[] _ed;
     [SyncVar] private GameObject _owner;  //The player who actually spawned the tornado
     [SyncVar] private Vector3 _dir;
 
     private void Start() {
         this._player = GameObject.FindGameObjectWithTag("Player");
         this._enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        this._trapped = new bool[this._enemies.Length];
-        for (int i = 0; i < this._trapped.Length; i++) this._trapped[i] = false;
+        this._ed = new EnemyData[this._enemies.Length];
+        for (int i = 0; i < this._ed.Length; i++) this._ed[i] = new EnemyData();
     }
 
     void Update() {
@@ -41,6 +51,9 @@ public class DustTornado : NetworkBehaviour {
         }
     }
     
+    public void kill() {
+        this.timer = _lifeSpan;
+    }
 
     public void shoot(Vector3 pos, Vector3 dir, GameObject owner) {
         transform.position = pos;
@@ -52,13 +65,15 @@ public class DustTornado : NetworkBehaviour {
         if (this._enemies[i] != null) {
             float dist = Vector3.Distance(transform.position, this._enemies[i].transform.position);
             if (dist < _AOE) {
-                if (dist <= _spinLock && !this._trapped[i]) {
-                    this._trapped[i] = true;
-                    this._enemies[i].GetComponent<PlayerEffects>().CmdSetCC(false);
+                if (dist <= _spinLock && !this._ed[i].trapped) {
+                    this._ed[i].trapped = true;
+                    CmdSetCC(this._enemies[i], true);
                 }
-                if (this._trapped[i])
-                    CmdTornadoSpin(this._enemies[i]);
-                else
+                if (this._ed[i].trapped && true) {
+                    CmdTornadoSpin(this._enemies[i], this._ed[i].yOffset);
+                    if (this._ed[i].yOffset < 20)
+                        this._ed[i].yOffset += 6f * Time.deltaTime;
+                } else
                     CmdTornadoPullIn(this._enemies[i]);
             }
         }
@@ -66,7 +81,6 @@ public class DustTornado : NetworkBehaviour {
 
     [Command]
     public void CmdTornadoPullIn(GameObject player) {
-        Debug.Log("PULL IN");
         TargetTornadoPullIn(player.GetComponent<PlayerInformation>().connectionToClient, player);
     }
 
@@ -77,21 +91,35 @@ public class DustTornado : NetworkBehaviour {
     }
 
     [Command]
-    public void CmdTornadoSpin(GameObject player) {
-        Debug.Log("SPIN");
-        TargetTornadoSpin(player.GetComponent<PlayerInformation>().connectionToClient, player);
+    public void CmdTornadoSpin(GameObject player, float offset) {
+        TargetTornadoSpin(player.GetComponent<PlayerInformation>().connectionToClient, player, offset);
     }
 
     [TargetRpc]
-    private void TargetTornadoSpin(NetworkConnection target, GameObject player) {
-        Vector3 dir = player.transform.position - this.transform.position;
-        Vector3 spinDir = Quaternion.AngleAxis(10 * Time.deltaTime, Vector3.up) * dir;
-        spinDir.Normalize();
+    private void TargetTornadoSpin(NetworkConnection target, GameObject player, float offset) {
+        Vector3 pos = this.transform.position + Vector3.up * offset;
+        Vector3 dir = player.transform.position - pos;
+        dir.y = 0; dir.Normalize();
+        Vector3 spinDir = Quaternion.AngleAxis(180 * Time.deltaTime, Vector3.up) * dir;
         RaycastHit hit;
         Physics.Raycast(transform.position, spinDir, out hit);
-        float len = 10;
-        len = (hit.distance < len) ? hit.distance : len;
-        player.transform.position = transform.position + spinDir * len;
+        float len = (hit.distance < 10) ? hit.distance : 10;
+        player.transform.position = pos + spinDir * len;
+    }
+
+    [Command]
+    public void CmdSetCC(GameObject player, bool value) {
+        TargetSetCC(player.GetComponent<PlayerInformation>().connectionToClient, player, value);
+    }
+
+    [TargetRpc]
+    private void TargetSetCC(NetworkConnection target, GameObject player, bool value) {
+        player.GetComponent<PlayerController>().setCC(value);
+    }
+
+    [Command]
+    public void CmdDestroy() {
+        Destroy(this.gameObject);
     }
 
     //Cleanup is important, so Destroy(this, time) wont guarantee that this is the client that does the cleanup with OnDestroy
@@ -99,14 +127,14 @@ public class DustTornado : NetworkBehaviour {
         timer += Time.deltaTime;
         if (timer > _lifeSpan) {
             cleanup();
-            Destroy(this.gameObject);
+            CmdDestroy();
         }
     }
 
     private void cleanup() {
-        for (int i = 0; i < this._trapped.Length; i++) {
-            if (this._trapped[i]) {
-                this._enemies[i].GetComponent<PlayerEffects>().CmdSetCC(false);
+        for (int i = 0; i < this._ed.Length; i++) {
+            if (this._ed[i].trapped) {
+                CmdSetCC(this._enemies[i], false);
             }
         }
     }

@@ -97,25 +97,13 @@ public class PlayerEffects : NetworkBehaviour {
     public IEnumerator blind() {
         float timer = 0;
         while (timer < 10) { // Incase multiple blinds overlap.
-            timer += Time.deltaTime; 
+            timer += Time.deltaTime;
             this._blindEffect.enabled = true;
             yield return 0;
         };
         this._blindEffect.enabled = false;
     }
-    //=========Dust Tornado===================================================================================================================
-    
 
-    //=========CC=============================================================================================================================
-    [Command]
-    public void CmdSetCC(bool value) {
-        TargetSetCC(this.connectionToClient, value);
-    }
-
-    [TargetRpc]
-    private void TargetSetCC(NetworkConnection target, bool value) {
-        this._pc.setCC(value);
-    }
     //=========Other==========================================================================================================================
     private void OnTriggerEnter(Collider other) {
         if (!this.isLocalPlayer)

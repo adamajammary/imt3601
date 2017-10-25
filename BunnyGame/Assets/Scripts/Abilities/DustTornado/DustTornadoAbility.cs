@@ -13,7 +13,7 @@ public class DustTornadoAbility : SpecialAbility {
         this._bc = GetComponent<BirdController>();
         base.init("Textures/AbilityIcons/DustTornado");
         base.abilityName = "DustTornado";
-        base._cooldownTimeInSeconds = 15f;
+        base._cooldownTimeInSeconds = 20f;
     }
 
     public override IEnumerator useAbility() {

@@ -32,7 +32,7 @@ public class BirdController : NetworkBehaviour {
 
         // Set custom attributes for class:
         PlayerEffects pe = GetComponent<PlayerEffects>();
-        pe.CmdSetAttributes(0.7f, 1.0f, 1.5f, 1.0f);
+        pe.CmdSetAttributes(0.7f, 0.8f, 1.2f, 1.0f);
 
         // Add abilities to class:
         this._pc = GetComponent<PlayerController>();

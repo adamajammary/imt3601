@@ -21,9 +21,9 @@ public class AttributeUI : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if (player == null)
+        if (player == null) {
             tryGetPlayer();
-        else {
+        } else {
             t.sizeDelta = new Vector2(20, player.getToughness() * 100);
             d.sizeDelta = new Vector2(20, player.getDamage() * 100);
             s.sizeDelta = new Vector2(20, player.getSpeed() * 100);

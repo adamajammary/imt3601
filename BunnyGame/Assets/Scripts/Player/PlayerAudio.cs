@@ -19,19 +19,22 @@ public class PlayerAudio : MonoBehaviour {
     private Dictionary<string, AudioClip> _groundHitClips = new Dictionary<string, AudioClip>();
     
 
-    void Start () {
-        _characterController.GetComponent<CharacterController>();
-
+    void Awake() {
         _movementPlayer = gameObject.AddComponent<AudioSource>();
         _movementPlayer.volume = 0;
 
         _animalSoundPlayer = gameObject.AddComponent<AudioSource>();
         _animalSoundPlayer.clip = animalSound;
         _animalSoundPlayer.volume = 0;
+    }
 
-        foreach (string name in new string[] { "bush", "dirt", "rock", "wood" }) {
-            _footStepClips.Add(name, Resources.Load<AudioClip>("Audio/move/" + name));
-            _footStepClips.Add(name, Resources.Load<AudioClip>("Audio/groundhit/" + name));
+    void Start () {
+        _characterController = gameObject.GetComponent<CharacterController>();
+
+
+        foreach (string name in new string[] { "leaf", "dirt", "stone", "wood" }) {
+            _footStepClips.Add(name, Resources.Load<AudioClip>("Audio/Movement/" + name));
+            _groundHitClips.Add(name, Resources.Load<AudioClip>("Audio/GroundHit/" + name));
         }
 
 
@@ -61,17 +64,22 @@ public class PlayerAudio : MonoBehaviour {
         Ray ray = new Ray(transform.position, Vector3.down);
         RaycastHit hit = new RaycastHit();
         Physics.Raycast(ray, out hit, 10);
+
+        Debug.Log("Material of ground below is: " + hit.transform.GetComponent<MeshRenderer>().material.name);
         
         if (hit.transform.CompareTag("ground")) {
-            switch (hit.transform.GetComponent<MeshRenderer>().material.name) {
+            switch (hit.transform.GetComponent<MeshRenderer>().material.name.TrimEnd(" (Instance)".ToCharArray())) {
                 case "mat9":
                 case "mat10":
                 case "mat12":
-                    return "bush";
-                case "mat15":
-                    return "dirt";
+                    return "leaf";
+                case "mat18": // !! This is because the big mountain is in the same mesh as the ground... so I have to manually check whether it is stone or dirt...
+                    Debug.Log(transform.position + "; dist:" + Vector3.Distance(transform.position, new Vector3(24, transform.position.y, 44)));
+                    if (transform.position.y > -12.5f && Vector3.Distance(transform.position, new Vector3(24,transform.position.y,44)) < 80)
+                        return "stone";
+                    else return "dirt";
                 case "mat16":
-                    return "rock";
+                    return "stone";
                 case "mat20":
                     return "wood";
                 default:
@@ -84,9 +92,11 @@ public class PlayerAudio : MonoBehaviour {
 
     private IEnumerator playFootSteps() {
         while (true) {
-            if (_characterController.isGrounded)
+            if (_characterController.isGrounded && _characterController.velocity.magnitude > 0.1f) {
                 _movementPlayer.PlayOneShot(_footStepClips[_currentGroundType]);
-            yield return new WaitForSeconds(footStepFrequency);
+                yield return new WaitForSeconds(footStepFrequency);
+            }
+            else yield return null;
         }
     }
 

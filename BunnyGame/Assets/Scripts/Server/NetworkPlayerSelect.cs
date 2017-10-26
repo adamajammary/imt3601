@@ -23,6 +23,7 @@ public class Player {
     public string name       = "";
     public int    model      = 0;
     public bool   isDead     = false;
+    public int    placement  = 1;
     public int    rank       = 1;
     public int    kills      = 0;
     public int    score      = 0;
@@ -38,12 +39,12 @@ public class LobbyPlayer {
 }
 
 public class GameOverMessage : MessageBase {
-    public string   killer = "";
-    public string   name   = "";
-    public int      model  = 0;
-    public int      rank   = 0;
-    public int      kills  = 0;
-    public bool     win    = false;
+    public string   killer    = "";
+    public string   name      = "";
+    public int      model     = 0;
+    public int      placement = 0;
+    public int      kills     = 0;
+    public bool     win       = false;
 }
 
 public class PlayerStatsMessage : MessageBase {
@@ -88,8 +89,8 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
         foreach (var player in this._players) {
             if (!player.Value.isDead) {
-                player.Value.rank = 1;
-                player.Value.win  = true;
+                player.Value.placement = 1;
+                player.Value.win       = true;
 
                 return player.Value;
             }
@@ -128,8 +129,10 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     public override void OnServerDisconnect(NetworkConnection conn) {
         base.OnServerDisconnect(conn);
 
-        if (this._players.ContainsKey(conn.connectionId))
-            this._players[conn.connectionId].isDead = true;
+        if (this._players.ContainsKey(conn.connectionId)) {
+            this._players[conn.connectionId].placement = Mathf.Max(1, this.getNrOfPlayersAlive());
+            this._players[conn.connectionId].isDead    = true;
+        }
 
         // Send updated lobby player info to all players.
         if (this.offlineScene == "Lobby")
@@ -180,8 +183,10 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     public override void OnLobbyServerDisconnect(NetworkConnection conn) {
         base.OnLobbyServerDisconnect(conn);
 
-        if (this._players.ContainsKey(conn.connectionId))
-            this._players[conn.connectionId].isDead = true;
+        if (this._players.ContainsKey(conn.connectionId)) {
+            this._players[conn.connectionId].placement = Mathf.Max(1, this.getNrOfPlayersAlive());
+            this._players[conn.connectionId].isDead    = true;
+        }
 
         if (conn.lastError != NetworkError.Ok) {
             if ((conn.lastError != NetworkError.Timeout) && LogFilter.logError)
@@ -297,8 +302,8 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             if (killerID >= 0)
                 this._players[killerID].kills++;
 
-            this._players[message.conn.connectionId].isDead = true;
-            this._players[message.conn.connectionId].rank   = Mathf.Max(1, playersAlive);
+            this._players[message.conn.connectionId].isDead    = true;
+            this._players[message.conn.connectionId].placement = Mathf.Max(1, playersAlive);
 
             this.sendGameOverMessage(message.conn.connectionId, killerID, false);
         }
@@ -363,12 +368,12 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     private void sendGameOverMessage(int id, int killerID = -1, bool win = true) {
         GameOverMessage message = new GameOverMessage();
 
-        message.killer = (killerID >= 0 ? this._players[killerID].name : "");
-        message.name   = this._players[id].name;
-        message.model  = this._players[id].model;
-        message.rank   = this._players[id].rank;
-        message.kills  = this._players[id].kills;
-        message.win    = this._players[id].win;
+        message.killer    = (killerID >= 0 ? this._players[killerID].name : "");
+        message.name      = this._players[id].name;
+        message.model     = this._players[id].model;
+        message.placement = this._players[id].placement;
+        message.kills     = this._players[id].kills;
+        message.win       = this._players[id].win;
 
         NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_GAME_OVER, message);
     }
@@ -425,7 +430,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
         foreach (var player in this._players) {
             player.Value.score  = 0;
-            player.Value.score += ((7 - player.Value.rank) * 1000);
+            player.Value.score += ((7 - player.Value.placement) * 1000);
             player.Value.score += (player.Value.kills * 600);
 
             rankings.Add(player.Value);
@@ -446,6 +451,10 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             message.rankings[i].kills  = rankings[i].kills;
             message.rankings[i].score  = rankings[i].score;
             message.rankings[i].win    = rankings[i].win;
+
+            // Only send the scores once form the server.
+            if (id == NetworkServer.serverHostId)
+                Leaderboard.SaveScore(rankings[i].name, (double)rankings[i].score);
         }
 
         NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_RANKINGS, message);

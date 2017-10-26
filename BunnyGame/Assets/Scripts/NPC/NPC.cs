@@ -135,8 +135,15 @@ public class NPC : NetworkBehaviour {
         }
     }
 
-    private void OnTriggerEnter(Collider other) {
-        if ((other.gameObject.tag == "foxbite")) {
+    private void OnTriggerEnter(Collider other)
+    {
+        if ((other.gameObject.tag == "foxbite"))
+        {
+            PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
+            kill(other.transform.parent.gameObject, otherInfo.ConnectionID);
+        }
+        else if ((other.gameObject.tag == "mooseAttack"))
+        {
             PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
             kill(other.transform.parent.gameObject, otherInfo.ConnectionID);
         }

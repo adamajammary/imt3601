@@ -34,7 +34,7 @@ public class MooseController : NetworkBehaviour{
 
         // Set custom attributes for class:
         PlayerEffects pe = GetComponent<PlayerEffects>();
-        pe.CmdSetAttributes(1.2f, 1.2f, 1.2f, 0.8f);
+        pe.CmdSetAttributes(2.0f, 1.5f, 1.2f, 0.8f);
 
         // Add abilities to class:
         //PlayerController playerController = GetComponent<PlayerController>();
@@ -89,7 +89,7 @@ public class MooseController : NetworkBehaviour{
     {
         _isAttackingAnim = true;
         ramArea.GetComponent<BoxCollider>().enabled = true;
-        yield return 0;
+        yield return new WaitForSeconds(0.5f);
         ramArea.GetComponent<BoxCollider>().enabled = false;
         _isAttackingAnim = false;
     }
@@ -113,7 +113,7 @@ public class MooseController : NetworkBehaviour{
         }
     }
 
-    public Vector3 biteImpact()
+    public Vector3 ramImpact()
     {
         return this.ramArea.transform.position;
     }

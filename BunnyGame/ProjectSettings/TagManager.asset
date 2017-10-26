@@ -14,6 +14,7 @@ TagManager:
   - lobbyplayer
   - pecker
   - DustTornado
+  - mooseAttack
   layers:
   - Default
   - TransparentFX

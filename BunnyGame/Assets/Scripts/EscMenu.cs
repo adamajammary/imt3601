@@ -26,6 +26,7 @@ public class EscMenu : NetworkBehaviour {
         exitToDesktop = exitToDesktop.GetComponent<Button>();
 
         escMenu.enabled = false;
+
     }
 
     void Update() {

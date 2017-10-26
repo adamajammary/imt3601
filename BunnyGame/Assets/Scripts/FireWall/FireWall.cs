@@ -156,6 +156,8 @@ public class FireWall : NetworkBehaviour {
             other.GetComponent<PlayerEffects>().insideWall = false;
         } else if (other.tag == "npc") {
             other.GetComponent<NPC>().burn();
+        } else if (other.tag == "DustTornado") {
+            other.GetComponent<DustTornado>().kill();
         }
     }
 
@@ -167,6 +169,6 @@ public class FireWall : NetworkBehaviour {
             other.GetComponent<PlayerEffects>().insideWall = true;
         } else if (other.tag == "Enemy") {
             other.GetComponent<PlayerEffects>().insideWall = true;
-        }
+        } 
     }
 }

@@ -85,19 +85,21 @@ public class PlayerEffects : NetworkBehaviour {
         Vector3 curDir = dir;
         Vector3 pos = transform.position;
         pos.y += 2;
-        transform.position = pos;       
+        transform.position = pos;
+        this._pc.setCC(true);
         for (float i = 0; i < 1.0f; i += Time.deltaTime * 2) {
             this._cc.Move(curDir* force * Time.deltaTime);
             curDir = Vector3.Lerp(dir, flatDir, i);
             yield return 0;
         }
+        this._pc.setCC(false);
     }
 
     //=========Dust Storm=====================================================================================================================
     public IEnumerator blind() {
         float timer = 0;
         while (timer < 10) { // Incase multiple blinds overlap.
-            timer += Time.deltaTime; 
+            timer += Time.deltaTime;
             this._blindEffect.enabled = true;
             yield return 0;
         };
@@ -133,6 +135,16 @@ public class PlayerEffects : NetworkBehaviour {
                 this.CmdBloodParticle(other.gameObject.transform.position);
                 this._health.TakeDamage(calcDamage(p.owner, p.GetDamage()), otherInfo.ConnectionID);
             }
+        } else if ((other.gameObject.tag == "mooseAttack") && (other.gameObject.transform.parent.gameObject.tag == "Enemy"))
+        {
+            MooseController MooseScript = other.GetComponentInParent<MooseController>();
+            PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
+
+            if ((this._health != null) && (MooseScript != null) && !this._health.IsDead())
+            {
+                this.CmdBloodParticle(MooseScript.ramImpact());
+                this._health.TakeDamage(calcDamage(other.transform.parent.gameObject, MooseScript.GetDamage()), otherInfo.ConnectionID);
+            }
         } else if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
         }
@@ -143,7 +155,8 @@ public class PlayerEffects : NetworkBehaviour {
     }
 
     public void onWaterStay(float waterForce) {
-        this._pc.velocityY += waterForce * Time.deltaTime;
+        if (!this._pc.getCC())
+            this._pc.velocityY += waterForce * Time.deltaTime;
     }
 
     private void handleGroundHit() {

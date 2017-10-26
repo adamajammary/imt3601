@@ -1,15 +1,17 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class FoxController : NetworkBehaviour {
+public class MooseController : NetworkBehaviour{
 
-    private GameObject biteArea;
-    private int _biteDamage = 15;
+    private GameObject ramArea;
+    private int _ramDamage = 15;
     private bool _isAttackingAnim = false;
-    
 
-    public override void PreStartClient() {
+
+    public override void PreStartClient()
+    {
         base.PreStartClient();
         NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
 
@@ -18,80 +20,88 @@ public class FoxController : NetworkBehaviour {
     }
 
     // Use this for initialization
-    void Start() {
+    void Start()
+    {
         NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
 
         for (int i = 0; i < netAnimator.animator.parameterCount; i++)
             netAnimator.SetParameterAutoSend(i, true);
 
-        biteArea = transform.GetChild(2).gameObject;
+        ramArea = transform.GetChild(2).gameObject;
 
         if (!this.isLocalPlayer)
             return;
 
         // Set custom attributes for class:
         PlayerEffects pe = GetComponent<PlayerEffects>();
-        pe.CmdSetAttributes(1.2f, 1.2f, 1.2f, 0.8f);
+        pe.CmdSetAttributes(1.5f, 1.0f, 1.0f, 0.8f);
 
         // Add abilities to class:
-        PlayerController playerController = GetComponent<PlayerController>();
-        Sprint sp = gameObject.AddComponent<Sprint>();
-        sp.init(50, 1);
-        playerController.abilities.Add(sp);
+        //PlayerController playerController = GetComponent<PlayerController>();
+        //Sprint sp = gameObject.AddComponent<Sprint>();
+        //sp.init(50, 1);
+        //playerController.abilities.Add(sp);
 
-        Stealth st = gameObject.AddComponent<Stealth>();
-        st.init(1, 0.1f);
-        playerController.abilities.Add(st);
+        //Stealth st = gameObject.AddComponent<Stealth>();
+        //st.init(1, 0.1f);
+        //playerController.abilities.Add(st);
 
-        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
+        //GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
     }
 
     // Update is called once per frame
-    void Update() {
+    void Update()
+    {
         if (!this.isLocalPlayer)
             return;
 
         updateAnimator();
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
-            this.bite();
+            this.ram();
     }
 
-    private void bite() {
+    private void ram()
+    {
         if (this.GetComponent<PlayerHealth>().IsDead())
             return;
 
         if (this.isServer)
-            this.RpcBite();
+            this.RpcRam();
         else if (this.isClient)
-            this.CmdBite();
+            this.CmdRam();
     }
 
     [Command]
-    private void CmdBite() {
-        this.RpcBite();
+    private void CmdRam()
+    {
+        this.RpcRam();
     }
 
     [ClientRpc]
-    private void RpcBite() {
-        StartCoroutine(this.toggleBite());
+    private void RpcRam()
+    {
+        StartCoroutine(this.toggleRam());
     }
 
     // Biting is enabled for 1 tick after called
-    private IEnumerator toggleBite() {
+    private IEnumerator toggleRam()
+    {
         _isAttackingAnim = true;
-        biteArea.GetComponent<BoxCollider>().enabled = true; 
-        yield return 0;
-        biteArea.GetComponent<BoxCollider>().enabled = false;
+        ramArea.GetComponent<BoxCollider>().enabled = true;
+        yield return new WaitForSeconds(0.5f);
+        ramArea.GetComponent<BoxCollider>().enabled = false;
         _isAttackingAnim = false;
     }
 
-    public int GetDamage() {
-        return this._biteDamage;
+    public int GetDamage()
+    {
+        return this._ramDamage;
     }
 
     // Update the animator with current state
-    public void updateAnimator() {
+    public void updateAnimator()
+    {
         Animator animator = GetComponent<Animator>();
 
         if (animator != null)
@@ -103,7 +113,8 @@ public class FoxController : NetworkBehaviour {
         }
     }
 
-    public Vector3 biteImpact() {
-        return this.biteArea.transform.position;
+    public Vector3 ramImpact()
+    {
+        return this.ramArea.transform.position;
     }
 }

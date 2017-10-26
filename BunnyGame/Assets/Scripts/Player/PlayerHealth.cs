@@ -13,7 +13,7 @@ public class PlayerHealth : NetworkBehaviour {
     private bool          _damageImmune;
     private Text          _gameOverText;
     private bool          _isDead;
-    private Button        _spectateButton;
+    //private Button        _spectateButton;
     private Image         _spectateImage;
     private Text          _spectateText;
     private bool          _ranked;
@@ -37,7 +37,7 @@ public class PlayerHealth : NetworkBehaviour {
 
         this._damageImage    = GameObject.Find("Canvas/BloodSplatterOverlay").GetComponent<Image>();
         this._gameOverText   = GameObject.Find("Canvas/GameOverText").GetComponent<Text>();
-        this._spectateButton = GameObject.Find("Canvas/SpectateButton").GetComponent<Button>();
+        //this._spectateButton = GameObject.Find("Canvas/SpectateButton").GetComponent<Button>();
         this._spectateImage  = GameObject.Find("Canvas/SpectateButton").GetComponent<Image>();
         this._spectateText   = GameObject.Find("Canvas/SpectateButton/SpectateButtonText").GetComponent<Text>();
         this._isDead         = false;
@@ -258,15 +258,16 @@ public class PlayerHealth : NetworkBehaviour {
         string animal = "";
 
         switch (message.model) {
-            case 0:  animal = "BUNNY";     break;
-            case 1:  animal = "FOXY";      break;
-            case 2:  animal = "ELK STEAK"; break;
+            case 0:  animal = "BUNNY"; break;
+            case 1:  animal = "FOXY";  break;
+            case 2:  animal = "BIRDY"; break;
+            case 3:  animal = "MOOZY"; break;
             default: Debug.Log("ERROR! Unknown model: " + message.model); break;
         }
 
         this._winner             = true;
         this._gameOver           = message;
-        this._gameOverText.text  = string.Format("WINNER WINNER {0} DINNER!\n\tPlacement: #1\t\tKills: {1}\n", animal, this._gameOver.kills);
+        this._gameOverText.text  = string.Format("WINNER WINNER {0} DINNER!\n\tPlacement: #1\t\tKills: {2}\n", animal, this._gameOver.placement, this._gameOver.kills);
         this._gameOverText.color = new Color(this._gameOverText.color.r, this._gameOverText.color.g, this._gameOverText.color.b, 1.0f);
     }
 
@@ -278,15 +279,16 @@ public class PlayerHealth : NetworkBehaviour {
         this._gameOver = message;
 
         if (this._gameOver.killer != "")
-            this._gameOverText.text = string.Format("YOU WERE KILLED BY {0}!\n\tPlacement: #{2}\t\tKills: {1}\n", this._gameOver.killer, this._gameOver.kills, this._gameOver.rank);
+            this._gameOverText.text = string.Format("YOU WERE KILLED BY {0}!\n\tPlacement: #{1}\t\tKills: {2}\n", this._gameOver.killer, this._gameOver.placement, this._gameOver.kills);
         else
-            this._gameOverText.text = string.Format("YOU DIED!\n\tPlacement: #{1}\t\tKills: {0}\n", this._gameOver.kills, this._gameOver.rank);
+            this._gameOverText.text = string.Format("YOU DIED!\n\tPlacement: #{0}\t\tKills: {1}\n", this._gameOver.placement, this._gameOver.kills);
 
         this._gameOverText.color  = new Color(this._gameOverText.color.r,  this._gameOverText.color.g,  this._gameOverText.color.b,  1.0f);
         this._spectateImage.color = new Color(this._spectateImage.color.r, this._spectateImage.color.g, this._spectateImage.color.b, 1.0f);
         this._spectateText.color  = new Color(this._spectateText.color.r,  this._spectateText.color.g,  this._spectateText.color.b,  1.0f);
 
-        this._spectateButton.onClick.AddListener(this.spectate);
+        //this._spectateButton.onClick.AddListener(this.spectate);
+        this.spectate();
     }
 
     // Shows a countdown until you are automatically moved out of the server
@@ -328,12 +330,13 @@ public class PlayerHealth : NetworkBehaviour {
 
         this._ranked             = true;
         this._rankings           = message;
-        this._gameOverText.text += "\nRank\tKills\t\tScore\tName\n---------------------------------------";
+        this._gameOverText.text += "\nRank\tKills\t\tScore\tName\n";
+        this._gameOverText.text += "---------------------------------------";
 
         foreach (Player player in this._rankings.rankings)
             this._gameOverText.text += string.Format("\n#{0}\t\t{1}\t\t\t{2}\t{3}", player.rank, player.kills, player.score, player.name);
 
-        StartCoroutine(gameOverTimer(10));
+        StartCoroutine(gameOverTimer(15));
     }
 
     // Update the HUD showing the player stats.

@@ -6,7 +6,7 @@ public class pecker : MonoBehaviour {
     public GameObject owner;
     public Transform body;
 
-    private int damage = 10;
+    private int damage = 7;
 
     void Update() {
         transform.position = body.position;

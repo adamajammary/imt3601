@@ -17,10 +17,14 @@ public class AbilityNetwork : NetworkBehaviour {
 
     private GameObject _poopGrenade;
     private GameObject _explosion;
+    private GameObject _dustParticles;
+    private GameObject _dustTornado;
 
     void Start() {
         this._poopGrenade = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopGrenade");
         this._explosion = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopExplosion");
+        this._dustParticles = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustStorm");
+        this._dustTornado = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustTornado");
     }
   
 
@@ -119,6 +123,39 @@ public class AbilityNetwork : NetworkBehaviour {
         explosion.transform.position = pos;
         NetworkServer.Spawn(explosion);
         Destroy(explosion, 1.1f);
+    }
+    /////////////////////////////////////////////////////////////////
+
+    ///////////// Functions for DustStorm ability ///////////////////
+    [Command]
+    public void CmdDustStorm(Vector3 pos, int id) {
+        GameObject dustStorm = Instantiate(this._dustParticles);
+        dustStorm.transform.position = pos;
+        NetworkServer.Spawn(dustStorm);
+        Destroy(dustStorm, 10.0f);
+        RpcBlind(pos, id);
+    }
+
+    [ClientRpc]
+    private void RpcBlind(Vector3 pos, int id) {
+        StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
+        var player = GameObject.FindGameObjectWithTag("Player");
+        if (player.GetComponent<PlayerInformation>().ConnectionID != id) {
+            if (Vector3.Distance(player.transform.position, pos) < 20) {
+                StartCoroutine(player.GetComponent<PlayerEffects>().blind());
+            }
+        }        
+    }
+
+
+    ///////////// Functions for DustTornado ability /////////////////
+    [Command]
+    public void CmdDustTornado(Vector3 pos, Vector3 dir, GameObject owner) {
+        StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
+        GameObject dustTornado = Instantiate(this._dustTornado);
+        dustTornado.transform.position = pos;
+        dustTornado.GetComponent<DustTornado>().shoot(pos, dir, owner);
+        NetworkServer.SpawnWithClientAuthority(dustTornado, owner.GetComponent<PlayerInformation>().connectionToClient);
     }
     /////////////////////////////////////////////////////////////////
 }

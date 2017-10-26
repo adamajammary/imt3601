@@ -133,6 +133,16 @@ public class PlayerEffects : NetworkBehaviour {
                 this.CmdBloodParticle(other.gameObject.transform.position);
                 this._health.TakeDamage(calcDamage(p.owner, p.GetDamage()), otherInfo.ConnectionID);
             }
+        } else if ((other.gameObject.tag == "mooseAttack") && (other.gameObject.transform.parent.gameObject.tag == "Enemy"))
+        {
+            MooseController MooseScript = other.GetComponentInParent<MooseController>();
+            PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
+
+            if ((this._health != null) && (MooseScript != null) && !this._health.IsDead())
+            {
+                this.CmdBloodParticle(MooseScript.ramImpact());
+                this._health.TakeDamage(calcDamage(other.transform.parent.gameObject, MooseScript.GetDamage()), otherInfo.ConnectionID);
+            }
         } else if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
         }

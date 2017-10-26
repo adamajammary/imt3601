@@ -261,7 +261,7 @@ public class LobbyHUD : MonoBehaviour {
 
             listing.transform.GetChild(0).GetComponent<Text>().text = message.players[i].name;
             listing.transform.GetChild(1).GetComponent<Text>().text = (message.players[i].ready ? "Ready" : "Not ready");
-            listing.transform.GetChild(2).GetComponent<Text>().text = new string[] {"Bunny", "Fox", "Bird"}[message.players[i].animal];
+            listing.transform.GetChild(2).GetComponent<Text>().text = new string[] {"Bunny", "Fox", "Bird", "Moose"}[message.players[i].animal];
         }
     }
 

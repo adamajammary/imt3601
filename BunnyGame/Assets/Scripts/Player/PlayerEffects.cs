@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class PlayerEffects : NetworkBehaviour {
     public bool insideWall;
@@ -14,7 +15,8 @@ public class PlayerEffects : NetworkBehaviour {
     private GameObject          _blood;
     private PlayerController    _pc;
     private CharacterController _cc;
-    private PlayerHealth        _health;  
+    private PlayerHealth        _health;
+    private Image               _blindEffect;
     
     private int   _fallDamage = 40;
     private bool  _fallDamageImmune = false;
@@ -23,11 +25,12 @@ public class PlayerEffects : NetworkBehaviour {
 
     // Use this for initialization
     void Start () {
-        this.insideWall = true;
-        this._pc        = GetComponent<PlayerController>();
-        this._cc        = GetComponent<CharacterController>();
-        this._blood     = Resources.Load<GameObject>("Prefabs/Blood");
-        this._health    = this.GetComponent<PlayerHealth>();
+        this.insideWall     = true;
+        this._pc            = GetComponent<PlayerController>();
+        this._cc            = GetComponent<CharacterController>();
+        this._blood         = Resources.Load<GameObject>("Prefabs/Blood");
+        this._health        = this.GetComponent<PlayerHealth>();
+        this._blindEffect   = GameObject.Find("BlindOverlay").GetComponent<Image>();
     }
 	
 	// Update is called once per frame
@@ -80,12 +83,25 @@ public class PlayerEffects : NetworkBehaviour {
         Vector3 curDir = dir;
         Vector3 pos = transform.position;
         pos.y += 2;
-        transform.position = pos;       
+        transform.position = pos;
+        this._pc.setCC(true);
         for (float i = 0; i < 1.0f; i += Time.deltaTime * 2) {
             this._cc.Move(curDir* force * Time.deltaTime);
             curDir = Vector3.Lerp(dir, flatDir, i);
             yield return 0;
         }
+        this._pc.setCC(false);
+    }
+
+    //=========Dust Storm=====================================================================================================================
+    public IEnumerator blind() {
+        float timer = 0;
+        while (timer < 10) { // Incase multiple blinds overlap.
+            timer += Time.deltaTime;
+            this._blindEffect.enabled = true;
+            yield return 0;
+        };
+        this._blindEffect.enabled = false;
     }
 
     //=========Other==========================================================================================================================
@@ -127,7 +143,8 @@ public class PlayerEffects : NetworkBehaviour {
     }
 
     public void onWaterStay(float waterForce) {
-        this._pc.velocityY += waterForce * Time.deltaTime;
+        if (!this._pc.getCC())
+            this._pc.velocityY += waterForce * Time.deltaTime;
     }
 
     private void handleFallDamage() {

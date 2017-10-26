@@ -159,6 +159,7 @@ public class NPCManager : NetworkBehaviour {
     //Recieves instructions from the NPCThread, and passes them along to the NPC GameObjects in the scene
     void handleInstructions() {
         while (!this._instructions.isEmpty()) {
+            //Debug.Log("CHEECKY");
             var instruction = this._instructions.Dequeue();
             if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null)
                 this._npcs[instruction.id].GetComponent<NPC>().update(instruction.moveDir, instruction.goal);

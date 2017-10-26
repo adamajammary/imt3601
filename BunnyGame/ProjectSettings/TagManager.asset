@@ -13,6 +13,7 @@ TagManager:
   - FireWall
   - lobbyplayer
   - pecker
+  - DustTornado
   layers:
   - Default
   - TransparentFX
@@ -30,9 +31,9 @@ TagManager:
   - Environment
   - NPC
   - SpecialEffects
-  - 
-  - 
-  - 
+  - Borders
+  - FireWall
+  - DustTornado
   - 
   - 
   - 

@@ -83,19 +83,21 @@ public class PlayerEffects : NetworkBehaviour {
         Vector3 curDir = dir;
         Vector3 pos = transform.position;
         pos.y += 2;
-        transform.position = pos;       
+        transform.position = pos;
+        this._pc.setCC(true);
         for (float i = 0; i < 1.0f; i += Time.deltaTime * 2) {
             this._cc.Move(curDir* force * Time.deltaTime);
             curDir = Vector3.Lerp(dir, flatDir, i);
             yield return 0;
         }
+        this._pc.setCC(false);
     }
 
     //=========Dust Storm=====================================================================================================================
     public IEnumerator blind() {
         float timer = 0;
         while (timer < 10) { // Incase multiple blinds overlap.
-            timer += Time.deltaTime; 
+            timer += Time.deltaTime;
             this._blindEffect.enabled = true;
             yield return 0;
         };
@@ -141,7 +143,8 @@ public class PlayerEffects : NetworkBehaviour {
     }
 
     public void onWaterStay(float waterForce) {
-        this._pc.velocityY += waterForce * Time.deltaTime;
+        if (!this._pc.getCC())
+            this._pc.velocityY += waterForce * Time.deltaTime;
     }
 
     private void handleFallDamage() {

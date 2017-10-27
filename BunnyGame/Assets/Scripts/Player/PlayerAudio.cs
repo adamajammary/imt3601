@@ -76,8 +76,9 @@ public class PlayerAudio : MonoBehaviour {
         RaycastHit hit = new RaycastHit();
         bool didHit = Physics.Raycast(ray, out hit, 10);
 
-        if(!didHit)
-            if (hit.transform.GetComponent<MeshRenderer>() == null)
+        if (!didHit)
+            return "";
+        else if (hit.transform.GetComponent<MeshRenderer>() == null)
                 return "";
 
         Debug.Log("Material of ground below is: " + hit.transform.GetComponent<MeshRenderer>().material.name);

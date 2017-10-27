@@ -49,7 +49,7 @@ public class PlayerAudio : MonoBehaviour {
         }
 
 
-        updateVolume(PlayerPrefs.GetFloat("Effect Volume", 100) / 100f * masterVolume;);
+        updateVolume(PlayerPrefs.GetFloat("Effect Volume", 100) / 100f * (PlayerPrefs.GetFloat("Master Volume", 100) / 100f));
 
         StartCoroutine(playFootSteps());
     }

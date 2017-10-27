@@ -1343,7 +1343,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21b8b4f3f19632841ae3bc91e3232a83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  footStepFrequency: 1
+  animalSound: {fileID: 0}
+  footStepFrequency: 1.3
+  runSpeedFrequency: 0.5
 --- !u!114 &114961053703169034
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerAudio : MonoBehaviour {
 
     private CharacterController _characterController;
+    private PlayerController _playerController;
     private float _volume;
 
     // Animal sound
@@ -15,6 +16,7 @@ public class PlayerAudio : MonoBehaviour {
     private AudioSource _movementPlayer;
     private string _currentGroundType;
     public float footStepFrequency = 1f;
+    public float runSpeedFrequency = 0.5f;
     private Dictionary<string, AudioClip> _footStepClips = new Dictionary<string, AudioClip>();
     private Dictionary<string, AudioClip> _groundHitClips = new Dictionary<string, AudioClip>();
     
@@ -30,6 +32,7 @@ public class PlayerAudio : MonoBehaviour {
 
     void Start () {
         _characterController = gameObject.GetComponent<CharacterController>();
+        _playerController = gameObject.GetComponent<PlayerController>();
 
 
         foreach (string name in new string[] { "leaf", "dirt", "stone", "wood" }) {
@@ -73,13 +76,14 @@ public class PlayerAudio : MonoBehaviour {
                 case "mat10":
                 case "mat12":
                     return "leaf";
+                case "mat16":
+                case "mat17":
+                    return "stone";
                 case "mat18": // !! This is because the big mountain is in the same mesh as the ground... so I have to manually check whether it is stone or dirt...
                     Debug.Log(transform.position + "; dist:" + Vector3.Distance(transform.position, new Vector3(24, transform.position.y, 44)));
                     if (transform.position.y > -12.5f && Vector3.Distance(transform.position, new Vector3(24,transform.position.y,44)) < 80)
                         return "stone";
                     else return "dirt";
-                case "mat16":
-                    return "stone";
                 case "mat20":
                     return "wood";
                 default:
@@ -94,7 +98,7 @@ public class PlayerAudio : MonoBehaviour {
         while (true) {
             if (_characterController.isGrounded && _characterController.velocity.magnitude > 0.1f) {
                 _movementPlayer.PlayOneShot(_footStepClips[_currentGroundType]);
-                yield return new WaitForSeconds(footStepFrequency);
+                yield return new WaitForSeconds(_playerController.running ? runSpeedFrequency : footStepFrequency);
             }
             else yield return null;
         }

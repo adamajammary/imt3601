@@ -74,11 +74,11 @@ public class PlayerAudio : MonoBehaviour {
     private string getGroundType() {
         Ray ray = new Ray(transform.position, Vector3.down);
         RaycastHit hit = new RaycastHit();
-        Physics.Raycast(ray, out hit, 10);
+        bool didHit = Physics.Raycast(ray, out hit, 10);
 
-        if(hit.transform != null)
+        if(!didHit)
             if (hit.transform.GetComponent<MeshRenderer>() == null)
-            return "";
+                return "";
 
         Debug.Log("Material of ground below is: " + hit.transform.GetComponent<MeshRenderer>().material.name);
         

@@ -27,6 +27,8 @@ public class NPC : NetworkBehaviour {
 
     private Animator _ani;
 
+    private bool _isDead; // Due to network delay.
+
     // Use this for initialization
     void Start() {
         this._cc    = GetComponent<CharacterController>();
@@ -34,6 +36,8 @@ public class NPC : NetworkBehaviour {
         this._fire = Resources.Load<GameObject>("Prefabs/Fire");
         this._yVel  = 0;
         this._ani   = GetComponentInChildren<Animator>();
+
+        this._isDead = false;
 
         if (this.isServer) { this._syncTimer = 0; this.syncClients(); }
         }
@@ -69,6 +73,8 @@ public class NPC : NetworkBehaviour {
     }
 
     public void kill(GameObject killer, int id) {
+        if (this._isDead) return;
+        this._isDead = true;
         PlayerHealth healthScript = killer.GetComponent<PlayerHealth>();
         PlayerEffects pe = killer.GetComponent<PlayerEffects>();
         this.CmdBloodParticle(this.transform.position);

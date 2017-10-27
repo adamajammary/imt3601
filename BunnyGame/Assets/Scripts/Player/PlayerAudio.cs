@@ -24,18 +24,22 @@ public class PlayerAudio : MonoBehaviour {
     void Awake() {
         _movementPlayer = gameObject.AddComponent<AudioSource>();
         _movementPlayer.volume = 0;
-        _movementPlayer.rolloffMode = AudioRolloffMode.Logarithmic;
+        _movementPlayer.rolloffMode = AudioRolloffMode.Linear;
         _movementPlayer.minDistance = 0;
-        _movementPlayer.maxDistance = 25;
+        _movementPlayer.maxDistance = 50;
+        _movementPlayer.spatialBlend = 1;
+        _movementPlayer.spatialize = true;
 
 
 
         _animalSoundPlayer = gameObject.AddComponent<AudioSource>();
         _animalSoundPlayer.clip = animalSound;
         _animalSoundPlayer.volume = 0;
-        _animalSoundPlayer.rolloffMode = AudioRolloffMode.Logarithmic;
+        _animalSoundPlayer.rolloffMode = AudioRolloffMode.Linear;
         _animalSoundPlayer.minDistance = 0;
-        _animalSoundPlayer.maxDistance = 25;
+        _animalSoundPlayer.maxDistance = 50;
+        _animalSoundPlayer.spatialBlend = 1;
+        _animalSoundPlayer.spatialize = true;
     }
 
     void Start () {

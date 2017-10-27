@@ -99,9 +99,8 @@ public class PlayerAudio : MonoBehaviour {
                 case "mat17":
                     return "stone";
                 case "mat18": // !! This is because the big mountain is in the same mesh as the ground... so I have to manually check whether it is stone or dirt...
-                    Debug.Log(transform.position + "; dist:" + Vector3.Distance(transform.position, new Vector3(24, transform.position.y, 44)));
                     if (transform.position.y > -12.5f && Vector3.Distance(transform.position, new Vector3(24,transform.position.y,44)) < 80)
-                        return "stone";
+                         return "stone";
                     else return "dirt";
                 case "mat20":
                     return "wood";
@@ -114,8 +113,11 @@ public class PlayerAudio : MonoBehaviour {
 
 
     private IEnumerator playFootSteps() {
+        Ray ray = new Ray(transform.position, Vector3.down);
+
         while (true) {
-            if (_characterController.isGrounded && _characterController.velocity.magnitude > 0.1f) {
+            Debug.Log(Physics.Raycast(ray, 0.2f) + " : " + _characterController.velocity.magnitude);
+            if (Physics.Raycast(ray, 0.2f) && _characterController.velocity.magnitude > 0.1f) {
                 _movementPlayer.PlayOneShot(_footStepClips[_currentGroundType]);
                 yield return new WaitForSeconds(_playerController.running ? runSpeedFrequency : footStepFrequency);
             }

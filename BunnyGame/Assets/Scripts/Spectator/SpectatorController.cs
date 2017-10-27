@@ -66,6 +66,7 @@ public class SpectatorController : MonoBehaviour {
         setSpectatorMode(SpectatorMode.FREE);
 
         _thirdPersonCamera.canFPS = false;
+        gameObject.tag = "Spectator";
 
 
         // Disable ui elements that aren't necessary to keep after going into spectate mode

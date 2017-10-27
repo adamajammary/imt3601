@@ -49,6 +49,8 @@ public class PlayerAudio : MonoBehaviour {
         }
 
 
+        updateVolume(PlayerPrefs.GetFloat("Effect Volume", 100) / 100f * masterVolume;);
+
         StartCoroutine(playFootSteps());
     }
 
@@ -79,7 +81,7 @@ public class PlayerAudio : MonoBehaviour {
         if (!didHit)
             return "";
         else if (hit.transform.GetComponent<MeshRenderer>() == null)
-                return "";
+            return "";
 
         Debug.Log("Material of ground below is: " + hit.transform.GetComponent<MeshRenderer>().material.name);
         

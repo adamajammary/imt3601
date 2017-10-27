@@ -91,7 +91,7 @@ public class NPC : NetworkBehaviour {
                 break;
         }
 
-        Destroy(this.gameObject);
+        CmdDestroy();
     }
     
     public void burn() {
@@ -147,6 +147,11 @@ public class NPC : NetworkBehaviour {
             PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
             kill(other.transform.parent.gameObject, otherInfo.ConnectionID);
         }
+    }
+
+    [Command]
+    private void CmdDestroy() {
+        NetworkServer.Destroy(gameObject);
     }
 
     [Command]

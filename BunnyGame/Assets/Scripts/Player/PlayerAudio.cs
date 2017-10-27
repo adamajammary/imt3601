@@ -6,6 +6,7 @@ public class PlayerAudio : MonoBehaviour {
 
     private CharacterController _characterController;
     private PlayerController _playerController;
+    private PlayerEffects _playerEffects;
     private float _volume;
 
     // Animal sound
@@ -15,9 +16,9 @@ public class PlayerAudio : MonoBehaviour {
     // Movement
     private AudioSource _movementPlayer;
     private string _currentGroundType;
-    public float footStepFrequency = 1f;
-    public float runSpeedFrequency = 0.5f;
-    private Dictionary<string, AudioClip> _footStepClips = new Dictionary<string, AudioClip>();
+    public float frequencyModifier = 1;
+    public float distanceFromGroundToCenter = 1f;
+    private Dictionary<string, AudioClip> _footStepClips  = new Dictionary<string, AudioClip>();
     private Dictionary<string, AudioClip> _groundHitClips = new Dictionary<string, AudioClip>();
     
 
@@ -44,7 +45,8 @@ public class PlayerAudio : MonoBehaviour {
 
     void Start () {
         _characterController = gameObject.GetComponent<CharacterController>();
-        _playerController = gameObject.GetComponent<PlayerController>();
+        _playerController    = gameObject.GetComponent<PlayerController>();
+        _playerEffects       = gameObject.GetComponent<PlayerEffects>();
 
 
         foreach (string name in new string[] { "leaf", "dirt", "stone", "wood" }) {
@@ -99,7 +101,7 @@ public class PlayerAudio : MonoBehaviour {
                 case "mat17":
                     return "stone";
                 case "mat18": // !! This is because the big mountain is in the same mesh as the ground... so I have to manually check whether it is stone or dirt...
-                    if (transform.position.y > -12.5f && Vector3.Distance(transform.position, new Vector3(24,transform.position.y,44)) < 80)
+                    if (hit.point.y > -16.3f && Vector3.Distance(transform.position, new Vector3(24,transform.position.y,44)) < 80)
                          return "stone";
                     else return "dirt";
                 case "mat20":
@@ -113,13 +115,15 @@ public class PlayerAudio : MonoBehaviour {
 
 
     private IEnumerator playFootSteps() {
-        Ray ray = new Ray(transform.position, Vector3.down);
-
+        RaycastHit hit = new RaycastHit();
         while (true) {
-            Debug.Log(Physics.Raycast(ray, 0.2f) + " : " + _characterController.velocity.magnitude);
-            if (Physics.Raycast(ray, 0.2f) && _characterController.velocity.magnitude > 0.1f) {
+            Physics.Raycast(transform.position, Vector3.down, out hit);
+            bool isGrounded = hit.distance < this.distanceFromGroundToCenter;
+            Debug.Log(isGrounded + " " + hit.distance);
+            if (isGrounded && _playerController.currentSpeed > 1) {
                 _movementPlayer.PlayOneShot(_footStepClips[_currentGroundType]);
-                yield return new WaitForSeconds(_playerController.running ? runSpeedFrequency : footStepFrequency);
+                float time = Mathf.Min(1, _playerController.walkSpeed/_playerController.currentSpeed) * this.frequencyModifier;
+                yield return new WaitForSeconds(time);
             }
             else yield return null;
         }

@@ -24,10 +24,16 @@ public class PlayerAudio : MonoBehaviour {
     void Awake() {
         _movementPlayer = gameObject.AddComponent<AudioSource>();
         _movementPlayer.volume = 0;
+        _movementPlayer.rolloffMode = AudioRolloffMode.Logarithmic;
+        _movementPlayer.maxDistance = 25;
+
+
 
         _animalSoundPlayer = gameObject.AddComponent<AudioSource>();
         _animalSoundPlayer.clip = animalSound;
         _animalSoundPlayer.volume = 0;
+        _animalSoundPlayer.rolloffMode = AudioRolloffMode.Logarithmic;
+        _animalSoundPlayer.maxDistance = 25;
     }
 
     void Start () {
@@ -67,6 +73,9 @@ public class PlayerAudio : MonoBehaviour {
         Ray ray = new Ray(transform.position, Vector3.down);
         RaycastHit hit = new RaycastHit();
         Physics.Raycast(ray, out hit, 10);
+
+        if (hit.transform.GetComponent<MeshRenderer>() == null)
+            return "";
 
         Debug.Log("Material of ground below is: " + hit.transform.GetComponent<MeshRenderer>().material.name);
         

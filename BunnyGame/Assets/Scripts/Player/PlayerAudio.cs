@@ -24,7 +24,7 @@ public class PlayerAudio : MonoBehaviour {
 
     void Awake() {
         _movementPlayer = gameObject.AddComponent<AudioSource>();
-        _movementPlayer.volume = 0;
+        //_movementPlayer.volume = 0;
         _movementPlayer.rolloffMode = AudioRolloffMode.Linear;
         _movementPlayer.minDistance = 0;
         _movementPlayer.maxDistance = 50;
@@ -34,13 +34,13 @@ public class PlayerAudio : MonoBehaviour {
 
 
         _animalSoundPlayer = gameObject.AddComponent<AudioSource>();
-        _animalSoundPlayer.clip = animalSound;
-        _animalSoundPlayer.volume = 0;
-        _animalSoundPlayer.rolloffMode = AudioRolloffMode.Linear;
-        _animalSoundPlayer.minDistance = 0;
-        _animalSoundPlayer.maxDistance = 50;
-        _animalSoundPlayer.spatialBlend = 1;
-        _animalSoundPlayer.spatialize = true;
+        //_animalSoundPlayer.clip = animalSound;
+        //_animalSoundPlayer.volume = 0;
+        //_animalSoundPlayer.rolloffMode = AudioRolloffMode.Linear;
+        //_animalSoundPlayer.minDistance = 0;
+        //_animalSoundPlayer.maxDistance = 50;
+        //_animalSoundPlayer.spatialBlend = 1;
+        //_animalSoundPlayer.spatialize = true;
     }
 
     void Start () {
@@ -116,13 +116,13 @@ public class PlayerAudio : MonoBehaviour {
 
     private IEnumerator playFootSteps() {
         RaycastHit hit = new RaycastHit();
+        float normalSpeed = _playerController.walkSpeed;
         while (true) {
             Physics.Raycast(transform.position, Vector3.down, out hit);
-            bool isGrounded = hit.distance < this.distanceFromGroundToCenter;
-            Debug.Log(isGrounded + " " + hit.distance);
-            if (isGrounded && _playerController.currentSpeed > 1) {
+            if (hit.distance < this.distanceFromGroundToCenter && _characterController.velocity.magnitude > 1) {
                 _movementPlayer.PlayOneShot(_footStepClips[_currentGroundType]);
-                float time = Mathf.Min(1, _playerController.walkSpeed/_playerController.currentSpeed) * this.frequencyModifier;
+                float time = Mathf.Clamp(normalSpeed / _characterController.velocity.magnitude, 0.3f, 1) * this.frequencyModifier;
+                Debug.Log(GetComponent<PlayerInformation>().playerName + " : " + normalSpeed / _playerController.currentSpeed);
                 yield return new WaitForSeconds(time);
             }
             else yield return null;

@@ -107,10 +107,11 @@ public class PlayerAudio : MonoBehaviour {
 
     public void playGroundHit(float vel) {
         _movementPlayer.PlayOneShot(_groundHitClips[_currentGroundType]);
+        // To be fully implemented
     }
 
     public void playWaterHit(float vel)
     {
-
+        // To be implemented
     }
 }

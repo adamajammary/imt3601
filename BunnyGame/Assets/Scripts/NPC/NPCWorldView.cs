@@ -196,6 +196,17 @@ public static class NPCWorldView {
         initPlane(_land, _landOffset);
         initPlane(_water, _waterOffset);
     }
+
+    public static void clear() {
+        _runNPCThread = false;
+        _ready = false;
+
+        _npcs = null;
+        _players = null;
+
+        _land = null;
+        _water = null;
+    }
     //===============================================================================
     public static Vector3 landOffset { get { return _landOffset; } }
     public static Vector3 waterOffset { get { return _waterOffset; } }

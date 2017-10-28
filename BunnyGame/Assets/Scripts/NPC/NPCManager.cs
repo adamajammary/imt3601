@@ -4,21 +4,20 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class NPCManager : NetworkBehaviour {
-    [SyncVar(hook ="setPlayerCount")]
-    private int _playerCount;
+    [SyncVar]
+    private int _playerCount = -1;
     private int _cellCount; //Amount of cells in NPCWorldView
 
-    private Dictionary<int, GameObject>             _players;       //Used to update NPCWorldView
-    private Dictionary<int, GameObject>             _npcs;          //Used to update NPCWorldView
-    private List<int>                               _deadPlayers;   //Keeps track of dead players, so that they can be removed from datastructures at a convenient time
-    private List<int>                               _deadNpcs;      //Keeps track of dead npcs, so that they can be removed from datastructures at a convenient time
-    private NPCThread                               _npcThread;     //The thread running the logic for NPCs using NPCWorldView maintained by this class
-    private BlockingQueue<NPCThread.instruction>    _instructions;  //Queue used to recieve instuctions from NPCThread
-    private bool                                    _ready;         //Flag set to true when initialization is finished
+    private Dictionary<int, GameObject> _players;       //Used to update NPCWorldView
+    private Dictionary<int, GameObject> _npcs;          //Used to update NPCWorldView
+    private List<int> _deadPlayers;   //Keeps track of dead players, so that they can be removed from datastructures at a convenient time
+    private List<int> _deadNpcs;      //Keeps track of dead npcs, so that they can be removed from datastructures at a convenient time
+    private NPCThread _npcThread;     //The thread running the logic for NPCs using NPCWorldView maintained by this class
+    private BlockingQueue<NPCThread.instruction> _instructions;  //Queue used to recieve instuctions from NPCThread
+    private bool _ready;         //Flag set to true when initialization is finished
 
     // Use this for initialization
     void Start() {
-        this._playerCount = -1;
         _cellCount = NPCWorldView.cellCount;
 
         this._players = new Dictionary<int, GameObject>();
@@ -28,10 +27,6 @@ public class NPCManager : NetworkBehaviour {
         this._ready = false;
         if (this.isServer) StartCoroutine(waitForClients());
         StartCoroutine(init());
-    }
-
-    private void setPlayerCount(int count) {
-        this._playerCount = count;
     }
 
     //Waits for clients, then syncs playercount, and spawns npcs
@@ -52,7 +47,6 @@ public class NPCManager : NetworkBehaviour {
 
             this._playerCount = playerCount; //sync playerCount to clients, now that all are here
         }
-
     }
 
     //Spawn NPCs, then register players/npcs in datastructures in this class, and NPCWorldView
@@ -62,6 +56,7 @@ public class NPCManager : NetworkBehaviour {
     //The need for keeping two list comes from the fact that the Unity API is not thread safe.
     //The NPCThread uses a thread safe representation of the World provided by NPCWorldView.
     private IEnumerator init() {
+        while (!NPCWorldView.ready) yield return 0;
         while (this._playerCount == -1) yield return 0;
 
         //Wait for all players to spawn, +1 for localplayer 
@@ -97,7 +92,7 @@ public class NPCManager : NetworkBehaviour {
     }
 
     // Update is called once per frame
-    void Update () {
+    void Update() {
         if (this._ready) {
             this.updateNPCWorldView();
             this.handleInstructions();
@@ -135,7 +130,7 @@ public class NPCManager : NetworkBehaviour {
                 NPCWorldView.setRunNPCThread(false);
                 this._deadNpcs.Clear();
                 this._deadPlayers.Clear();
-                this._ready = false;              
+                this._ready = false;
                 return;
             } else
                 if (this._npcThread.isUpdating) { this._npcThread.wait = true; return; /*Wait for npc thread to catch up */}
@@ -159,7 +154,6 @@ public class NPCManager : NetworkBehaviour {
     //Recieves instructions from the NPCThread, and passes them along to the NPC GameObjects in the scene
     void handleInstructions() {
         while (!this._instructions.isEmpty()) {
-            //Debug.Log("CHEECKY");
             var instruction = this._instructions.Dequeue();
             if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null)
                 this._npcs[instruction.id].GetComponent<NPC>().update(instruction.moveDir, instruction.goal);
@@ -176,7 +170,7 @@ public class NPCManager : NetworkBehaviour {
             int x = Random.Range(0, this._cellCount);
             int y = Random.Range(0, this._cellCount);
             landCell = NPCWorldView.getCell(true, x, y);
-            waterCell = NPCWorldView.getCell(false, x, y);            
+            waterCell = NPCWorldView.getCell(false, x, y);
         } while (landCell.blocked || !waterCell.blocked);
 
         //Angle is used to generate a direction
@@ -185,7 +179,7 @@ public class NPCManager : NetworkBehaviour {
         npcInstance.GetComponent<NPC>().spawn(landCell.pos, dir);
 
         NetworkServer.Spawn(npcInstance);
-        
+
     }
 
     //It's important to stop the NPCThread when quitting

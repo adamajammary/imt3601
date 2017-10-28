@@ -7,7 +7,7 @@ public class PlayerAudio : MonoBehaviour {
     private CharacterController _characterController;
     private PlayerController _playerController;
     private PlayerEffects _playerEffects;
-    private float _volume;
+    private float _volume = 1f;
 
     // Animal sound
     private AudioSource _animalSoundPlayer;
@@ -52,8 +52,7 @@ public class PlayerAudio : MonoBehaviour {
             _footStepClips.Add(name,  Resources.Load<AudioClip>("Audio/Movement/" + name));
             _groundHitClips.Add(name, Resources.Load<AudioClip>("Audio/GroundHit/" + name));
         }
-
-
+        
         updateVolume();
 
         StartCoroutine(playFootSteps());
@@ -66,18 +65,18 @@ public class PlayerAudio : MonoBehaviour {
         }
 	}
 
-    public void updateVolume(float v) {
-        _volume = v;
-        _movementPlayer.volume = v;
-        _animalSoundPlayer.volume = v;
-    }
+    /*
+     * PARAMS:
+     * volume: what you would expect
+     * volumeModifier: Used to modify the volume independently of the general effect volume (stealth ability)
+     */
+    public void updateVolume(float volume = -1, float volumeModifier = -1) {
+        if (volumeModifier != -1) this.volumeModifier = volumeModifier;
 
-    public void updateVolume() {
-        updateVolume(PlayerPrefs.GetFloat("Effect Volume", 100) / 100f * (PlayerPrefs.GetFloat("Master Volume", 100) / 100f) * volumeModifier);
-    }
-
-    public void updateVolumeModifier(float volumeMod) {
-        updateVolume(PlayerPrefs.GetFloat("Effect Volume", 100) / 100f * (PlayerPrefs.GetFloat("Master Volume", 100) / 100f) * volumeMod);
+        if (volume == -1) _volume = PlayerPrefs.GetFloat("Effect Volume", 100) / 100f * (PlayerPrefs.GetFloat("Master Volume", 100) / 100f) * this.volumeModifier;
+        else _volume = volume * this.volumeModifier;
+        _movementPlayer.volume = _volume;
+        _animalSoundPlayer.volume = _volume;
     }
 
     public float getVolume() {
@@ -88,14 +87,12 @@ public class PlayerAudio : MonoBehaviour {
     private string getGroundType() {
         Ray ray = new Ray(transform.position, Vector3.down);
         RaycastHit hit = new RaycastHit();
-        bool didHit = Physics.Raycast(ray, out hit, 10);
 
-        if (!didHit)
+        if (!Physics.Raycast(ray, out hit, 10))
             return "";
         else if (hit.transform.GetComponent<MeshRenderer>() == null)
             return "";
 
-        Debug.Log("Material of ground below is: " + hit.transform.GetComponent<MeshRenderer>().material.name);
         
         if (hit.transform.CompareTag("ground")) {
             switch (hit.transform.GetComponent<MeshRenderer>().material.name.TrimEnd(" (Instance)".ToCharArray())) {
@@ -128,7 +125,6 @@ public class PlayerAudio : MonoBehaviour {
             if (hit.distance < this.distanceFromGroundToCenter && _characterController.velocity.magnitude > 1) {
                 _movementPlayer.PlayOneShot(_footStepClips[_currentGroundType]);
                 float time = Mathf.Clamp(normalSpeed / _characterController.velocity.magnitude, 0.3f, 1) * this.frequencyModifier;
-                Debug.Log(GetComponent<PlayerInformation>().playerName + " : " + normalSpeed / _playerController.currentSpeed);
                 yield return new WaitForSeconds(time);
             }
             else yield return null;

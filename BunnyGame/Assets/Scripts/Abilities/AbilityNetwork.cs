@@ -44,10 +44,10 @@ public class AbilityNetwork : NetworkBehaviour {
 
     private IEnumerator stealth(float activeTime,float transparancy, float volumeMod)
     {
-        GetComponent<PlayerAudio>().updateVolumeModifier(volumeMod);
+        GetComponent<PlayerAudio>().updateVolume(volumeModifier: volumeMod);
         RpcSetTransparentFox(transparancy);
         yield return new WaitForSeconds(activeTime);
-        GetComponent<PlayerAudio>().updateVolumeModifier(1);
+        GetComponent<PlayerAudio>().updateVolume(volumeModifier: 1);
         RpcSetOrginalFox();
     }
 

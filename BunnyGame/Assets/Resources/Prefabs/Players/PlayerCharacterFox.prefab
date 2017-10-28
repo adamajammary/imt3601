@@ -1100,8 +1100,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animalSound: {fileID: 0}
-  footStepFrequency: 0.4
-  runSpeedFrequency: 0.2
+  frequencyModifier: 0.4
+  distanceFromGroundToCenter: 2
 --- !u!114 &114831858758883044
 MonoBehaviour:
   m_ObjectHideFlags: 1

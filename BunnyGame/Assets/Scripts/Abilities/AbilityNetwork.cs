@@ -30,22 +30,24 @@ public class AbilityNetwork : NetworkBehaviour {
 
     ///////////// Functions for Stealth ability /////////////////
 
-    public void useStealth(int modelChildNum, float activeTime, float transparancy)
+    public void useStealth(int modelChildNum, float activeTime, float transparancy, float volumeMod)
     {
         this.modelChildNum = modelChildNum;
-        CmdStealth(activeTime, transparancy);
+        CmdStealth(activeTime, transparancy, volumeMod);
     }
     
     [Command]
-    public void CmdStealth(float activeTime, float transparancy)
+    public void CmdStealth(float activeTime, float transparancy, float volumeMod)
     {
-        StartCoroutine(stealth(activeTime,transparancy));
+        StartCoroutine(stealth(activeTime,transparancy, volumeMod));
     }
 
-    private IEnumerator stealth(float activeTime,float transparancy)
+    private IEnumerator stealth(float activeTime,float transparancy, float volumeMod)
     {
+        GetComponent<PlayerAudio>().updateVolume(volumeModifier: volumeMod);
         RpcSetTransparentFox(transparancy);
         yield return new WaitForSeconds(activeTime);
+        GetComponent<PlayerAudio>().updateVolume(volumeModifier: 1);
         RpcSetOrginalFox();
     }
 

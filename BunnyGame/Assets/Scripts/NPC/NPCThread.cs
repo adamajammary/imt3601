@@ -47,7 +47,6 @@ public class NPCThread {
             if (this._instructions.isEmpty() && !this._wait) {
                 this._isUpdating = true;
                 foreach (var npcBrain in this._npcBrains) {
-                    if (npcBrain._npc == null) Debug.Log("BRAIN HAS NULL NPC");
                     if (npcBrain.npcAlive())
                         npcBrain.update();
                     else

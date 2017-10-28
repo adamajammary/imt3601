@@ -27,6 +27,7 @@ public class NPCManager : NetworkBehaviour {
         this._ready = false;
         if (this.isServer) StartCoroutine(waitForClients());
         StartCoroutine(init());
+        Debug.Log(this._playerCount);
     }
 
     //Waits for clients, then syncs playercount, and spawns npcs
@@ -57,13 +58,13 @@ public class NPCManager : NetworkBehaviour {
     //The NPCThread uses a thread safe representation of the World provided by NPCWorldView.
     private IEnumerator init() {
         while (!NPCWorldView.ready) yield return 0;
-        while (this._playerCount == -1) yield return 0;
+
+        //Wait for all NPCs to spawn
+        while (GameObject.FindGameObjectsWithTag("npc").Length != 100)
+            yield return 0;
 
         //Wait for all players to spawn, +1 for localplayer 
         while (this._playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1))
-            yield return 0;
-        //Wait for all NPCs to spawn
-        while (GameObject.FindGameObjectsWithTag("npc").Length != 100)
             yield return 0;
 
         //gather data about players for the NPCs

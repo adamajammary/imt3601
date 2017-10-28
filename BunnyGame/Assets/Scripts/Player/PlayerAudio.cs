@@ -16,31 +16,30 @@ public class PlayerAudio : MonoBehaviour {
     // Movement
     private AudioSource _movementPlayer;
     private string _currentGroundType;
-    public float frequencyModifier = 1;
+    public float frequencyModifier = 1; // This is for matching the frequency with the animation
     public float distanceFromGroundToCenter = 1f;
+    public float volumeModifier = 1f;
     private Dictionary<string, AudioClip> _footStepClips  = new Dictionary<string, AudioClip>();
     private Dictionary<string, AudioClip> _groundHitClips = new Dictionary<string, AudioClip>();
     
 
     void Awake() {
         _movementPlayer = gameObject.AddComponent<AudioSource>();
-        //_movementPlayer.volume = 0;
-        _movementPlayer.rolloffMode = AudioRolloffMode.Linear;
-        _movementPlayer.minDistance = 0;
-        _movementPlayer.maxDistance = 50;
-        _movementPlayer.spatialBlend = 1;
+        _movementPlayer.rolloffMode  = AudioRolloffMode.Linear;
+        _movementPlayer.minDistance  =  0;
+        _movementPlayer.maxDistance  = 50;
+        _movementPlayer.spatialBlend =  1;
         _movementPlayer.spatialize = true;
 
 
 
         _animalSoundPlayer = gameObject.AddComponent<AudioSource>();
         //_animalSoundPlayer.clip = animalSound;
-        //_animalSoundPlayer.volume = 0;
         //_animalSoundPlayer.rolloffMode = AudioRolloffMode.Linear;
-        //_animalSoundPlayer.minDistance = 0;
-        //_animalSoundPlayer.maxDistance = 50;
+        //_animalSoundPlayer.minDistance  = 0;
+        //_animalSoundPlayer.maxDistance  = 50;
         //_animalSoundPlayer.spatialBlend = 1;
-        //_animalSoundPlayer.spatialize = true;
+        //_animalSoundPlayer.spatialize   = true;
     }
 
     void Start () {
@@ -50,12 +49,12 @@ public class PlayerAudio : MonoBehaviour {
 
 
         foreach (string name in new string[] { "leaf", "dirt", "stone", "wood" }) {
-            _footStepClips.Add(name, Resources.Load<AudioClip>("Audio/Movement/" + name));
+            _footStepClips.Add(name,  Resources.Load<AudioClip>("Audio/Movement/" + name));
             _groundHitClips.Add(name, Resources.Load<AudioClip>("Audio/GroundHit/" + name));
         }
 
 
-        updateVolume(PlayerPrefs.GetFloat("Effect Volume", 100) / 100f * (PlayerPrefs.GetFloat("Master Volume", 100) / 100f));
+        updateVolume();
 
         StartCoroutine(playFootSteps());
     }
@@ -65,13 +64,20 @@ public class PlayerAudio : MonoBehaviour {
         if(newGroundType != _currentGroundType && newGroundType != "") {
             _currentGroundType = newGroundType;
         }
-
 	}
 
     public void updateVolume(float v) {
         _volume = v;
         _movementPlayer.volume = v;
         _animalSoundPlayer.volume = v;
+    }
+
+    public void updateVolume() {
+        updateVolume(PlayerPrefs.GetFloat("Effect Volume", 100) / 100f * (PlayerPrefs.GetFloat("Master Volume", 100) / 100f) * volumeModifier);
+    }
+
+    public void updateVolumeModifier(float volumeMod) {
+        updateVolume(PlayerPrefs.GetFloat("Effect Volume", 100) / 100f * (PlayerPrefs.GetFloat("Master Volume", 100) / 100f) * volumeMod);
     }
 
     public float getVolume() {

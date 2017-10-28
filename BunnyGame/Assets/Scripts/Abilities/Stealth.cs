@@ -10,6 +10,7 @@ public class Stealth : SpecialAbility {
 
     private float _stealthActive = 10.0f;
     private float _transparency = 0.1f;
+    private float _stealthSoundLevel = 0.1f;
     private int _modelChildNum = 1;
 
     AbilityNetwork networkAbility;
@@ -30,6 +31,6 @@ public class Stealth : SpecialAbility {
 
         StartCoroutine(base.doCoolDown());
 
-        networkAbility.useStealth(this._modelChildNum,this._stealthActive, this._transparency);
+        networkAbility.useStealth(this._modelChildNum,this._stealthActive, this._transparency, this._stealthSoundLevel);
     }
 }

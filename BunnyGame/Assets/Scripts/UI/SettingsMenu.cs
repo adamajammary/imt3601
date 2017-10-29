@@ -30,6 +30,11 @@ public class SettingsMenu : MonoBehaviour {
 
         executeSettings();
     }
+
+    void Update() {
+        if (transform.GetChild(0).gameObject.activeInHierarchy && Input.GetKeyDown(KeyCode.Escape))
+            close();
+    }
 	
     public void open()
     {

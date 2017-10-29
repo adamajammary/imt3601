@@ -99,7 +99,7 @@ public class FoxController : NetworkBehaviour {
             animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
             animator.SetBool("isJumping", !GetComponent<CharacterController>().isGrounded);
             animator.SetBool("isAttacking", _isAttackingAnim);
-
+            animator.SetFloat("height", GetComponent<PlayerController>().velocityY);
         }
     }
 

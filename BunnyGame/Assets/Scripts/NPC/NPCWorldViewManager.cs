@@ -190,6 +190,10 @@ public class NPCWorldViewManager : MonoBehaviour {
             closed.ElementAt(i).Value.blocked = true;
     }
 
+    private void OnDestroy() {
+        NPCWorldView.clear();
+    }
+
     void OnDrawGizmos() {
         if (debugRenderLand) {
             drawGizmo(true);

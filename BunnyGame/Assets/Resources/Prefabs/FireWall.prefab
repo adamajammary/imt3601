@@ -24,7 +24,7 @@ GameObject:
   - component: {fileID: 136312354876455210}
   - component: {fileID: 114335696100584890}
   - component: {fileID: 114041595877771642}
-  m_Layer: 13
+  m_Layer: 17
   m_Name: FireWall
   m_TagString: FireWall
   m_Icon: {fileID: 0}
@@ -53,6 +53,7 @@ MeshRenderer:
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
@@ -68,6 +69,7 @@ MeshRenderer:
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5

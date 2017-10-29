@@ -12,7 +12,8 @@ public class EscMenu : NetworkBehaviour {
     public Button exitToDesktop;
     private NetworkManager manager;
 
-    private bool isPressed = false;
+    private bool isMenu = false;
+    private bool lockCursor = true;
 
     // Use this for initialization
     void Start()
@@ -25,23 +26,34 @@ public class EscMenu : NetworkBehaviour {
         exitToDesktop = exitToDesktop.GetComponent<Button>();
 
         escMenu.enabled = false;
+
     }
 
-    public void EscPress(bool visible)
-    {
-        escMenu.enabled = visible;
+    void Update() {
+        handleMouse();
+
+
+        if (SceneManager.GetActiveScene().name != "Island")
+            return;
+
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            isMenu = !isMenu;
+            GetComponent<Canvas>().enabled = isMenu;
+            lockCursor = !isMenu;
+        }
     }
+
+    public void onResume() {
+        isMenu = !isMenu;
+        GetComponent<Canvas>().enabled = isMenu;
+        lockCursor = !isMenu;
+    }
+
 
     public void Settings()
     {
         Debug.Log("Settings button pressed!");
     }
-
-    public void ResumeGame()
-    {
-        isPressed = true;
-    }
-
     public void ExitToDesktop()
     {
         manager.StopHost();
@@ -52,22 +64,20 @@ public class EscMenu : NetworkBehaviour {
     {
         manager.StopHost();
         SceneManager.LoadScene("Lobby");
-    }
+    } 
 
-    public bool resumePressed()
+    void handleMouse()
     {
-        return isPressed;
-    }
+        if (Input.GetKeyDown(KeyCode.Escape))
+            lockCursor = !lockCursor;
 
-    public void rusumePressedReset()
-    {
-        isPressed = false;
-    }
-
-    // Is this used?
-    public void DisconnectFromServer()
-    {
-        manager.GetComponent<NetworkManager>().StopServer();
-        manager.GetComponent<NetworkManager>().enabled = false;
+        if (lockCursor) {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
     }
 }

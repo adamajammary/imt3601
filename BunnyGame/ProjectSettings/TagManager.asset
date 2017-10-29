@@ -13,6 +13,8 @@ TagManager:
   - FireWall
   - lobbyplayer
   - pecker
+  - DustTornado
+  - mooseAttack
   layers:
   - Default
   - TransparentFX
@@ -29,10 +31,10 @@ TagManager:
   - MiniMap object
   - Environment
   - NPC
-  - 
-  - 
-  - 
-  - 
+  - SpecialEffects
+  - Borders
+  - FireWall
+  - DustTornado
   - 
   - 
   - 

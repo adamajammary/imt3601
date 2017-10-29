@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class PlayerEffects : NetworkBehaviour {
     public bool insideWall;
@@ -14,7 +15,9 @@ public class PlayerEffects : NetworkBehaviour {
     private GameObject          _blood;
     private PlayerController    _pc;
     private CharacterController _cc;
-    private PlayerHealth        _health;  
+    private PlayerHealth        _health;
+    private PlayerAudio         _playerAudio;
+    private Image               _blindEffect;
     
     private int   _fallDamage = 40;
     private bool  _fallDamageImmune = false;
@@ -23,18 +26,20 @@ public class PlayerEffects : NetworkBehaviour {
 
     // Use this for initialization
     void Start () {
-        this.insideWall = true;
-        this._pc        = GetComponent<PlayerController>();
-        this._cc        = GetComponent<CharacterController>();
-        this._blood     = Resources.Load<GameObject>("Prefabs/Blood");
-        this._health    = this.GetComponent<PlayerHealth>();
+        this.insideWall     = true;
+        this._pc            = GetComponent<PlayerController>();
+        this._cc            = GetComponent<CharacterController>();
+        this._blood         = Resources.Load<GameObject>("Prefabs/Blood");
+        this._health        = this.GetComponent<PlayerHealth>();
+        this._playerAudio   = GetComponent<PlayerAudio>();
+        this._blindEffect   = GameObject.Find("BlindOverlay").GetComponent<Image>();
     }
 	
 	// Update is called once per frame
 	void Update () {
+        handleGroundHit();
         if (!this.isLocalPlayer) return;
         if (!this.insideWall) wallDamage();
-        handleFallDamage();
     }
 
     //=========Attrbutes=====================================================================================================================
@@ -80,12 +85,25 @@ public class PlayerEffects : NetworkBehaviour {
         Vector3 curDir = dir;
         Vector3 pos = transform.position;
         pos.y += 2;
-        transform.position = pos;       
+        transform.position = pos;
+        this._pc.setCC(true);
         for (float i = 0; i < 1.0f; i += Time.deltaTime * 2) {
             this._cc.Move(curDir* force * Time.deltaTime);
             curDir = Vector3.Lerp(dir, flatDir, i);
             yield return 0;
         }
+        this._pc.setCC(false);
+    }
+
+    //=========Dust Storm=====================================================================================================================
+    public IEnumerator blind() {
+        float timer = 0;
+        while (timer < 10) { // Incase multiple blinds overlap.
+            timer += Time.deltaTime;
+            this._blindEffect.enabled = true;
+            yield return 0;
+        };
+        this._blindEffect.enabled = false;
     }
 
     //=========Other==========================================================================================================================
@@ -104,19 +122,28 @@ public class PlayerEffects : NetworkBehaviour {
         } else if (other.gameObject.tag == "projectile") {
             BunnyPoop poopScript = other.gameObject.GetComponent<BunnyPoop>();
             PlayerInformation otherInfo = poopScript.owner.GetComponent<PlayerInformation>();
-            if ((this._health != null) && (poopScript != null) && !this._health.IsDead()) {
+            if ((this._health != null) && (poopScript != null) && !this._health.IsDead() && poopScript.owner.gameObject != this.gameObject) {
                 this.CmdBloodParticle(other.gameObject.transform.position);
                 this._health.TakeDamage(calcDamage(poopScript.owner, poopScript.GetDamage()), otherInfo.ConnectionID);
             }
 
             Destroy(other.gameObject);
         } else if (other.gameObject.tag == "pecker" && other.transform.parent.tag == "Enemy") {
-            Debug.Log("DASDA");
             pecker p = other.gameObject.GetComponent<pecker>();
             PlayerInformation otherInfo = p.owner.GetComponent<PlayerInformation>();
             if ((this._health != null) && !this._health.IsDead()) {
                 this.CmdBloodParticle(other.gameObject.transform.position);
                 this._health.TakeDamage(calcDamage(p.owner, p.GetDamage()), otherInfo.ConnectionID);
+            }
+        } else if ((other.gameObject.tag == "mooseAttack") && (other.gameObject.transform.parent.gameObject.tag == "Enemy"))
+        {
+            MooseController MooseScript = other.GetComponentInParent<MooseController>();
+            PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
+
+            if ((this._health != null) && (MooseScript != null) && !this._health.IsDead())
+            {
+                this.CmdBloodParticle(MooseScript.ramImpact());
+                this._health.TakeDamage(calcDamage(other.transform.parent.gameObject, MooseScript.GetDamage()), otherInfo.ConnectionID);
             }
         } else if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
@@ -128,16 +155,19 @@ public class PlayerEffects : NetworkBehaviour {
     }
 
     public void onWaterStay(float waterForce) {
-        this._pc.velocityY += waterForce * Time.deltaTime;
+        if (!this._pc.getCC())
+            this._pc.velocityY += waterForce * Time.deltaTime;
     }
 
-    private void handleFallDamage() {
+    private void handleGroundHit() {
         if (!_fallDamageImmune && _cc.isGrounded && _currentImpactVelocity < _damageImpactVelocity) {
-            this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage * (_currentImpactVelocity / _damageImpactVelocity), -1);
-            Debug.Log("Impact vel: " + _currentImpactVelocity + " :: Damage: " + (_fallDamage * (_currentImpactVelocity / _damageImpactVelocity)));
-            _currentImpactVelocity = 0;
+            _playerAudio.playGroundHit(_currentImpactVelocity);
+            if (isLocalPlayer) {
+                this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage * (_currentImpactVelocity / _damageImpactVelocity), -1);
+                _currentImpactVelocity = 0;
+            }
         }
-        else _currentImpactVelocity = _cc.velocity.y;
+        else if(isLocalPlayer) _currentImpactVelocity = _cc.velocity.y;
     }
 
     private void OnTriggerExit(Collider other) {

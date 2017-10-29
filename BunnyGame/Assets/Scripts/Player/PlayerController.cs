@@ -21,17 +21,16 @@ public class PlayerController : NetworkBehaviour {
     public float currentSpeed;
     public float velocityY;
 
+    private bool _CC = false; //Turns off players ability to control character, used for CC effects
+
     private float _turnSmoothVelocity;
     private float _speedSmoothVelocity;
 
 
     private Transform _cameraTransform;
     public CharacterController controller;
-    private EscMenu escButtonPress;
     private PlayerEffects playerEffects;
-
-    bool lockCursor = true;
-    bool escMenu = false;
+    
     public bool running = false;
 
     private bool _moveDirectionLocked = false;
@@ -44,8 +43,7 @@ public class PlayerController : NetworkBehaviour {
 
         if (!this.isLocalPlayer)
             return;
-
-        this.escButtonPress = FindObjectOfType<EscMenu>();
+        
         this._cameraTransform = Camera.main.transform;
         this.controller = this.GetComponent<CharacterController>();
         this.playerEffects = GetComponent<PlayerEffects>();
@@ -63,22 +61,31 @@ public class PlayerController : NetworkBehaviour {
         _moveDirectionLocked = Input.GetKey(KeyCode.LeftAlt);
 
         handleSpecialAbilities();
-        Move(inputDir);
 
-        if (Input.GetAxisRaw("Jump") > 0)
-            this.jump();
+        if (!this._CC) {
+            Move(inputDir);
+            if (Input.GetKeyDown(KeyCode.Space))
+                this.jump();
+        }
 
         HandleAiming();
-        handleMouse();
-        handleEscMenu();
     }
 
+    public bool getGrounded() {
+        return controller.isGrounded;
+    }
 
-	void OnTriggerEnter2D (Collider2D any) {
+    public void setCC(bool value) {
+        this._CC = value;
+        if (value) {
+            this.currentSpeed = 0;
+            this.velocityY = 0;
+        }
+    }
 
-		Debug.Log ("Overlap!");
-
-	}
+    public bool getCC() {
+        return this._CC;
+    }
 
     // Turn off and on MeshRenderer so FPS camera works
     private void HandleAiming(){
@@ -133,8 +140,7 @@ public class PlayerController : NetworkBehaviour {
     }
 
     public void jump() {
-			
-		if (controller.isGrounded && !onWall()) {
+        if (controller.isGrounded && !onWall()) { 
             float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight * this.playerEffects.getJump()); 
             this.velocityY = jumpVelocity;
         }
@@ -149,19 +155,6 @@ public class PlayerController : NetworkBehaviour {
             return float.MaxValue;
 
         return smoothTime / airControlPercent;
-    }
-
-    void handleMouse() {
-        if (Input.GetKeyDown(KeyCode.Escape))
-            lockCursor = !lockCursor;
-
-        if (lockCursor) {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        } else {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
     }
 
     private void OnDestroy() {
@@ -187,48 +180,26 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
-    private void handleEscMenu() {
-        if (SceneManager.GetActiveScene().name != "Island")
-            return;
+    private bool onWall() {
+        const float deltaLimit = 1.00f;
+        Vector3[] offsets = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
 
-        if (Input.GetKeyDown(KeyCode.Escape))
-            escMenu = !escMenu;
-          
-        escButtonPress.EscPress(escMenu);
+        float[] distances = new float[offsets.Length];
+        RaycastHit hit = new RaycastHit();
 
-        if(escButtonPress.resumePressed())
-        {
-            escMenu = false;
-            escButtonPress.rusumePressedReset();
-            lockCursor = true;
-        }  
+        for (int i = 0; i < offsets.Length; i++) {
+            Physics.Raycast(transform.position + offsets[i], Vector3.down, out hit);
+            distances[i] = hit.distance;
+        }
+
+        foreach (var dist in distances) {
+            foreach (var dist2 in distances) {
+                if (Mathf.Abs(dist - dist2) > deltaLimit) {
+                    return true;
+                }
+
+            }
+        }
+        return false;
     }
-
-
-
-
-	private bool onWall() {
-		const float deltaLimit = 1.00f;
-		Vector3[] offsets = {Vector3.forward, Vector3.back, Vector3.left, Vector3.right};
-			
-		float[] distances = new float[offsets.Length];
-		RaycastHit hit = new RaycastHit();
-
-		for (int i = 0; i < offsets.Length; i++) {
-			Physics.Raycast(transform.position + offsets[i], Vector3.down, out hit);
-			distances[i] = hit.distance;
-		}
-
-		foreach (var dist in distances) {
-			foreach (var dist2 in distances){
-				if (Mathf.Abs(dist - dist2) > deltaLimit){
-					return true;
-				}
-					
-			}
-		}
-		return false;
-
-			
-	}
 }

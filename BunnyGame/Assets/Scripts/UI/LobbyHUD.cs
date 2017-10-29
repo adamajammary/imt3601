@@ -18,10 +18,12 @@ public class LobbyHUD : MonoBehaviour {
     private GameObject _serverCreationPanel;
     private GameObject _serverFindPanel;
     private GameObject _lobbyPanel;
+    private GameObject _leaderboardPanel;
 
     private List<MatchInfoSnapshot> _matchList;
     private MatchInfo _joinedMatch = null;
     private string _matchName = "";
+    private Text _leaderboardText;
 
     private bool _localhost;
     private bool _inRoom;
@@ -34,11 +36,14 @@ public class LobbyHUD : MonoBehaviour {
         this._serverCreationPanel = this.transform.GetChild(1).gameObject;
         this._serverFindPanel = this.transform.GetChild(2).gameObject;
         this._lobbyPanel = this.transform.GetChild(3).gameObject;
+        this._leaderboardPanel = this.transform.GetChild(4).gameObject;
+        this._leaderboardText = this._leaderboardPanel.transform.GetChild(1).gameObject.GetComponent<Text>();
 
         this._panel1.SetActive(true);
         this._serverCreationPanel.SetActive(false);
         this._serverFindPanel.SetActive(false);
         this._lobbyPanel.SetActive(false);
+        this._leaderboardPanel.SetActive(false);
     }
 
     /**
@@ -196,6 +201,39 @@ public class LobbyHUD : MonoBehaviour {
     }
 
     /**
+     * Leaderboard panel
+     * 
+     **/
+
+    // Load leaderboard panel and query Leaderboard for an updated list.
+    public void onClickLeaderboardBtn() {
+        this._leaderboardText.text = "Fetching leaderboard ...";
+
+        Leaderboard.GetLeaderboard(10);
+
+        this._panel1.SetActive(false);
+        this._leaderboardPanel.SetActive(true);
+    }
+
+    // Go back to main menu.
+    public void onClickLeaderboardOKBtn() {
+        this._leaderboardPanel.SetActive(false);
+        this._panel1.SetActive(true);
+    }
+
+    // Update the leaderboard panel text with the updated list we received from Leaderboard.
+    public void UpdateLeaderboard(List<LeaderboardScore> scores) {
+        this._leaderboardText.text  = "Score\tDate\t\t\t\t\t\t\t\t\t\tPlayer\n";
+        this._leaderboardText.text += "-------------------------------------------------------------------------------------------";
+
+        if (scores.Count < 1)
+            this._leaderboardText.text += "\n\t\t\t\t\t\t\t\t\t\tNo scores found.";
+
+        foreach (var score in scores)
+            this._leaderboardText.text += string.Format("\n{0}\t{1}\t{2}", score.score, score.date, score.name);
+    }
+
+    /**
      * Game lobby
      * 
      **/
@@ -261,6 +299,7 @@ public class LobbyHUD : MonoBehaviour {
 
             listing.transform.GetChild(0).GetComponent<Text>().text = message.players[i].name;
             listing.transform.GetChild(1).GetComponent<Text>().text = (message.players[i].ready ? "Ready" : "Not ready");
+            listing.transform.GetChild(2).GetComponent<Text>().text = new string[] {"Bunny", "Fox", "Bird", "Moose"}[message.players[i].animal];
         }
     }
 

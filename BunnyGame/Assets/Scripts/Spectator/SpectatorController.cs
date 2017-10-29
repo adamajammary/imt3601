@@ -14,6 +14,8 @@ public enum SpectatorMode
 public class SpectatorController : MonoBehaviour {
     private SpectatorMode _spectatorMode;
     private SpectatorUI _ui;
+
+    public GameObject body;
     
 
     private ThirdPersonCamera _thirdPersonCamera;
@@ -62,6 +64,9 @@ public class SpectatorController : MonoBehaviour {
         // Switch spectating mode with Home-key
         if (Input.GetKeyDown(KeyCode.Home))
             setSpectatorMode((SpectatorMode)((int)~_spectatorMode & 1));
+
+        body.transform.position = this.transform.position;
+
 	}
 
     // This should be called when the players dies and wants to go into spectating mode

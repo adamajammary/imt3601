@@ -208,7 +208,7 @@ public class PlayerController : NetworkBehaviour {
 
 
 	private bool onWall() {
-		const float deltaLimit = 0.25f;
+		const float deltaLimit = 1.00f;
 		Vector3[] offsets = {Vector3.forward, Vector3.back, Vector3.left, Vector3.right};
 			
 		float[] distances = new float[offsets.Length];

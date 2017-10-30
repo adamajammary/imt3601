@@ -44,6 +44,8 @@ public class FoxController : NetworkBehaviour {
         playerController.abilities.Add(st);
 
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
+
+        applySmell();
     }
 
     // Update is called once per frame
@@ -55,6 +57,16 @@ public class FoxController : NetworkBehaviour {
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
             this.bite();
+    }
+
+    private void applySmell() {
+        var enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        var smellTrail = Resources.Load<GameObject>("Prefabs/SmellTrail");
+        foreach (var enemy in enemies) {
+            var obj = Instantiate(smellTrail);
+            obj.transform.parent = enemy.transform;
+            obj.transform.localPosition = Vector3.zero;
+        }
     }
 
     private void bite() {

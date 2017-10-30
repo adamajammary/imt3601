@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 4cc20dc1c04c32442966e3eee798e505
-timeCreated: 1508686466
+guid: 71af54afb313d0e429875fcf7f0ed7d4
+timeCreated: 1509309894
 licenseType: Free
 ModelImporter:
   serializedVersion: 21
@@ -51,6 +51,7 @@ ModelImporter:
     7400000: Armature|Attack
     7400002: Armature|Jump
     7400004: Armature|Run
+    7400006: Armature|SpeedAttack
     9500000: //RootNode
     13700000: Cylinder
   materials:
@@ -80,8 +81,8 @@ ModelImporter:
     - serializedVersion: 16
       name: Armature|Attack
       takeName: Armature|Attack
-      firstFrame: 9
-      lastFrame: 36
+      firstFrame: 3
+      lastFrame: 46
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -108,7 +109,7 @@ ModelImporter:
     - serializedVersion: 16
       name: Armature|Jump
       takeName: Armature|Jump
-      firstFrame: 15
+      firstFrame: 0
       lastFrame: 28
       wrapMode: 0
       orientationOffsetY: 0
@@ -136,8 +137,36 @@ ModelImporter:
     - serializedVersion: 16
       name: Armature|Run
       takeName: Armature|Run
-      firstFrame: 6
-      lastFrame: 28
+      firstFrame: 18
+      lastFrame: 46
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 1
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Armature|SpeedAttack
+      takeName: Armature|SpeedAttack
+      firstFrame: 10
+      lastFrame: 50
       wrapMode: 0
       orientationOffsetY: 0
       level: 0

@@ -143,10 +143,10 @@ public class AbilityNetwork : NetworkBehaviour {
         StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
         var player = GameObject.FindGameObjectWithTag("Player");
         if (player.GetComponent<PlayerInformation>().ConnectionID != id) {
-            if (Vector3.Distance(player.transform.position, pos) < 20) {
+            if (Vector3.Distance(player.transform.position, pos) < 20 && !player.GetComponent<PlayerHealth>().IsDead()) {
                 StartCoroutine(player.GetComponent<PlayerEffects>().blind());
             }
-        }        
+        }
     }
 
 

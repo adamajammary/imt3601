@@ -22,12 +22,12 @@ public class Water : MonoBehaviour {
             other.GetComponent<PlayerEffects>().onWaterStay(waterForce);
         }
 
-        if (other.tag == "Player")
+        if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag())
             waterScreenEffect.enabled = true; 
     }
 
     void OnTriggerExit(Collider other) {
-        if (other.tag == "Player")
+        if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag())
             waterScreenEffect.enabled = false;
     }
 }

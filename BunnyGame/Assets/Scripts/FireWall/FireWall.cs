@@ -150,7 +150,6 @@ public class FireWall : NetworkBehaviour {
         if (!this._ready) return;
 
         if (other.tag == "Player") {
-            _outsideWallEffect.enabled = true;
             other.GetComponent<PlayerEffects>().insideWall = false;
         }else if (other.tag == "Enemy") {
             other.GetComponent<PlayerEffects>().insideWall = false;
@@ -159,16 +158,23 @@ public class FireWall : NetworkBehaviour {
         } else if (other.tag == "DustTornado") {
             other.GetComponent<DustTornado>().kill();
         }
+
+        if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
+            _outsideWallEffect.enabled = true;
+        }
     }
 
     void OnTriggerEnter(Collider other) {
         if (!this._ready) return;
 
         if (other.tag == "Player") {
-            _outsideWallEffect.enabled = false;
             other.GetComponent<PlayerEffects>().insideWall = true;
         } else if (other.tag == "Enemy") {
             other.GetComponent<PlayerEffects>().insideWall = true;
-        } 
+        }
+
+        if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
+            _outsideWallEffect.enabled = false;
+        }
     }
 }

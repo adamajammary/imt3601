@@ -15,9 +15,6 @@ public class SpectatorController : MonoBehaviour {
     private SpectatorMode _spectatorMode;
     private SpectatorUI _ui;
 
-    public GameObject body;
-    
-
     private ThirdPersonCamera _thirdPersonCamera;
     private int _currentPlayerIdx = 0;
     public List<GameObject> _players = new List<GameObject>(); // Should contain only live players
@@ -64,9 +61,6 @@ public class SpectatorController : MonoBehaviour {
         // Switch spectating mode with Home-key
         if (Input.GetKeyDown(KeyCode.Home))
             setSpectatorMode((SpectatorMode)((int)~_spectatorMode & 1));
-
-        body.transform.position = this.transform.position;
-
 	}
 
     // This should be called when the players dies and wants to go into spectating mode
@@ -76,7 +70,6 @@ public class SpectatorController : MonoBehaviour {
         setSpectatorMode(SpectatorMode.FREE);
 
         _thirdPersonCamera.canFPS = false;
-        gameObject.tag = "Spectator";
 
         // Disable ui elements that aren't necessary to keep after going into spectate mode
         foreach (string str in "SpectateButton BloodSplatterOverlay AbilityPanel AttributeUI".Split(' '))

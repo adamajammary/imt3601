@@ -91,11 +91,14 @@ public class AudioManager : MonoBehaviour {
     // also distorts sound when underwater
     private void updateOceanSound() {
         float distFromCenter = Vector2.Distance(new Vector2(this.cameraTransform.position.x, this.cameraTransform.position.z), Vector2.zero);
-        float distFromOcean = mapRadius - distFromCenter;
+        float distFromOcean = findDistanceToWater();//mapRadius - distFromCenter;
 
-        _ocean.volume = (Mathf.Max((distFromOcean > 0 ? 3f / distFromOcean : 1f), .05f) / 2f) * effectVolume;
-        _ocean.pitch = _isUnderWater ? 0.2f : 1f;
 
+        if (distFromOcean != -1) {
+            _ocean.volume = (Mathf.Max((distFromOcean > 0 ? 3f / distFromOcean : 1f), .05f) / 2f) * effectVolume;
+            _ocean.pitch = _isUnderWater ? 0.2f : 1f;
+            //Debug.Log("Current: " + distFromOcean + "; Old: " + (mapRadius - distFromCenter));
+        }
 
         // TODO : Surround/Stereo?
     }
@@ -136,6 +139,37 @@ public class AudioManager : MonoBehaviour {
 
         foreach (GameObject player in players)
             player.GetComponent<PlayerAudio>().updateVolume(effectVolume);
+    }
+
+
+
+    private float findDistanceToWater() {
+        if (!NPCWorldView.ready)
+            return -1;
+
+        NPCWorldView.worldCellData[,] waterCells = NPCWorldView.water; // Getting a map of the water from here because it should already be generated for the npcs anyways.
+        int[] playercell = NPCWorldView.convertWorld2WaterCell(cameraTransform.position);
+        Vector2 playerCellPos = new Vector2(playercell[0], playercell[1]);
+        int count = 0;
+
+        Vector2 closest = new Vector2(500, 500);
+        for (int x = 0; x < waterCells.GetLength(0); x++) {
+            for (int z = 0; z < waterCells.GetLength(1); z++) {
+                if (!waterCells[x, z].blocked) {
+                    if(Vector2.Distance(playerCellPos, new Vector2(x, z)) < 
+                       Vector2.Distance(playerCellPos, closest)) {
+                        closest.x = x;
+                        closest.y = z;
+                        count++;
+                    }
+                }
+            }
+        }
+
+        Vector3 closest_vec3 = NPCWorldView.convertWaterCell2World((int)closest.x, (int)closest.y, waterLevel);
+        Debug.Log("CLOSEST:" + closest_vec3 + "    MYPOS:" + cameraTransform.position + "     DIST:"+ Vector3.Distance(cameraTransform.position, closest_vec3));
+        Debug.Log("CLOSEST:" + closest + "    MYPOS:" + playerCellPos + "     DIST:"+ Vector3.Distance(cameraTransform.position, closest_vec3));
+        return Vector3.Distance(cameraTransform.position, closest_vec3);
     }
 
 }

@@ -114,13 +114,13 @@ public static class NPCWorldView {
                 this._pos = pos;
                 this._goal = goal;
             }
-        }   
-        
+        }
+
         public Vector3 getPos() {
-            lock (this) 
+            lock (this)
                 return this._pos;
         }
-        
+
         public Vector3 getMapPos() {
             lock (this) {
                 int[] index = convertWorld2Cell(this._pos);
@@ -136,12 +136,12 @@ public static class NPCWorldView {
         }
 
         public Vector3 getDir() {
-            lock (this) 
+            lock (this)
                 return this._dir;
         }
 
         public int getId() {
-            lock (this) 
+            lock (this)
                 return this._id;
         }
 
@@ -154,9 +154,9 @@ public static class NPCWorldView {
     //===============================================================================
     public const int cellCount = 150;
     public const float worldSize = 400;
-    public const float cellSize = worldSize/cellCount;
+    public const float cellSize = worldSize / cellCount;
 
-    private static Dictionary<int,GameCharacter> _npcs;
+    private static Dictionary<int, GameCharacter> _npcs;
     private static Dictionary<int, GameCharacter> _players;
     private static FireWall.Circle _fireWall;
     private static bool _runNPCThread;
@@ -212,6 +212,7 @@ public static class NPCWorldView {
     public static Vector3 waterOffset { get { return _waterOffset; } }
     public static bool ready { get { return _ready; } set { _ready = value; } }
     public static FireWall.Circle FireWall { get { return _fireWall; } set { _fireWall = value; } }
+    public static worldCellData[,] water { get { return _water; } }
     //===============================================================================
     public static void resetAStarData() {
         for (int y = 0; y < cellCount; y++) {
@@ -235,6 +236,31 @@ public static class NPCWorldView {
         cellPos[1] = clamp((int)world.z);
 
         return cellPos;
+    }
+
+    public static int[] convertWorld2WaterCell(Vector3 world)
+    {
+        int[] cellPos = { 0, 0 };
+        world -= waterOffset;
+        world /= cellSize;
+
+        cellPos[0] = clamp((int)world.x);
+        cellPos[1] = clamp((int)world.z);
+
+        return cellPos;
+    }
+
+    public static Vector3 convertWaterCell2World(int cellX, int cellZ, float waterLevel = 0)
+    {
+        Vector3 res = new Vector3(cellX + 0.5f, waterLevel, cellZ + 0.5f);
+
+        res.x *= cellSize;
+        res.z *= cellSize;
+
+        res.x += waterOffset.x;// + cellSize/2;
+        res.z += waterOffset.z;// + cellSize/2;
+
+        return res;
     }
 
     // No convenient way of using get; set; or overloading [,] operator that i found

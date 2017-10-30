@@ -45,7 +45,7 @@ public class FoxController : NetworkBehaviour {
 
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
 
-        applySmell();
+        CmdApplySmell();
     }
 
     // Update is called once per frame
@@ -59,14 +59,28 @@ public class FoxController : NetworkBehaviour {
             this.bite();
     }
 
-    private void applySmell() {
-        var enemies = GameObject.FindGameObjectsWithTag("Enemy");
+    private IEnumerator applySmell(int playerCount) {
+        GameObject[] enemies;
+        do {
+            enemies = GameObject.FindGameObjectsWithTag("Enemy");
+            yield return 0;
+        } while (enemies.Length + 1 != playerCount);
         var smellTrail = Resources.Load<GameObject>("Prefabs/SmellTrail");
         foreach (var enemy in enemies) {
             var obj = Instantiate(smellTrail);
             obj.transform.parent = enemy.transform;
             obj.transform.localPosition = Vector3.zero;
         }
+    }
+
+    [Command]
+    private void CmdApplySmell() {
+        TargetApplySmell(this.connectionToClient, Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers);
+    }
+
+    [TargetRpc]
+    private void TargetApplySmell(NetworkConnection conn, int playerCount) {
+        StartCoroutine(applySmell(playerCount));
     }
 
     private void bite() {

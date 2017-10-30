@@ -140,7 +140,7 @@ public class AudioManager : MonoBehaviour {
             return -1;
 
         NPCWorldView.worldCellData[,] waterCells = NPCWorldView.water; // Getting a map of the water from here because it should already be generated for the npcs anyways.
-        int[] playercell = NPCWorldView.convertWorld2WaterCell(cameraTransform.position);
+        int[] playercell = NPCWorldView.convertWorld2Cell(cameraTransform.position);
         Vector2 playerCellPos = new Vector2(playercell[0], playercell[1]);
         int count = 0;
 
@@ -158,7 +158,8 @@ public class AudioManager : MonoBehaviour {
             }
         }
 
-        Vector3 closest_vec3 = NPCWorldView.convertWaterCell2World((int)closest.x, (int)closest.y, waterLevel);
+        Vector3 closest_vec3 = waterCells[(int)closest.x, (int)closest.y].pos;
+        closest_vec3.y = waterLevel;
         float tileCenterToCorner = Mathf.Sqrt(Mathf.Pow(NPCWorldView.cellSize, 2) * 2);
         Debug.Log(Vector3.Distance(cameraTransform.position, closest_vec3) + "   ::   " + Mathf.Max(Vector3.Distance(cameraTransform.position, closest_vec3), tileCenterToCorner) * (1 / tileCenterToCorner));
         return Mathf.Max(Vector3.Distance(cameraTransform.position, closest_vec3), tileCenterToCorner) * (1/ tileCenterToCorner);

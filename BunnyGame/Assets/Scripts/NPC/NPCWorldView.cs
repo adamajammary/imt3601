@@ -238,30 +238,7 @@ public static class NPCWorldView {
         return cellPos;
     }
 
-    public static int[] convertWorld2WaterCell(Vector3 world)
-    {
-        int[] cellPos = { 0, 0 };
-        world -= waterOffset;
-        world /= cellSize;
 
-        cellPos[0] = clamp((int)world.x);
-        cellPos[1] = clamp((int)world.z);
-
-        return cellPos;
-    }
-
-    public static Vector3 convertWaterCell2World(int cellX, int cellZ, float waterLevel = 0)
-    {
-        Vector3 res = new Vector3(cellX + 0.5f, waterLevel, cellZ + 0.5f);
-
-        res.x *= cellSize;
-        res.z *= cellSize;
-
-        res.x += waterOffset.x;// + cellSize/2;
-        res.z += waterOffset.z;// + cellSize/2;
-
-        return res;
-    }
 
     // No convenient way of using get; set; or overloading [,] operator that i found
     //========================================================================================

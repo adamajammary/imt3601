@@ -160,4 +160,26 @@ public class AbilityNetwork : NetworkBehaviour {
         NetworkServer.SpawnWithClientAuthority(dustTornado, owner.GetComponent<PlayerInformation>().connectionToClient);
     }
     /////////////////////////////////////////////////////////////////
+
+    /////////////////////// Functiuons for SuperSpeed ///////////////
+    [Command]
+    public void CmdSuperSpeed(bool active)
+    {
+        RpcSuperSpeed(active);
+    }
+
+    [ClientRpc]
+    private void RpcSuperSpeed(bool active)
+    {
+        GameObject damageArea = transform.GetChild(3).gameObject;
+        if (active)
+        {
+            damageArea.GetComponent<CapsuleCollider>().enabled = true;
+        }
+        else
+        {
+            damageArea.GetComponent<CapsuleCollider>().enabled = false;
+        }
+    }
+    //////////////////////////////////////////////////////////////////
 }

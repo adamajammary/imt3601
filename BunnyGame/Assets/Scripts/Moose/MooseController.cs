@@ -42,10 +42,6 @@ public class MooseController : NetworkBehaviour{
         sp.init(30, 3);
         playerController.abilities.Add(sp);
 
-        //Stealth st = gameObject.AddComponent<Stealth>();
-        //st.init(1, 0.1f);
-        //playerController.abilities.Add(st);
-
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
     }
 

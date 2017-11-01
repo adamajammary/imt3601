@@ -7,8 +7,7 @@ public class SpeedBomb : SpecialAbility{
     private Animator         _animator;
     private GameObject       _attackArea;
     private AbilityNetwork   _networkAbility;
-    // private PlayerController _controller;
-   // private CharacterController _controller;
+    private PlayerController _playerController;
     private float            _speed;
     private float            _time;
    
@@ -22,23 +21,22 @@ public void init(float speed, float time)
         this._animator = GetComponent<Animator>();
         this._attackArea = transform.GetChild(3).gameObject;
         this._networkAbility = GetComponent<AbilityNetwork>();
-        //this._controller = GetComponent<PlayerController>();
-      //  this._controller = GetComponent<CharacterController>();
-
+        this._playerController = GetComponent<PlayerController>();
     }
 
     override public IEnumerator useAbility()
     {
-        PlayerController playerController = GetComponent<PlayerController>();
         if (base._cooldown > 0) 
             yield break;
 
         StartCoroutine(base.doCoolDown());
 
-        float normalRun = playerController.runSpeed;
-        float normalWalk = playerController.walkSpeed;
-        playerController.runSpeed = _speed;
-        playerController.walkSpeed = _speed;
+        float normalRun = this._playerController.runSpeed;
+        float normalWalk = this._playerController.walkSpeed;
+        this._playerController.runSpeed = _speed;
+        this._playerController.walkSpeed = _speed;
+        this._playerController.setNoInputMovement(true);
+
 
         if (this._animator != null)
         {
@@ -50,12 +48,6 @@ public void init(float speed, float time)
         float time = 0;
         while (time < _time)
         {
-            //Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-            //Vector2 inputDir = input.normalized;
-            //Vector3 moveDir = transform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
-            //moveDir.y = 0;
-            //Vector3 velocity = moveDir.normalized * this._speed;
-            //this._controller.Move(velocity * Time.deltaTime);
             time += Time.deltaTime;
             yield return null;
         }
@@ -64,9 +56,10 @@ public void init(float speed, float time)
         {
             this._animator.SetBool("speedAttack", false);
         }
-      
+        
         this._networkAbility.CmdSuperSpeed(false);
-        playerController.runSpeed = normalRun;
-        playerController.walkSpeed = normalWalk;
+        this._playerController.runSpeed = normalRun;
+        this._playerController.walkSpeed = normalWalk;
+        this._playerController.setNoInputMovement(false);
     }
 }

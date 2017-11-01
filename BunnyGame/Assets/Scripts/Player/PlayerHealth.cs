@@ -73,6 +73,7 @@ public class PlayerHealth : NetworkBehaviour {
     private void spectate() {
         GameObject.Find("Main Camera").GetComponent<SpectatorController>().startSpectating();
         GetComponent<PlayerController>().enabled = false;
+        GetComponent<Collider>().enabled = false;
         GetComponent<PlayerEffects>().enabled = false;
         for(int i = 0; i < transform.childCount; i++)
             transform.GetChild(i).gameObject.SetActive(false);

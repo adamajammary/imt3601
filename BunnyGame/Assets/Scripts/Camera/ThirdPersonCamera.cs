@@ -101,4 +101,9 @@ public class ThirdPersonCamera : MonoBehaviour {
     public Transform getTarget() {
         return _target;
     }
+
+    public string getTargetTag()
+    {
+        return _target.tag;
+    }
 }

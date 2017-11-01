@@ -140,7 +140,7 @@ public class PlayerController : NetworkBehaviour {
     }
 
     public void jump() {
-        if (controller.isGrounded) {
+        if (controller.isGrounded && !onWall()) { 
             float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight * this.playerEffects.getJump()); 
             this.velocityY = jumpVelocity;
         }
@@ -178,5 +178,28 @@ public class PlayerController : NetworkBehaviour {
                 mat.renderQueue = 2000;
             }
         }
+    }
+
+    private bool onWall() {
+        const float deltaLimit = 1.00f;
+        Vector3[] offsets = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
+
+        float[] distances = new float[offsets.Length];
+        RaycastHit hit = new RaycastHit();
+
+        for (int i = 0; i < offsets.Length; i++) {
+            Physics.Raycast(transform.position + offsets[i], Vector3.down, out hit);
+            distances[i] = hit.distance;
+        }
+
+        foreach (var dist in distances) {
+            foreach (var dist2 in distances) {
+                if (Mathf.Abs(dist - dist2) > deltaLimit) {
+                    return true;
+                }
+
+            }
+        }
+        return false;
     }
 }

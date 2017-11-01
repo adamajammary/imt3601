@@ -40,7 +40,7 @@ public class FoxController : NetworkBehaviour {
         playerController.abilities.Add(sp);
 
         Stealth st = gameObject.AddComponent<Stealth>();
-        st.init(1, 0.1f);
+        st.init(1, 0);
         playerController.abilities.Add(st);
 
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);

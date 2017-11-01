@@ -15,9 +15,16 @@ public class Stealth : SpecialAbility {
 
     AbilityNetwork networkAbility;
 
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Mouse0) && base._cooldown != 0)
+            cancel();
+    }
+
     public void init(int modelChildNumb,float transparency)
     {
         base.init("Textures/AbilityIcons/ninjaman");
+        base._cooldown = 20;
         base.abilityName = "Stealth";
         this._transparency = transparency;
         this._modelChildNum = modelChildNumb;
@@ -32,5 +39,11 @@ public class Stealth : SpecialAbility {
         StartCoroutine(base.doCoolDown());
 
         networkAbility.useStealth(this._modelChildNum,this._stealthActive, this._transparency, this._stealthSoundLevel);
+    }
+
+
+    public void cancel() {
+        GetComponent<PlayerAudio>().updateVolume(volumeModifier: 1);
+        networkAbility.RpcSetOrginalFox();
     }
 }

@@ -184,14 +184,14 @@ public class PlayerController : NetworkBehaviour {
     }
 
     private bool onWall() {
-        const float deltaLimit = 1.00f;
+        const float deltaLimit = 1.6f;
         Vector3[] offsets = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
 
         float[] distances = new float[offsets.Length];
         RaycastHit hit = new RaycastHit();
 
         for (int i = 0; i < offsets.Length; i++) {
-            Physics.Raycast(transform.position + offsets[i], Vector3.down, out hit);
+            Physics.Raycast(transform.position + offsets[i] + Vector3.up, Vector3.down, out hit);
             distances[i] = hit.distance;
         }
 

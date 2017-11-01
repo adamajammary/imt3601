@@ -55,8 +55,10 @@ public class AbilityNetwork : NetworkBehaviour {
     }
 
     [ClientRpc]
-    private void RpcSetTransparentFox(float transparancy)
-    {
+    private void RpcSetTransparentFox(float transparancy){
+        if (isLocalPlayer && transparancy < 0.1f)
+            transparancy = 0.1f;
+
         Material[] materials;
         Color alfa;
       

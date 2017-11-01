@@ -7,6 +7,7 @@ public class AddCollider : MonoBehaviour {
 	void Awake () {
         foreach (Transform t in transform) {
             t.gameObject.AddComponent<MeshCollider>();
+            //t.transform.parent = transform.parent;
         }
     }
 }

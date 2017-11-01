@@ -41,7 +41,7 @@ public class FireWall : NetworkBehaviour {
         }
     }
  
-    private const float _wallShrinkTime = 60.0f;//Time in seconds between _wall shrinking
+    private const float _wallShrinkTime = 10.0f;//Time in seconds between _wall shrinking
     private const float _wallShrinkRate = 0.04f; //The rate at which the wall shrinks
 
     private WallMapRenderer _actualWallRenderer;//Renders the actual fire wall
@@ -50,6 +50,8 @@ public class FireWall : NetworkBehaviour {
     private Image           _outsideWallEffect; //A red transparent UI panel indicating that the player is outside the wall
     private Circle          _current;           //The current circle
     private Circle          _target;            //The target circle
+    private Material        _burned;            //The material used for burned stuff
+    private GameObject      _fire;              //Particle effect for fire
     private System.Random   _RNG;               //Number generator, will be seeded the same across all clients
     [SyncVar(hook="init")]
     private int             _rngSeed;
@@ -58,6 +60,8 @@ public class FireWall : NetworkBehaviour {
     private bool            _ready = false;     //Wall ready
 
     void Start() {
+        _burned = Resources.Load<Material>("Materials/Burned");
+        this._fire = Resources.Load<GameObject>("Prefabs/Fire");
         if (this.isServer) StartCoroutine(waitForClients());
     }
 
@@ -110,6 +114,11 @@ public class FireWall : NetworkBehaviour {
         this._actualWallRenderer.draw(this.transform);
     }   
 
+    private void spawnFire() {
+        float lowerRadius = this._current.radius;
+
+    }
+
     private void UpdateWallUI() {
         _wallTransitionUI.sizeDelta = new Vector2(150 * this._wallShrinkTimer / _wallShrinkTime, 10);
     }
@@ -148,7 +157,7 @@ public class FireWall : NetworkBehaviour {
 
     void OnTriggerExit(Collider other) {
         if (!this._ready) return;
-
+        Debug.Log(other.tag);
         if (other.tag == "Player") {
             other.GetComponent<PlayerEffects>().insideWall = false;
         }else if (other.tag == "Enemy") {
@@ -157,6 +166,13 @@ public class FireWall : NetworkBehaviour {
             other.GetComponent<NPC>().burn();
         } else if (other.tag == "DustTornado") {
             other.GetComponent<DustTornado>().kill();
+        } else if (other.tag == "ground") {
+            var renderer = other.GetComponent<MeshRenderer>();
+            Debug.Log(renderer.material.name);
+            if (renderer.material.name.Contains("mat10")
+                || renderer.material.name.Contains("mat12")
+                || renderer.material.name.Contains("mat20"))
+                renderer.material = _burned;
         }
 
         if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {

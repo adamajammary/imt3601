@@ -212,6 +212,7 @@ public static class NPCWorldView {
     public static Vector3 waterOffset { get { return _waterOffset; } }
     public static bool ready { get { return _ready; } set { _ready = value; } }
     public static FireWall.Circle FireWall { get { return _fireWall; } set { _fireWall = value; } }
+    public static worldCellData[,] water { get { return _water;  } }
     //===============================================================================
     public static void resetAStarData() {
         for (int y = 0; y < cellCount; y++) {

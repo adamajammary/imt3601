@@ -138,4 +138,33 @@ public class AudioManager : MonoBehaviour {
             player.GetComponent<PlayerAudio>().updateVolume(effectVolume);
     }
 
+    private float findDistanceToWater() {
+        if (!NPCWorldView.ready)
+            return -1;
+
+        NPCWorldView.worldCellData[,] waterCells = NPCWorldView.water; // Getting a map of the water from here because it should already be generated for the npcs anyways.
+        int[] playercell = NPCWorldView.convertWorld2Cell(cameraTransform.position);
+        Vector2 playerCellPos = new Vector2(playercell[0], playercell[1]);
+        int count = 0;
+
+        Vector2 closest = new Vector2(500, 500);
+        for (int x = 0; x < waterCells.GetLength(0); x++) {
+            for (int z = 0; z < waterCells.GetLength(1); z++) {
+                if (!waterCells[x, z].blocked) {
+                    if(Vector2.Distance(playerCellPos, new Vector2(x, z)) < 
+                       Vector2.Distance(playerCellPos, closest)) {
+                        closest.x = x;
+                        closest.y = z;
+                        count++;
+                    }
+                }
+            }
+        }
+
+        Vector3 closest_vec3 = waterCells[(int)closest.x, (int)closest.y].pos;
+        closest_vec3.y = waterLevel;
+        float tileCenterToCorner = Mathf.Sqrt(Mathf.Pow(NPCWorldView.cellSize, 2) * 2);
+        //Debug.Log(Vector3.Distance(cameraTransform.position, closest_vec3) + "   ::   " + Mathf.Max(Vector3.Distance(cameraTransform.position, closest_vec3), tileCenterToCorner) * (1 / tileCenterToCorner));
+        return Mathf.Max(Vector3.Distance(cameraTransform.position, closest_vec3), tileCenterToCorner) * (1/ tileCenterToCorner);
+    }
 }

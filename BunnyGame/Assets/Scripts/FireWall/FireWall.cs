@@ -41,7 +41,7 @@ public class FireWall : NetworkBehaviour {
         }
     }
  
-    private const float _wallShrinkTime = 10.0f;//Time in seconds between _wall shrinking
+    private const float _wallShrinkTime = 60.0f;//Time in seconds between _wall shrinking
     private const float _wallShrinkRate = 0.04f; //The rate at which the wall shrinks
 
     private WallMapRenderer _actualWallRenderer;//Renders the actual fire wall
@@ -57,9 +57,11 @@ public class FireWall : NetworkBehaviour {
     private int             _rngSeed;
     private float           _wallShrinkTimer;   //Timer for when to shrink _wall   
     private bool            _wallIsShrinking;   //Keeps track of wheter or not the wall is shrinking
+    private float           _outerBounds;       //Outer bounds of map
     private bool            _ready = false;     //Wall ready
 
     void Start() {
+        _outerBounds = 250;
         _burned = Resources.Load<Material>("Materials/Burned");
         this._fire = Resources.Load<GameObject>("Prefabs/Fire");
         if (this.isServer) StartCoroutine(waitForClients());
@@ -112,11 +114,30 @@ public class FireWall : NetworkBehaviour {
             this.UpdateWallUI();
         }
         this._actualWallRenderer.draw(this.transform);
+        spawnFire();
     }   
 
     private void spawnFire() {
-        float lowerRadius = this._current.radius;
+        if (UnityEngine.Random.Range(0.0f, 1.0f) < 0.4) return;
+        float radius = UnityEngine.Random.Range(0, this._outerBounds);
+        float angle = UnityEngine.Random.Range(0, Mathf.PI * 2);
+        Vector3 pos = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
+        pos.y = 50;
+        //Check if the point is inside the firewall
+        if (Vector3.Distance(pos, this._current.wall.transform.position) < this._current.wall.transform.localScale.x/2) return;
 
+        RaycastHit hit;
+        if (Physics.Raycast(pos, Vector3.down, out hit)) {
+            if (hit.collider.tag == "ground") {
+                var mat = hit.collider.gameObject.GetComponent<MeshRenderer>().material;
+                if (mat.name.Contains("mat18")) {
+                    var fire = Instantiate(this._fire);
+                    fire.transform.position = hit.point;
+                    fire.transform.GetChild(0).localScale *= UnityEngine.Random.Range(0.5f, 1.5f);
+                    Destroy(fire, 10.0f);
+                }
+            }
+        }
     }
 
     private void UpdateWallUI() {
@@ -157,7 +178,7 @@ public class FireWall : NetworkBehaviour {
 
     void OnTriggerExit(Collider other) {
         if (!this._ready) return;
-        Debug.Log(other.tag);
+    
         if (other.tag == "Player") {
             other.GetComponent<PlayerEffects>().insideWall = false;
         }else if (other.tag == "Enemy") {
@@ -168,11 +189,7 @@ public class FireWall : NetworkBehaviour {
             other.GetComponent<DustTornado>().kill();
         } else if (other.tag == "ground") {
             var renderer = other.GetComponent<MeshRenderer>();
-            Debug.Log(renderer.material.name);
-            if (renderer.material.name.Contains("mat10")
-                || renderer.material.name.Contains("mat12")
-                || renderer.material.name.Contains("mat20"))
-                renderer.material = _burned;
+            renderer.material = _burned;
         }
 
         if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {

@@ -24,7 +24,7 @@ public class Stealth : SpecialAbility {
     public void init(int modelChildNumb,float transparency)
     {
         base.init("Textures/AbilityIcons/ninjaman");
-        base._cooldown = 20;
+        base._cooldownTimeInSeconds = 15;
         base.abilityName = "Stealth";
         this._transparency = transparency;
         this._modelChildNum = modelChildNumb;

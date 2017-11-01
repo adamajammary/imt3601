@@ -161,7 +161,7 @@ public class AudioManager : MonoBehaviour {
         Vector3 closest_vec3 = waterCells[(int)closest.x, (int)closest.y].pos;
         closest_vec3.y = waterLevel;
         float tileCenterToCorner = Mathf.Sqrt(Mathf.Pow(NPCWorldView.cellSize, 2) * 2);
-        Debug.Log(Vector3.Distance(cameraTransform.position, closest_vec3) + "   ::   " + Mathf.Max(Vector3.Distance(cameraTransform.position, closest_vec3), tileCenterToCorner) * (1 / tileCenterToCorner));
+        //Debug.Log(Vector3.Distance(cameraTransform.position, closest_vec3) + "   ::   " + Mathf.Max(Vector3.Distance(cameraTransform.position, closest_vec3), tileCenterToCorner) * (1 / tileCenterToCorner));
         return Mathf.Max(Vector3.Distance(cameraTransform.position, closest_vec3), tileCenterToCorner) * (1/ tileCenterToCorner);
     }
 

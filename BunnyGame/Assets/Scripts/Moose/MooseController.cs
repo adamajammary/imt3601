@@ -39,7 +39,7 @@ public class MooseController : NetworkBehaviour{
         // Add abilities to class:
         PlayerController playerController = GetComponent<PlayerController>();
         SpeedBomb sp = gameObject.AddComponent<SpeedBomb>();
-        sp.init(30, 3);
+        sp.init(30, 4);
         playerController.abilities.Add(sp);
 
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);

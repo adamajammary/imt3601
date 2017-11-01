@@ -19,12 +19,15 @@ public class AbilityNetwork : NetworkBehaviour {
     private GameObject _explosion;
     private GameObject _dustParticles;
     private GameObject _dustTornado;
+    private GameObject _fireFart;
 
     void Start() {
         this._poopGrenade = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopGrenade");
         this._explosion = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopExplosion");
         this._dustParticles = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustStorm");
         this._dustTornado = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustTornado");
+
+        this._fireFart = transform.GetChild(6).gameObject;
     }
   
 
@@ -175,10 +178,12 @@ public class AbilityNetwork : NetworkBehaviour {
         if (active)
         {
             damageArea.GetComponent<CapsuleCollider>().enabled = true;
+            this._fireFart.SetActive(true);
         }
         else
         {
             damageArea.GetComponent<CapsuleCollider>().enabled = false;
+            this._fireFart.SetActive(false);
         }
     }
     //////////////////////////////////////////////////////////////////

@@ -6,6 +6,8 @@ public class SpeedBomb : SpecialAbility{
 
     private Animator         _animator;
     private GameObject       _attackArea;
+    private GameObject       _capsule1;
+    private GameObject       _capsule2;
     private AbilityNetwork   _networkAbility;
     private PlayerController _playerController;
     private float            _speed;
@@ -22,6 +24,8 @@ public void init(float speed, float time)
         this._attackArea = transform.GetChild(3).gameObject;
         this._networkAbility = GetComponent<AbilityNetwork>();
         this._playerController = GetComponent<PlayerController>();
+        this._capsule1 = transform.GetChild(4).gameObject;
+        this._capsule2 = transform.GetChild(5).gameObject;
     }
 
     override public IEnumerator useAbility()
@@ -37,6 +41,9 @@ public void init(float speed, float time)
         this._playerController.walkSpeed = _speed;
         this._playerController.setNoInputMovement(true);
 
+      //  this._capsule1.SetActive(true);
+      //  this._capsule2.SetActive(true);
+    
 
         if (this._animator != null)
         {
@@ -56,7 +63,10 @@ public void init(float speed, float time)
         {
             this._animator.SetBool("speedAttack", false);
         }
+
         
+       // this._capsule1.SetActive(false);
+       // this._capsule2.SetActive(false);
         this._networkAbility.CmdSuperSpeed(false);
         this._playerController.runSpeed = normalRun;
         this._playerController.walkSpeed = normalWalk;

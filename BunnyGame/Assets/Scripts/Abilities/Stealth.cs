@@ -8,7 +8,7 @@ using UnityEngine;
  *******************************************/
 public class Stealth : SpecialAbility {
 
-    private float _stealthActive = 10.0f;
+    private float _stealthActive = 7.0f;
     private float _transparency = 0.1f;
     private float _stealthSoundLevel = 0.1f;
     private int _modelChildNum = 1;

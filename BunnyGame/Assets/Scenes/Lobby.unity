@@ -468,7 +468,7 @@ MonoBehaviour:
   m_OnlineScene: 
   m_SpawnPrefabs:
   - {fileID: 1414541341299080, guid: a21a1bc70d54d8b4db8b9c9aeabe862f, type: 2}
-  - {fileID: 1783322173011318, guid: 809e53d4ef88533478dbac980d337183, type: 2}
+  - {fileID: 1965564860097320, guid: 809e53d4ef88533478dbac980d337183, type: 2}
   - {fileID: 1812289213968426, guid: 8ae5ab1b99a18bb4e97be54e780f0256, type: 2}
   - {fileID: 1513430975508516, guid: f265853c0643f3c45899f50e9806aedb, type: 2}
   - {fileID: 1634268821032914, guid: 57578a9c1be616c448fada5d1314aa78, type: 2}
@@ -546,7 +546,7 @@ MonoBehaviour:
   m_MinPlayers: 1
   m_LobbyPlayerPrefab: {fileID: 114654690879382970, guid: 61ed66254448e5142a6e5fe3f12cc2af,
     type: 2}
-  m_GamePlayerPrefab: {fileID: 1783322173011318, guid: 809e53d4ef88533478dbac980d337183,
+  m_GamePlayerPrefab: {fileID: 1965564860097320, guid: 809e53d4ef88533478dbac980d337183,
     type: 2}
   m_LobbyScene: Lobby
   m_PlayScene: Island
@@ -561,12 +561,12 @@ Prefab:
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_LocalPosition.x
-      value: 891
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_LocalPosition.y
-      value: 449
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}

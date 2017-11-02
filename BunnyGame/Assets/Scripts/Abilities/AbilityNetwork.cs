@@ -25,9 +25,7 @@ public class AbilityNetwork : NetworkBehaviour {
         this._poopGrenade = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopGrenade");
         this._explosion = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopExplosion");
         this._dustParticles = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustStorm");
-        this._dustTornado = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustTornado");
-
-        this._fireFart = transform.GetChild(6).gameObject;
+        this._dustTornado = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustTornado");   
     }
   
 
@@ -177,6 +175,7 @@ public class AbilityNetwork : NetworkBehaviour {
     private void RpcSuperSpeed(bool active)
     {
         GameObject damageArea = transform.GetChild(3).gameObject;
+        this._fireFart = transform.GetChild(6).gameObject;
         if (active)
         {
             damageArea.GetComponent<CapsuleCollider>().enabled = true;

@@ -293,6 +293,7 @@ GameObject:
   - component: {fileID: 4014757249602944}
   - component: {fileID: 33517622492299984}
   - component: {fileID: 65953950616972658}
+  - component: {fileID: 114960385477048236}
   - component: {fileID: 23584365356473376}
   m_Layer: 8
   m_Name: ramArea
@@ -1028,6 +1029,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71ded84c2f98d1648a5dc80597ccfe3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &114960385477048236
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1686137025488668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72d370dd34b958348af22b24eecfdd7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 1515126593779490}
 --- !u!136 &136300696075980316
 CapsuleCollider:
   m_ObjectHideFlags: 1

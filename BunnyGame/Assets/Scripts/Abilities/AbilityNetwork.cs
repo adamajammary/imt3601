@@ -108,11 +108,13 @@ public class AbilityNetwork : NetworkBehaviour {
     public void CmdPoopGrenade(Vector3 direction, Vector3 startVel, int id) {
         GameObject poop = Instantiate(this._poopGrenade);
         GrenadePoopProjectile poopScript = poop.GetComponent<GrenadePoopProjectile>();
+        PlayerAttack attackScript = poop.GetComponent<PlayerAttack>();
         Vector3 position = (transform.position + direction * 5.0f);
 
         poopScript.ConnectionID = id;   // Assign the player connection ID to the projectile.
         poopScript.shoot(direction, position, startVel);
         poopScript.owner = this.gameObject;
+        attackScript.owner = this.gameObject;
 
         NetworkServer.Spawn(poop);
     }

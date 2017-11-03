@@ -58,10 +58,12 @@ public class MooseController : NetworkBehaviour{
         updateAnimator();
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
-            this.ram();
+            StartCoroutine(this.toggleRam());
+            //this.ram();
     }
 
-    private void ram()
+    // NB! Not needed with reverse attack logic (PlayerAttack.cs)
+    /*private void ram()
     {
         if (this.GetComponent<PlayerHealth>().IsDead())
             return;
@@ -82,7 +84,7 @@ public class MooseController : NetworkBehaviour{
     private void RpcRam()
     {
         StartCoroutine(this.toggleRam());
-    }
+    }*/
 
     // Biting is enabled for 1 tick after called
     private IEnumerator toggleRam()

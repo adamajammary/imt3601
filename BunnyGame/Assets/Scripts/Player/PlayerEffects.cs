@@ -61,12 +61,13 @@ public class PlayerEffects : NetworkBehaviour {
     public float getSpeed()     { return this._speed; }     //Used when moving (multiplier)
     public float getJump()      { return this._jump; }      //Used when jumping (multiplier)
 
-    private float calcDamage(GameObject attacker, float damage) { // Use this to get attribute adjusted damage
+    public float calcDamage(GameObject attacker, float damage) { // Use this to get attribute adjusted damage
         float damageMult = attacker.GetComponent<PlayerEffects>().getDamage();
         //Debug.Log("Damage: " + damage + "DamageMult: " + damageMult + "Toughness: " + this._toughness);
         //Debug.Log("Final damage: " + damage * damageMult / this._toughness);
         return damage * damageMult / this._toughness;
     }
+
     //=========Poop Grenade==================================================================================================================
     public void OnPoopGrenade(GameObject attacker, int damage, int id, Vector3 impact) {
         this._health.TakeDamage(calcDamage(attacker, damage), id);
@@ -107,11 +108,14 @@ public class PlayerEffects : NetworkBehaviour {
     }
 
     //=========Other==========================================================================================================================
+    // Triggers when something collides with our player character.
+    // We are the victim, while the enemy is the attacker.
     private void OnTriggerEnter(Collider other) {
         if (!this.isLocalPlayer)
             return;
 
-        if ((other.gameObject.tag == "foxbite") && (other.gameObject.transform.parent.gameObject.tag == "Enemy")) {
+        // NB! Handled in PlayerAttack.cs
+        /*if ((other.gameObject.tag == "foxbite") && (other.gameObject.transform.parent.gameObject.tag == "Enemy")) {
             FoxController foxScript = other.GetComponentInParent<FoxController>();
             PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
 
@@ -145,13 +149,15 @@ public class PlayerEffects : NetworkBehaviour {
                 this.CmdBloodParticle(MooseScript.ramImpact());
                 this._health.TakeDamage(calcDamage(other.transform.parent.gameObject, MooseScript.GetDamage()), otherInfo.ConnectionID);
             }
-        } else if (other.gameObject.name == "Water") {
+        } else */
+        if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
         }
     }
 
     private void wallDamage() {
-        this.GetComponent<PlayerHealth>().TakeDamage(10 * Time.deltaTime, -1);
+        //this.GetComponent<PlayerHealth>().TakeDamage(10 * Time.deltaTime, -1);
+        this.GetComponent<PlayerHealth>().TakeDamage(10 * Time.deltaTime, (int)KillerID.KILLER_ID_WALL);
     }
 
     public void onWaterStay(float waterForce) {
@@ -163,7 +169,8 @@ public class PlayerEffects : NetworkBehaviour {
         if (!_fallDamageImmune && _cc.isGrounded && _currentImpactVelocity < _damageImpactVelocity) {
             _playerAudio.playGroundHit(_currentImpactVelocity);
             if (isLocalPlayer) {
-                this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage * (_currentImpactVelocity / _damageImpactVelocity), -1);
+                //this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage * (_currentImpactVelocity / _damageImpactVelocity), -1);
+                this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage * (_currentImpactVelocity / _damageImpactVelocity), (int)KillerID.KILLER_ID_FALL);
                 _currentImpactVelocity = 0;
             }
         }
@@ -179,7 +186,7 @@ public class PlayerEffects : NetworkBehaviour {
     }
 
     [Command]
-    private void CmdBloodParticle(Vector3 hitPosition) {
+    public void CmdBloodParticle(Vector3 hitPosition) {
         GameObject blood = Instantiate(this._blood);
 
         blood.transform.position = hitPosition;
@@ -187,6 +194,4 @@ public class PlayerEffects : NetworkBehaviour {
         NetworkServer.Spawn(blood);
         Destroy(blood, 5.0f);
     }
-
-
 }

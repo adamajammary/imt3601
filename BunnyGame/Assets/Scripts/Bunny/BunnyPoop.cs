@@ -2,8 +2,8 @@
 using UnityEngine.Networking;
 
 public class BunnyPoop : NetworkBehaviour {
-    [SyncVar]
-    public GameObject owner; //The gameobject which owns this 
+    //[SyncVar]
+    //public GameObject owner; //The gameobject which owns this 
 
     private int _timeToLive = 3;
     private float _timeAlive = 0;
@@ -32,7 +32,7 @@ public class BunnyPoop : NetworkBehaviour {
         this._timeAlive += Time.deltaTime;
 
         if (this._timeAlive > this._timeToLive)
-            Destroy(this.gameObject);
+            NetworkServer.Destroy(this.gameObject);
     }
 
     public void shoot(Vector3 dir, Vector3 pos, Vector3 startVel) {
@@ -42,7 +42,7 @@ public class BunnyPoop : NetworkBehaviour {
 
     private void OnCollisionEnter(Collision other) {
         if (other.gameObject.tag != "Player")
-            Destroy(this.gameObject);
+            NetworkServer.Destroy(this.gameObject);
     }
 
     public int GetDamage() {

@@ -87,7 +87,7 @@ public class PlayerAudio : MonoBehaviour {
         else if (hit.transform.GetComponent<MeshRenderer>() == null)
             return "";
 
-        Debug.Log("Material of ground below is: " + hit.transform.GetComponent<MeshRenderer>().material.name);
+        //Debug.Log("Material of ground below is: " + hit.transform.GetComponent<MeshRenderer>().material.name);
         
         if (hit.transform.CompareTag("ground")) {
             switch (hit.transform.GetComponent<MeshRenderer>().material.name.TrimEnd(" (Instance)".ToCharArray())) {
@@ -99,7 +99,7 @@ public class PlayerAudio : MonoBehaviour {
                 case "mat17":
                     return "stone";
                 case "mat18": // !! This is because the big mountain is in the same mesh as the ground... so I have to manually check whether it is stone or dirt...
-                    Debug.Log(transform.position + "; dist:" + Vector3.Distance(transform.position, new Vector3(24, transform.position.y, 44)));
+                    //Debug.Log(transform.position + "; dist:" + Vector3.Distance(transform.position, new Vector3(24, transform.position.y, 44)));
                     if (transform.position.y > -12.5f && Vector3.Distance(transform.position, new Vector3(24,transform.position.y,44)) < 80)
                         return "stone";
                     else return "dirt";

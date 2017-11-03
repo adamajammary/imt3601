@@ -187,6 +187,7 @@ GameObject:
   - component: {fileID: 4241218062921330}
   - component: {fileID: 65561374399031036}
   - component: {fileID: 114338138868947958}
+  - component: {fileID: 114660185341853244}
   - component: {fileID: 54112513142777222}
   m_Layer: 0
   m_Name: PeckCollider
@@ -792,7 +793,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19f3528874b3a9841aefc815d4140715, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  owner: {fileID: 1513430975508516}
   body: {fileID: 4824371401852152}
 --- !u!114 &114423235304548102
 MonoBehaviour:
@@ -893,6 +893,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 137f3531404a4e4408c0c04a7a878685, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &114660185341853244
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1500626200089572}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72d370dd34b958348af22b24eecfdd7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 1513430975508516}
 --- !u!114 &114717408788938462
 MonoBehaviour:
   m_ObjectHideFlags: 1

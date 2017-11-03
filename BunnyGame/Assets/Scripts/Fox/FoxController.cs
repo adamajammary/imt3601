@@ -54,10 +54,12 @@ public class FoxController : NetworkBehaviour {
         updateAnimator();
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
-            this.bite();
+            StartCoroutine(this.toggleBite());
+            //this.bite();
     }
 
-    private void bite() {
+    // NB! Not needed with reverse attack logic (PlayerAttack.cs)
+    /*private void bite() {
         if (this.GetComponent<PlayerHealth>().IsDead())
             return;
 
@@ -75,7 +77,7 @@ public class FoxController : NetworkBehaviour {
     [ClientRpc]
     private void RpcBite() {
         StartCoroutine(this.toggleBite());
-    }
+    }*/
 
     // Biting is enabled for 1 tick after called
     private IEnumerator toggleBite() {

@@ -114,7 +114,10 @@ GameObject:
   - component: {fileID: 4230305509679570}
   - component: {fileID: 33128175657689010}
   - component: {fileID: 136727053077750170}
+  - component: {fileID: 54402276200431686}
+  - component: {fileID: 114993020853149724}
   - component: {fileID: 23641535663763230}
+  - component: {fileID: 114644052300683708}
   m_Layer: 8
   m_Name: abilitySuperSpeed
   m_TagString: mooseAttack
@@ -1062,6 +1065,21 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1319598638080910}
   m_Mesh: {fileID: 4300000, guid: e0fa813353264a84bb07ec4698d66c80, type: 3}
+--- !u!54 &54402276200431686
+Rigidbody:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1122769087506774}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!65 &65023412114569470
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -1304,6 +1322,38 @@ MonoBehaviour:
     i15: 120
   m_ServerOnly: 0
   m_LocalPlayerAuthority: 1
+--- !u!114 &114644052300683708
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1122769087506774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 87
+    i1: 87
+    i2: 138
+    i3: 156
+    i4: 27
+    i5: 230
+    i6: 22
+    i7: 196
+    i8: 72
+    i9: 250
+    i10: 218
+    i11: 93
+    i12: 19
+    i13: 20
+    i14: 170
+    i15: 120
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 0
 --- !u!114 &114694326485843934
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1368,6 +1418,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77bd3c3aabb973949833b8d5904d77aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &114993020853149724
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1122769087506774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72d370dd34b958348af22b24eecfdd7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 1634268821032914}
 --- !u!114 &114999473665891914
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1401,7 +1463,7 @@ CapsuleCollider:
   m_GameObject: {fileID: 1122769087506774}
   m_Material: {fileID: 0}
   m_IsTrigger: 1
-  m_Enabled: 1
+  m_Enabled: 0
   m_Radius: 0.5
   m_Height: 2
   m_Direction: 1

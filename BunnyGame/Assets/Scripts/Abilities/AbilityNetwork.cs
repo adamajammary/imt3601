@@ -27,7 +27,8 @@ public class AbilityNetwork : NetworkBehaviour {
         this._dustParticles = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustStorm");
         this._dustTornado = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustTornado");
 
-        this._fireFart = transform.GetChild(6).gameObject;
+        if (this.transform.childCount > 6)
+            this._fireFart = this.transform.GetChild(6).gameObject;
     }
   
 
@@ -169,14 +170,16 @@ public class AbilityNetwork : NetworkBehaviour {
     /////////////////////////////////////////////////////////////////
 
     /////////////////////// Functiuons for SuperSpeed ///////////////
-    [Command]
+    // NB! Not needed with reverse attack logic (PlayerAttack.cs)
+    /*[Command]
     public void CmdSuperSpeed(bool active)
     {
         RpcSuperSpeed(active);
     }
 
     [ClientRpc]
-    private void RpcSuperSpeed(bool active)
+    private void RpcSuperSpeed(bool active)*/
+    public void SuperSpeed(bool active)
     {
         GameObject damageArea = transform.GetChild(3).gameObject;
         if (active)

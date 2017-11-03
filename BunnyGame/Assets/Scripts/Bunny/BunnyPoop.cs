@@ -41,7 +41,7 @@ public class BunnyPoop : NetworkBehaviour {
     }
 
     private void OnCollisionEnter(Collision other) {
-        if (other.gameObject.tag != "Player")
+        if (other.gameObject.tag != "Player" && other.gameObject.tag != "MainCamera")
             NetworkServer.Destroy(this.gameObject);
     }
 

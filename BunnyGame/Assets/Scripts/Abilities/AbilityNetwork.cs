@@ -19,39 +19,46 @@ public class AbilityNetwork : NetworkBehaviour {
     private GameObject _explosion;
     private GameObject _dustParticles;
     private GameObject _dustTornado;
+    private GameObject _fireFart;
 
     void Start() {
         this._poopGrenade = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopGrenade");
         this._explosion = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopExplosion");
         this._dustParticles = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustStorm");
         this._dustTornado = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustTornado");
+
+        this._fireFart = transform.GetChild(6).gameObject;
     }
   
 
     ///////////// Functions for Stealth ability /////////////////
 
-    public void useStealth(int modelChildNum, float activeTime, float transparancy)
+    public void useStealth(int modelChildNum, float activeTime, float transparancy, float volumeMod)
     {
         this.modelChildNum = modelChildNum;
-        CmdStealth(activeTime, transparancy);
+        CmdStealth(activeTime, transparancy, volumeMod);
     }
     
     [Command]
-    public void CmdStealth(float activeTime, float transparancy)
+    public void CmdStealth(float activeTime, float transparancy, float volumeMod)
     {
-        StartCoroutine(stealth(activeTime,transparancy));
+        StartCoroutine(stealth(activeTime,transparancy, volumeMod));
     }
 
-    private IEnumerator stealth(float activeTime,float transparancy)
+    private IEnumerator stealth(float activeTime,float transparancy, float volumeMod)
     {
+        GetComponent<PlayerAudio>().updateVolume(volumeModifier: volumeMod);
         RpcSetTransparentFox(transparancy);
         yield return new WaitForSeconds(activeTime);
+        GetComponent<PlayerAudio>().updateVolume(volumeModifier: 1);
         RpcSetOrginalFox();
     }
 
     [ClientRpc]
-    private void RpcSetTransparentFox(float transparancy)
-    {
+    private void RpcSetTransparentFox(float transparancy){
+        if (isLocalPlayer && transparancy < 0.1f)
+            transparancy = 0.1f;
+
         Material[] materials;
         Color alfa;
       
@@ -143,10 +150,10 @@ public class AbilityNetwork : NetworkBehaviour {
         StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
         var player = GameObject.FindGameObjectWithTag("Player");
         if (player.GetComponent<PlayerInformation>().ConnectionID != id) {
-            if (Vector3.Distance(player.transform.position, pos) < 20) {
+            if (Vector3.Distance(player.transform.position, pos) < 20 && !player.GetComponent<PlayerHealth>().IsDead()) {
                 StartCoroutine(player.GetComponent<PlayerEffects>().blind());
             }
-        }        
+        }
     }
 
 
@@ -160,4 +167,28 @@ public class AbilityNetwork : NetworkBehaviour {
         NetworkServer.SpawnWithClientAuthority(dustTornado, owner.GetComponent<PlayerInformation>().connectionToClient);
     }
     /////////////////////////////////////////////////////////////////
+
+    /////////////////////// Functiuons for SuperSpeed ///////////////
+    [Command]
+    public void CmdSuperSpeed(bool active)
+    {
+        RpcSuperSpeed(active);
+    }
+
+    [ClientRpc]
+    private void RpcSuperSpeed(bool active)
+    {
+        GameObject damageArea = transform.GetChild(3).gameObject;
+        if (active)
+        {
+            damageArea.GetComponent<CapsuleCollider>().enabled = true;
+            this._fireFart.SetActive(true);
+        }
+        else
+        {
+            damageArea.GetComponent<CapsuleCollider>().enabled = false;
+            this._fireFart.SetActive(false);
+        }
+    }
+    //////////////////////////////////////////////////////////////////
 }

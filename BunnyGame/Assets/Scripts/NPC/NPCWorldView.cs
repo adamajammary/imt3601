@@ -114,13 +114,13 @@ public static class NPCWorldView {
                 this._pos = pos;
                 this._goal = goal;
             }
-        }   
-        
+        }
+
         public Vector3 getPos() {
-            lock (this) 
+            lock (this)
                 return this._pos;
         }
-        
+
         public Vector3 getMapPos() {
             lock (this) {
                 int[] index = convertWorld2Cell(this._pos);
@@ -136,12 +136,12 @@ public static class NPCWorldView {
         }
 
         public Vector3 getDir() {
-            lock (this) 
+            lock (this)
                 return this._dir;
         }
 
         public int getId() {
-            lock (this) 
+            lock (this)
                 return this._id;
         }
 
@@ -154,9 +154,9 @@ public static class NPCWorldView {
     //===============================================================================
     public const int cellCount = 150;
     public const float worldSize = 400;
-    public const float cellSize = worldSize/cellCount;
+    public const float cellSize = worldSize / cellCount;
 
-    private static Dictionary<int,GameCharacter> _npcs;
+    private static Dictionary<int, GameCharacter> _npcs;
     private static Dictionary<int, GameCharacter> _players;
     private static FireWall.Circle _fireWall;
     private static bool _runNPCThread;
@@ -196,11 +196,23 @@ public static class NPCWorldView {
         initPlane(_land, _landOffset);
         initPlane(_water, _waterOffset);
     }
+
+    public static void clear() {
+        _runNPCThread = false;
+        _ready = false;
+
+        _npcs = null;
+        _players = null;
+
+        _land = null;
+        _water = null;
+    }
     //===============================================================================
     public static Vector3 landOffset { get { return _landOffset; } }
     public static Vector3 waterOffset { get { return _waterOffset; } }
     public static bool ready { get { return _ready; } set { _ready = value; } }
     public static FireWall.Circle FireWall { get { return _fireWall; } set { _fireWall = value; } }
+    public static worldCellData[,] water { get { return _water; } }
     //===============================================================================
     public static void resetAStarData() {
         for (int y = 0; y < cellCount; y++) {
@@ -225,6 +237,8 @@ public static class NPCWorldView {
 
         return cellPos;
     }
+
+
 
     // No convenient way of using get; set; or overloading [,] operator that i found
     //========================================================================================

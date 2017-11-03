@@ -35,6 +35,7 @@ public class PlayerController : NetworkBehaviour {
 
     private bool _moveDirectionLocked = false;
     private float _targetRotation = 0;
+    private bool _noInputMovement = false;
 
 
     void Start() {
@@ -63,7 +64,10 @@ public class PlayerController : NetworkBehaviour {
         handleSpecialAbilities();
 
         if (!this._CC) {
-            Move(inputDir);
+            if (!this._noInputMovement)
+                Move(inputDir);
+            else
+                NoInputMovement();
             if (Input.GetKeyDown(KeyCode.Space))
                 this.jump();
         }
@@ -131,8 +135,7 @@ public class PlayerController : NetworkBehaviour {
         moveDir.y = 0;
 
         Vector3 velocity = moveDir.normalized * currentSpeed * playerEffects.getSpeed() + Vector3.up * velocityY;
-
-
+       
         this.controller.Move(velocity * Time.deltaTime);
 
         if (controller.isGrounded)
@@ -140,7 +143,7 @@ public class PlayerController : NetworkBehaviour {
     }
 
     public void jump() {
-        if (controller.isGrounded) {
+        if (controller.isGrounded && !onWall()) { 
             float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight * this.playerEffects.getJump()); 
             this.velocityY = jumpVelocity;
         }
@@ -178,5 +181,58 @@ public class PlayerController : NetworkBehaviour {
                 mat.renderQueue = 2000;
             }
         }
+    }
+
+    private bool onWall() {
+        const float deltaLimit = 1.6f;
+        Vector3[] offsets = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
+
+        float[] distances = new float[offsets.Length];
+        RaycastHit hit = new RaycastHit();
+
+        for (int i = 0; i < offsets.Length; i++) {
+            Physics.Raycast(transform.position + offsets[i] + Vector3.up, Vector3.down, out hit);
+            distances[i] = hit.distance;
+        }
+
+        foreach (var dist in distances) {
+            foreach (var dist2 in distances) {
+                if (Mathf.Abs(dist - dist2) > deltaLimit) {
+                    return true;
+                }
+
+            }
+        }
+        return false;
+    }
+
+    // Used in SpeedBomb ability
+    public void NoInputMovement()
+    {
+        if (!_moveDirectionLocked)
+            _targetRotation = _cameraTransform.eulerAngles.y;
+
+        transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation,
+                                                    ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
+
+        float targetSpeed = ((running) ? runSpeed : walkSpeed);
+        this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
+
+        this.velocityY += Time.deltaTime * gravity;
+
+        Vector3 moveDir = transform.TransformDirection(new Vector3(transform.eulerAngles.x, 0, transform.eulerAngles.y));
+        moveDir.y = 0;
+
+        Vector3 velocity = moveDir.normalized * currentSpeed * playerEffects.getSpeed() + Vector3.up * velocityY;
+
+        this.controller.Move(velocity * Time.deltaTime);
+
+        if (controller.isGrounded)
+            velocityY = 0;
+    }
+
+    public void setNoInputMovement(bool noInput)
+    {
+        this._noInputMovement = noInput;
     }
 }

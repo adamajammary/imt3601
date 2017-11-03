@@ -5,7 +5,7 @@ using UnityEngine;
 public class NPCBrain { 
     //==============Member variables==================================================
     private Stack<State>                            _state;
-    private NPCWorldView.GameCharacter              _npc;
+    public NPCWorldView.GameCharacter              _npc;
     private BlockingQueue<NPCThread.instruction>    _instructions;
     private float                                   _speed;
 

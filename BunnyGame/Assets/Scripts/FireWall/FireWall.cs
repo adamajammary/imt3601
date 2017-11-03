@@ -50,14 +50,20 @@ public class FireWall : NetworkBehaviour {
     private Image           _outsideWallEffect; //A red transparent UI panel indicating that the player is outside the wall
     private Circle          _current;           //The current circle
     private Circle          _target;            //The target circle
+    private Material        _burned;            //The material used for burned stuff
+    private GameObject      _fire;              //Particle effect for fire
     private System.Random   _RNG;               //Number generator, will be seeded the same across all clients
     [SyncVar(hook="init")]
     private int             _rngSeed;
     private float           _wallShrinkTimer;   //Timer for when to shrink _wall   
     private bool            _wallIsShrinking;   //Keeps track of wheter or not the wall is shrinking
+    private float           _outerBounds;       //Outer bounds of map
     private bool            _ready = false;     //Wall ready
 
     void Start() {
+        _outerBounds = 250;
+        _burned = Resources.Load<Material>("Materials/Burned");
+        this._fire = Resources.Load<GameObject>("Prefabs/Fire");
         if (this.isServer) StartCoroutine(waitForClients());
     }
 
@@ -108,7 +114,31 @@ public class FireWall : NetworkBehaviour {
             this.UpdateWallUI();
         }
         this._actualWallRenderer.draw(this.transform);
+        spawnFire();
     }   
+
+    private void spawnFire() {
+        if (UnityEngine.Random.Range(0.0f, 1.0f) < 0.4) return;
+        float radius = UnityEngine.Random.Range(0, this._outerBounds);
+        float angle = UnityEngine.Random.Range(0, Mathf.PI * 2);
+        Vector3 pos = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
+        pos.y = 50;
+        //Check if the point is inside the firewall
+        if (Vector3.Distance(pos, this._current.wall.transform.position) < this._current.wall.transform.localScale.x/2) return;
+
+        RaycastHit hit;
+        if (Physics.Raycast(pos, Vector3.down, out hit)) {
+            if (hit.collider.tag == "ground") {
+                var mat = hit.collider.gameObject.GetComponent<MeshRenderer>().material;
+                if (mat.name.Contains("mat18")) {
+                    var fire = Instantiate(this._fire);
+                    fire.transform.position = hit.point;
+                    fire.transform.GetChild(0).localScale *= UnityEngine.Random.Range(0.5f, 1.5f);
+                    Destroy(fire, 10.0f);
+                }
+            }
+        }
+    }
 
     private void UpdateWallUI() {
         _wallTransitionUI.sizeDelta = new Vector2(150 * this._wallShrinkTimer / _wallShrinkTime, 10);
@@ -148,9 +178,8 @@ public class FireWall : NetworkBehaviour {
 
     void OnTriggerExit(Collider other) {
         if (!this._ready) return;
-
+    
         if (other.tag == "Player") {
-            _outsideWallEffect.enabled = true;
             other.GetComponent<PlayerEffects>().insideWall = false;
         }else if (other.tag == "Enemy") {
             other.GetComponent<PlayerEffects>().insideWall = false;
@@ -158,6 +187,13 @@ public class FireWall : NetworkBehaviour {
             other.GetComponent<NPC>().burn();
         } else if (other.tag == "DustTornado") {
             other.GetComponent<DustTornado>().kill();
+        } else if (other.tag == "ground") {
+            var renderer = other.GetComponent<MeshRenderer>();
+            renderer.material = _burned;
+        }
+
+        if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
+            _outsideWallEffect.enabled = true;
         }
     }
 
@@ -165,10 +201,13 @@ public class FireWall : NetworkBehaviour {
         if (!this._ready) return;
 
         if (other.tag == "Player") {
-            _outsideWallEffect.enabled = false;
             other.GetComponent<PlayerEffects>().insideWall = true;
         } else if (other.tag == "Enemy") {
             other.GetComponent<PlayerEffects>().insideWall = true;
-        } 
+        }
+
+        if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
+            _outsideWallEffect.enabled = false;
+        }
     }
 }

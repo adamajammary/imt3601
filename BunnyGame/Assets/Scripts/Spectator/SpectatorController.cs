@@ -13,7 +13,7 @@ public enum SpectatorMode
 
 public class SpectatorController : MonoBehaviour {
     private SpectatorMode _spectatorMode;
-    
+    private SpectatorUI _ui;
 
     private ThirdPersonCamera _thirdPersonCamera;
     private int _currentPlayerIdx = 0;
@@ -31,6 +31,9 @@ public class SpectatorController : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
+        _ui = GameObject.Find("SpectatorUI").GetComponent<SpectatorUI>();
+        _ui.gameObject.SetActive(false);
+
         _thirdPersonCamera = GetComponent<ThirdPersonCamera>();
 
         _freeCameraTarget = new GameObject() {
@@ -63,14 +66,13 @@ public class SpectatorController : MonoBehaviour {
     // This should be called when the players dies and wants to go into spectating mode
     public void startSpectating() {
         this.enabled = true;
+        _ui.gameObject.SetActive(true);
         setSpectatorMode(SpectatorMode.FREE);
 
         _thirdPersonCamera.canFPS = false;
-        gameObject.tag = "Spectator";
-
 
         // Disable ui elements that aren't necessary to keep after going into spectate mode
-        foreach (string str in "SpectateButton BloodSplatterOverlay".Split(' '))
+        foreach (string str in "SpectateButton BloodSplatterOverlay AbilityPanel AttributeUI".Split(' '))
             GameObject.Find(str).SetActive(false);
 
 
@@ -111,6 +113,7 @@ public class SpectatorController : MonoBehaviour {
     private void setFreeCameraMode() {
 
         _spectatorMode = SpectatorMode.FREE;
+        _ui.modeSwitch(SpectatorMode.FREE);
         _thirdPersonCamera.enabled = false;
 
         _freeCameraTarget.SetActive(true);
@@ -155,6 +158,7 @@ public class SpectatorController : MonoBehaviour {
 
     private void setFollowCameraMode() {
         _spectatorMode = SpectatorMode.FOLLOW;
+        _ui.modeSwitch(SpectatorMode.FOLLOW);
         _thirdPersonCamera.enabled = true;
         switchPlayerView(_currentPlayerIdx);
     }
@@ -168,5 +172,6 @@ public class SpectatorController : MonoBehaviour {
         transform.localPosition = new Vector3(0, 0, 0);
         _thirdPersonCamera.enabled = true;
         _thirdPersonCamera.SetTarget(_players[_currentPlayerIdx].transform);
+        _ui.followingPlayerChange(_players[_currentPlayerIdx].GetComponent<PlayerInformation>().playerName);
     }
 }

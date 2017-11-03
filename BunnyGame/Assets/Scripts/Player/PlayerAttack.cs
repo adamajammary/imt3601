@@ -16,7 +16,7 @@ public class PlayerAttack : NetworkBehaviour {
 
         // PLAYER VS. ENEMY
         if (other.gameObject.tag == "Enemy") {
-            if ((attackerID < 0) || (victimID < 0) || (victimHealth == null))
+            if ((attackerID < 0) || (victimID < 0) || (victimHealth == null) || !other.transform.GetChild(1).gameObject.activeInHierarchy)
                 return;
 
             // BIRD

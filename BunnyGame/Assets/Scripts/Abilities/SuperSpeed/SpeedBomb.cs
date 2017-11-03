@@ -51,7 +51,8 @@ public void init(float speed, float time)
            // this._animator.SetFloat("moveSpeed", this._speed);
         }
 
-        this._networkAbility.CmdSuperSpeed(true);
+        //this._networkAbility.CmdSuperSpeed(true);
+        this._networkAbility.SuperSpeed(true);
         float time = 0;
         while (time < _time)
         {
@@ -67,7 +68,8 @@ public void init(float speed, float time)
         
        // this._capsule1.SetActive(false);
        // this._capsule2.SetActive(false);
-        this._networkAbility.CmdSuperSpeed(false);
+        //this._networkAbility.CmdSuperSpeed(false);
+        this._networkAbility.SuperSpeed(false);
         this._playerController.runSpeed = normalRun;
         this._playerController.walkSpeed = normalWalk;
         this._playerController.setNoInputMovement(false);

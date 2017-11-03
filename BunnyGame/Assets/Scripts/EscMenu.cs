@@ -32,8 +32,7 @@ public class EscMenu : NetworkBehaviour {
     void Update() {
         handleMouse();
 
-
-        if (SceneManager.GetActiveScene().name != "Island")
+        if (SceneManager.GetActiveScene().name == "Lobby")
             return;
 
         if (Input.GetKeyDown(KeyCode.Escape)) {

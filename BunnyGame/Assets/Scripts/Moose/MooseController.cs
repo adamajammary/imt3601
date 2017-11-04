@@ -37,16 +37,12 @@ public class MooseController : NetworkBehaviour{
         pe.CmdSetAttributes(1.5f, 1.0f, 1.0f, 0.8f);
 
         // Add abilities to class:
-        //PlayerController playerController = GetComponent<PlayerController>();
-        //Sprint sp = gameObject.AddComponent<Sprint>();
-        //sp.init(50, 1);
-        //playerController.abilities.Add(sp);
+        PlayerController playerController = GetComponent<PlayerController>();
+        SpeedBomb sp = gameObject.AddComponent<SpeedBomb>();
+        sp.init(30, 4);
+        playerController.abilities.Add(sp);
 
-        //Stealth st = gameObject.AddComponent<Stealth>();
-        //st.init(1, 0.1f);
-        //playerController.abilities.Add(st);
-
-        //GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
+        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
     }
 
     // Update is called once per frame
@@ -58,10 +54,12 @@ public class MooseController : NetworkBehaviour{
         updateAnimator();
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
-            this.ram();
+            StartCoroutine(this.toggleRam());
+            //this.ram();
     }
 
-    private void ram()
+    // NB! Not needed with reverse attack logic (PlayerAttack.cs)
+    /*private void ram()
     {
         if (this.GetComponent<PlayerHealth>().IsDead())
             return;
@@ -82,7 +80,7 @@ public class MooseController : NetworkBehaviour{
     private void RpcRam()
     {
         StartCoroutine(this.toggleRam());
-    }
+    }*/
 
     // Biting is enabled for 1 tick after called
     private IEnumerator toggleRam()

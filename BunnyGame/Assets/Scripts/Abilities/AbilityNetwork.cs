@@ -19,12 +19,16 @@ public class AbilityNetwork : NetworkBehaviour {
     private GameObject _explosion;
     private GameObject _dustParticles;
     private GameObject _dustTornado;
+    private GameObject _fireFart;
 
     void Start() {
         this._poopGrenade = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopGrenade");
         this._explosion = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopExplosion");
         this._dustParticles = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustStorm");
         this._dustTornado = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustTornado");
+
+        if (this.transform.childCount > 6)
+            this._fireFart = this.transform.GetChild(6).gameObject;
     }
   
 
@@ -52,8 +56,10 @@ public class AbilityNetwork : NetworkBehaviour {
     }
 
     [ClientRpc]
-    private void RpcSetTransparentFox(float transparancy)
-    {
+    private void RpcSetTransparentFox(float transparancy){
+        if (isLocalPlayer && transparancy < 0.1f)
+            transparancy = 0.1f;
+
         Material[] materials;
         Color alfa;
       
@@ -110,11 +116,13 @@ public class AbilityNetwork : NetworkBehaviour {
     public void CmdPoopGrenade(Vector3 direction, Vector3 startVel, int id) {
         GameObject poop = Instantiate(this._poopGrenade);
         GrenadePoopProjectile poopScript = poop.GetComponent<GrenadePoopProjectile>();
+        PlayerAttack attackScript = poop.GetComponent<PlayerAttack>();
         Vector3 position = (transform.position + direction * 5.0f);
 
         poopScript.ConnectionID = id;   // Assign the player connection ID to the projectile.
         poopScript.shoot(direction, position, startVel);
         poopScript.owner = this.gameObject;
+        attackScript.owner = this.gameObject;
 
         NetworkServer.Spawn(poop);
     }
@@ -143,10 +151,10 @@ public class AbilityNetwork : NetworkBehaviour {
         StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
         var player = GameObject.FindGameObjectWithTag("Player");
         if (player.GetComponent<PlayerInformation>().ConnectionID != id) {
-            if (Vector3.Distance(player.transform.position, pos) < 20) {
+            if (Vector3.Distance(player.transform.position, pos) < 20 && !player.GetComponent<PlayerHealth>().IsDead()) {
                 StartCoroutine(player.GetComponent<PlayerEffects>().blind());
             }
-        }        
+        }
     }
 
 
@@ -160,4 +168,30 @@ public class AbilityNetwork : NetworkBehaviour {
         NetworkServer.SpawnWithClientAuthority(dustTornado, owner.GetComponent<PlayerInformation>().connectionToClient);
     }
     /////////////////////////////////////////////////////////////////
+
+    /////////////////////// Functiuons for SuperSpeed ///////////////
+    // NB! Not needed with reverse attack logic (PlayerAttack.cs)
+    /*[Command]
+    public void CmdSuperSpeed(bool active)
+    {
+        RpcSuperSpeed(active);
+    }
+
+    [ClientRpc]
+    private void RpcSuperSpeed(bool active)*/
+    public void SuperSpeed(bool active)
+    {
+        GameObject damageArea = transform.GetChild(3).gameObject;
+        if (active)
+        {
+            damageArea.GetComponent<CapsuleCollider>().enabled = true;
+            this._fireFart.SetActive(true);
+        }
+        else
+        {
+            damageArea.GetComponent<CapsuleCollider>().enabled = false;
+            this._fireFart.SetActive(false);
+        }
+    }
+    //////////////////////////////////////////////////////////////////
 }

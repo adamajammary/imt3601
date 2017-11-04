@@ -40,10 +40,12 @@ public class FoxController : NetworkBehaviour {
         playerController.abilities.Add(sp);
 
         Stealth st = gameObject.AddComponent<Stealth>();
-        st.init(1, 0.1f);
+        st.init(1, 0);
         playerController.abilities.Add(st);
 
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
+
+        CmdApplySmell();
     }
 
     // Update is called once per frame
@@ -54,10 +56,36 @@ public class FoxController : NetworkBehaviour {
         updateAnimator();
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
-            this.bite();
+            StartCoroutine(this.toggleBite());
+            //this.bite();
     }
 
-    private void bite() {
+    private IEnumerator applySmell(int playerCount) {
+        GameObject[] enemies;
+        do {
+            enemies = GameObject.FindGameObjectsWithTag("Enemy");
+            yield return 0;
+        } while (enemies.Length + 1 != playerCount);
+        var smellTrail = Resources.Load<GameObject>("Prefabs/SmellTrail");
+        foreach (var enemy in enemies) {
+            var obj = Instantiate(smellTrail);
+            obj.transform.parent = enemy.transform;
+            obj.transform.localPosition = Vector3.zero;
+        }
+    }
+
+    [Command]
+    private void CmdApplySmell() {
+        TargetApplySmell(this.connectionToClient, Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers);
+    }
+
+    [TargetRpc]
+    private void TargetApplySmell(NetworkConnection conn, int playerCount) {
+        StartCoroutine(applySmell(playerCount));
+    }
+
+    // NB! Not needed with reverse attack logic (PlayerAttack.cs)
+    /*private void bite() {
         if (this.GetComponent<PlayerHealth>().IsDead())
             return;
 
@@ -75,7 +103,7 @@ public class FoxController : NetworkBehaviour {
     [ClientRpc]
     private void RpcBite() {
         StartCoroutine(this.toggleBite());
-    }
+    }*/
 
     // Biting is enabled for 1 tick after called
     private IEnumerator toggleBite() {

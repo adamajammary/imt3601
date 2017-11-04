@@ -50,7 +50,6 @@ public class FireWall : NetworkBehaviour {
     private Image           _outsideWallEffect; //A red transparent UI panel indicating that the player is outside the wall
     private Circle          _current;           //The current circle
     private Circle          _target;            //The target circle
-    private Material        _burned;            //The material used for burned stuff
     private GameObject      _fire;              //Particle effect for fire
     private System.Random   _RNG;               //Number generator, will be seeded the same across all clients
     [SyncVar(hook="init")]
@@ -62,7 +61,6 @@ public class FireWall : NetworkBehaviour {
 
     void Start() {
         _outerBounds = 250;
-        _burned = Resources.Load<Material>("Materials/Burned");
         this._fire = Resources.Load<GameObject>("Prefabs/Fire");
         if (this.isServer) StartCoroutine(waitForClients());
     }
@@ -98,7 +96,6 @@ public class FireWall : NetworkBehaviour {
         this.recalculateWalls();
         this._targetWallRenderer.draw(this._target.wall.transform);
         this._ready = true;
-        Debug.Log("FIREWALL READY");
     }
 
     // Update is called once per frame
@@ -188,9 +185,6 @@ public class FireWall : NetworkBehaviour {
             other.GetComponent<NPC>().burn();
         } else if (other.tag == "DustTornado") {
             other.GetComponent<DustTornado>().kill();
-        } else if (other.tag == "ground") {
-            var renderer = other.GetComponent<MeshRenderer>();
-            renderer.material = _burned;
         }
 
         if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {

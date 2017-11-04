@@ -5,7 +5,6 @@ using UnityEngine.SceneManagement;
 
 public class PlayerController : NetworkBehaviour {
 
-    public List<SpecialAbility> abilities = new List<SpecialAbility>();
 
     public float walkSpeed = 5;
     public float runSpeed = 12;
@@ -30,6 +29,7 @@ public class PlayerController : NetworkBehaviour {
     private Transform _cameraTransform;
     public CharacterController controller;
     private PlayerEffects playerEffects;
+    private PlayerAbilityManager _abilityManager;
     
     public bool running = false;
 
@@ -48,6 +48,7 @@ public class PlayerController : NetworkBehaviour {
         this._cameraTransform = Camera.main.transform;
         this.controller = this.GetComponent<CharacterController>();
         this.playerEffects = GetComponent<PlayerEffects>();
+        this._abilityManager = GetComponent<PlayerAbilityManager>();
 
         this.airControlPercent = 1;
 	}
@@ -60,8 +61,6 @@ public class PlayerController : NetworkBehaviour {
         Vector2 inputDir = input.normalized;
         running = Input.GetKey(KeyCode.LeftShift);
         _moveDirectionLocked = Input.GetKey(KeyCode.LeftAlt);
-
-        handleSpecialAbilities();
 
         if (!this._CC) {
             if (!this._noInputMovement)
@@ -107,14 +106,6 @@ public class PlayerController : NetworkBehaviour {
                     t.gameObject.GetComponent<MeshRenderer>().enabled = true;
                 else if (t.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
                     t.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = true;
-            }
-        }
-    }
-
-    private void handleSpecialAbilities() {
-        for (int i = 0; i < abilities.Count && i < 9; i++) {
-            if (Input.GetKeyDown(KeyCode.Alpha1 + i)) {
-                StartCoroutine(abilities[i].useAbility());
             }
         }
     }

@@ -34,16 +34,16 @@ public class FoxController : NetworkBehaviour {
         pe.CmdSetAttributes(1.2f, 1.2f, 1.2f, 0.8f);
 
         // Add abilities to class:
-        PlayerController playerController = GetComponent<PlayerController>();
+        PlayerAbilityManager abilityManager = GetComponent<PlayerAbilityManager>();
         Sprint sp = gameObject.AddComponent<Sprint>();
         sp.init(50, 1);
-        playerController.abilities.Add(sp);
+        abilityManager.abilities.Add(sp);
 
         Stealth st = gameObject.AddComponent<Stealth>();
         st.init(1, 0);
-        playerController.abilities.Add(st);
+        abilityManager.abilities.Add(st);
 
-        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
+        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(abilityManager);
 
         CmdApplySmell();
     }

@@ -27,7 +27,7 @@ public class NPC : NetworkBehaviour {
 
     private Animator _ani;
 
-    private bool _isDead; // Due to network delay.
+    public bool IsDead; // Due to network delay.
 
     // Use this for initialization
     void Start() {
@@ -37,10 +37,10 @@ public class NPC : NetworkBehaviour {
         this._yVel  = 0;
         this._ani   = GetComponentInChildren<Animator>();
 
-        this._isDead = false;
+        this.IsDead = false;
 
         if (this.isServer) { this._syncTimer = 0; this.syncClients(); }
-        }
+    }
 
     // Update is called once per frame
     void Update() {
@@ -72,9 +72,11 @@ public class NPC : NetworkBehaviour {
         return this._goal;
     }
 
-    public void kill(GameObject killer, int id) {
-        if (this._isDead) return;
-        this._isDead = true;
+    // NB! Handled in PlayerAttack.cs
+    /*//public void kill(GameObject killer, int id) {
+    public void kill(GameObject killer) {
+        if (this.IsDead) return;
+        this.IsDead = true;
         PlayerHealth healthScript = killer.GetComponent<PlayerHealth>();
         PlayerEffects pe = killer.GetComponent<PlayerEffects>();
         this.CmdBloodParticle(this.transform.position);
@@ -93,13 +95,14 @@ public class NPC : NetworkBehaviour {
                 pe.CmdAddJump(0.05f);
                 break;
             case "chicken":
-                healthScript.TakeDamage(-10, id);
+                //healthScript.TakeDamage(-10, id);
+                healthScript.Heal(10.0f);
                 break;
         }
 
         CmdDestroy();
-    }
-    
+    }*/
+
     public void burn() {
         CmdBurn(this.transform.position);
         Destroy(this.gameObject);
@@ -133,11 +136,13 @@ public class NPC : NetworkBehaviour {
         this._masterGoal = this._goal;
     }
 
-    private void OnCollisionEnter(Collision other) {
+    // NB! Handled in PlayerAttack.cs
+    /*private void OnCollisionEnter(Collision other) {
         if (other.gameObject.tag == "projectile") {
             BunnyPoop poopScript = other.gameObject.GetComponent<BunnyPoop>();
-            PlayerInformation otherInfo = poopScript.owner.GetComponent<PlayerInformation>();
-            kill(poopScript.owner, otherInfo.ConnectionID);
+            //PlayerInformation otherInfo = poopScript.owner.GetComponent<PlayerInformation>();
+            //kill(poopScript.owner, otherInfo.ConnectionID);
+            kill(poopScript.owner);
         }
     }
 
@@ -145,13 +150,15 @@ public class NPC : NetworkBehaviour {
     {
         if ((other.gameObject.tag == "foxbite"))
         {
-            PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
-            kill(other.transform.parent.gameObject, otherInfo.ConnectionID);
+            //PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
+            //kill(other.transform.parent.gameObject, otherInfo.ConnectionID);
+            kill(other.transform.parent.gameObject);
         }
         else if ((other.gameObject.tag == "mooseAttack"))
         {
-            PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
-            kill(other.transform.parent.gameObject, otherInfo.ConnectionID);
+            //PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
+            //kill(other.transform.parent.gameObject, otherInfo.ConnectionID);
+            kill(other.transform.parent.gameObject);
         }
     }
 
@@ -168,7 +175,7 @@ public class NPC : NetworkBehaviour {
 
         NetworkServer.Spawn(blood);
         Destroy(blood, 5.0f);
-    }
+    }*/
 
     [Command]
     public void CmdBurn(Vector3 pos) {

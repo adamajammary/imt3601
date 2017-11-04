@@ -59,7 +59,8 @@ public class BirdController : NetworkBehaviour {
         if (Input.GetKey(KeyCode.Space))
             glide();
         else if (Input.GetMouseButtonDown(0) && !this._pecking)
-            StartCoroutine(peck());
+            StartCoroutine(this.peck());
+            //CmdPeck();
     }
 
     public int GetDamage() {
@@ -84,15 +85,16 @@ public class BirdController : NetworkBehaviour {
         }
     }
 
-    //[Command]
-    //private void CmdPeck() {
-    //    RpcPeck();
-    //}
+    // NB! Not needed with reverse attack logic (PlayerAttack.cs)
+    /*[Command]
+    private void CmdPeck() {
+        RpcPeck();
+    }
 
-    //[ClientRpc]
-    //private void RpcPeck() {
-    //    StartCoroutine(peck());
-    //}
+    [ClientRpc]
+    private void RpcPeck() {
+        StartCoroutine(peck());
+    }*/
 
     private IEnumerator peck() { //Animation is 1 sec long
         this._pecking = true;

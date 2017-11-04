@@ -27,7 +27,8 @@ public class AbilityNetwork : NetworkBehaviour {
         this._dustParticles = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustStorm");
         this._dustTornado = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustTornado");
 
-        this._fireFart = transform.GetChild(6).gameObject;
+        if (this.transform.childCount > 6)
+            this._fireFart = this.transform.GetChild(6).gameObject;
     }
   
 
@@ -115,11 +116,13 @@ public class AbilityNetwork : NetworkBehaviour {
     public void CmdPoopGrenade(Vector3 direction, Vector3 startVel, int id) {
         GameObject poop = Instantiate(this._poopGrenade);
         GrenadePoopProjectile poopScript = poop.GetComponent<GrenadePoopProjectile>();
+        PlayerAttack attackScript = poop.GetComponent<PlayerAttack>();
         Vector3 position = (transform.position + direction * 5.0f);
 
         poopScript.ConnectionID = id;   // Assign the player connection ID to the projectile.
         poopScript.shoot(direction, position, startVel);
         poopScript.owner = this.gameObject;
+        attackScript.owner = this.gameObject;
 
         NetworkServer.Spawn(poop);
     }
@@ -165,14 +168,16 @@ public class AbilityNetwork : NetworkBehaviour {
     /////////////////////////////////////////////////////////////////
 
     /////////////////////// Functiuons for SuperSpeed ///////////////
-    [Command]
+    // NB! Not needed with reverse attack logic (PlayerAttack.cs)
+    /*[Command]
     public void CmdSuperSpeed(bool active)
     {
         RpcSuperSpeed(active);
     }
 
     [ClientRpc]
-    private void RpcSuperSpeed(bool active)
+    private void RpcSuperSpeed(bool active)*/
+    public void SuperSpeed(bool active)
     {
         GameObject damageArea = transform.GetChild(3).gameObject;
         if (active)

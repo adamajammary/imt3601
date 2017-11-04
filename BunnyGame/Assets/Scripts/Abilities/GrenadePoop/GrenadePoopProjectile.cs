@@ -48,7 +48,9 @@ public class GrenadePoopProjectile : NetworkBehaviour {
         Collider[] hit =  Physics.OverlapSphere(this.transform.position, AOE, layermask);
         for (int i = 0; i < hit.Length; i++) {
             if (hit[i].tag == "npc") {
-                hit[i].GetComponent<NPC>().kill(this.owner, this.ConnectionID);
+                //hit[i].GetComponent<NPC>().kill(this.owner, this.ConnectionID);
+                //hit[i].GetComponent<NPC>().kill(this.owner);
+                this.GetComponent<PlayerAttack>().OnTriggerEnter(hit[i]);
             } else if (hit[i].tag == "Player" && hit[i].isTrigger && hit[i].gameObject != owner) {                   
                 hit[i].gameObject.GetComponent<PlayerEffects>().OnPoopGrenade(owner, _damage, ConnectionID, transform.position);
             }

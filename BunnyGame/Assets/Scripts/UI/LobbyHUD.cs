@@ -44,6 +44,9 @@ public class LobbyHUD : MonoBehaviour {
         this._serverFindPanel.SetActive(false);
         this._lobbyPanel.SetActive(false);
         this._leaderboardPanel.SetActive(false);
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     /**

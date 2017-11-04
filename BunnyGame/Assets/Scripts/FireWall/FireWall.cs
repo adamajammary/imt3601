@@ -98,6 +98,7 @@ public class FireWall : NetworkBehaviour {
         this.recalculateWalls();
         this._targetWallRenderer.draw(this._target.wall.transform);
         this._ready = true;
+        Debug.Log("READY");
     }
 
     // Update is called once per frame

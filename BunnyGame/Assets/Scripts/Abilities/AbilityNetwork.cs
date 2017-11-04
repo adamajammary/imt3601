@@ -148,7 +148,6 @@ public class AbilityNetwork : NetworkBehaviour {
 
     [ClientRpc]
     private void RpcBlind(Vector3 pos, int id) {
-        StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
         var player = GameObject.FindGameObjectWithTag("Player");
         if (player.GetComponent<PlayerInformation>().ConnectionID != id) {
             if (Vector3.Distance(player.transform.position, pos) < 20 && !player.GetComponent<PlayerHealth>().IsDead()) {
@@ -161,7 +160,6 @@ public class AbilityNetwork : NetworkBehaviour {
     ///////////// Functions for DustTornado ability /////////////////
     [Command]
     public void CmdDustTornado(Vector3 pos, Vector3 dir, GameObject owner) {
-        StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
         GameObject dustTornado = Instantiate(this._dustTornado);
         dustTornado.transform.position = pos;
         dustTornado.GetComponent<DustTornado>().shoot(pos, dir, owner);

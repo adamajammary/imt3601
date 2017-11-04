@@ -750,7 +750,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Animator: {fileID: 95643120566951948}
-  m_ParameterSendBits: 9
+  m_ParameterSendBits: 13
   param0: 
   param1: 
   param2: 
@@ -782,6 +782,7 @@ MonoBehaviour:
   animalSound: {fileID: 0}
   frequencyModifier: 0.5
   distanceFromGroundToCenter: 0.9
+  volumeModifier: 1
 --- !u!114 &114338138868947958
 MonoBehaviour:
   m_ObjectHideFlags: 1

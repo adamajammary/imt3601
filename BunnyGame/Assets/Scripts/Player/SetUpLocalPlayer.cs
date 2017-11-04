@@ -10,8 +10,7 @@ public class SetUpLocalPlayer : NetworkBehaviour {
             // Setting bunny offset target if BunnyController exists
             BunnyController bunnyContr = GetComponent<BunnyController>();
 
-            if (camera != null)
-            {
+            if (camera != null) {
                 if (!bunnyContr)
                     camera.SetTarget(this.transform);
                 else

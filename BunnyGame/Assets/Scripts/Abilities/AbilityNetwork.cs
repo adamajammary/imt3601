@@ -55,6 +55,12 @@ public class AbilityNetwork : NetworkBehaviour {
         RpcSetOrginalFox();
     }
 
+    [Command]
+    public void CmdCancelStealth()
+    {
+        RpcSetOrginalFox();
+    }
+
     [ClientRpc]
     private void RpcSetTransparentFox(float transparancy){
         if (isLocalPlayer && transparancy < 0.1f)

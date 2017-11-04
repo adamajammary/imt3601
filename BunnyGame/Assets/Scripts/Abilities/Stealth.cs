@@ -44,6 +44,6 @@ public class Stealth : SpecialAbility {
 
     public void cancel() {
         GetComponent<PlayerAudio>().updateVolume(volumeModifier: 1);
-        networkAbility.RpcSetOrginalFox();
+        networkAbility.CmdCancelStealth();
     }
 }

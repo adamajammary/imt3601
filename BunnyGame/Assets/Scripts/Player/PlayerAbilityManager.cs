@@ -6,14 +6,18 @@ using UnityEngine.Networking;
 
 public class PlayerAbilityManager : NetworkBehaviour {
     public List<SpecialAbility> abilities = new List<SpecialAbility>();
+    private AbilityPanel display;
 
     // Use this for initialization
     void Start () {
-		
+        display = GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
+        if (Input.GetKeyDown(KeyCode.O))
+            stealNewAbility("Stealth");
+
         for (int i = 0; i < abilities.Count && i < 9; i++) {
             if (Input.GetKeyDown(KeyCode.Alpha1 + i)) {
                 StartCoroutine(abilities[i].useAbility());
@@ -33,7 +37,8 @@ public class PlayerAbilityManager : NetworkBehaviour {
             yourAbilities.Add(ability.abilityName);
 
         string[] newAbilities = theirAbilities.Except(yourAbilities).ToArray<string>();
-        
+
+
         // If the player you killed had abilities you didn't have
         if(newAbilities.Length > 0) {
             int index = Random.Range(0, newAbilities.Length);
@@ -72,11 +77,16 @@ public class PlayerAbilityManager : NetworkBehaviour {
                 sa = gameObject.AddComponent<GrenadePoop>();
                 ((GrenadePoop)sa).init();
                 break;
+            case "SpeedBomb":
+                sa = gameObject.AddComponent<SpeedBomb>();
+                ((SpeedBomb)sa).init(30, 2);
+                break;
             default:
                 Debug.Log("Ability does not exist: \"" + abilityName + "\" (PlayerAbilityManager.cs:stealNewAbility())");
                 return;
         }
         abilities.Add(sa);
+        display.setupPanel(this);
     }
 
     private void upgradeExistingAbility(string abilityName) {
@@ -87,6 +97,9 @@ public class PlayerAbilityManager : NetworkBehaviour {
             case "SuperJump": break;
             case "DustTornado": break;
             case "GrenadePoop": break;
+            case "SpeedBomb": break;
+            default: return;
+
         }
     }
 

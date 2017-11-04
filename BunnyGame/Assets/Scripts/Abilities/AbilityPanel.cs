@@ -14,7 +14,12 @@ public class AbilityPanel : MonoBehaviour {
     }
 
     // Call this whenever the Player gets a new ability
-    public void setupPanel(PlayerAbilityManager abilityManager) {
+    public void setupPanel(PlayerAbilityManager abilityManager)  {
+        int count = transform.childCount;
+        for (int i = count - 1; i >= 0; i--) {
+            Destroy(transform.GetChild(i).gameObject);
+        }
+
         _playerAbilityManager = abilityManager;
 
         _abilities = new List<GameObject>();

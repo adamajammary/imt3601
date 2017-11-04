@@ -59,29 +59,38 @@ public class AbilityNetwork : NetworkBehaviour {
     private void RpcSetTransparentFox(float transparancy){
         if (isLocalPlayer && transparancy < 0.1f)
             transparancy = 0.1f;
-
-        Material[] materials;
-        Color alfa;
+        
+        Color alpha;
       
-        foreach (Transform child in this.transform.GetChild(modelChildNum))
-        {
-			if(child.gameObject.GetComponent<Renderer>() != null)
-				materials = child.gameObject.GetComponent<Renderer>().materials;
-			else if (child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
-				materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
-			else
-				continue;
-
-			int count = 0;
-            foreach (Material mat in materials)
-            {
-				alfa = mat.color;
-                alfa.a = transparancy;
-                materials[count++].SetColor("_Color", alfa);
-
+        foreach(SkinnedMeshRenderer smr in transform.GetComponentsInChildren<SkinnedMeshRenderer>()) {
+            foreach(Material mat in smr.materials) {
+                alpha = mat.color;
+                alpha.a = transparancy;
+                mat.SetColor("_Color", alpha);
                 mat.renderQueue = 3100;
             }
         }
+
+
+   //     foreach (Transform child in this.transform.GetChild(modelChildNum))
+   //     {
+			//if(child.gameObject.GetComponent<Renderer>() != null)
+			//	materials = child.gameObject.GetComponent<Renderer>().materials;
+			//else if (child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+			//	materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
+			//else
+			//	continue;
+
+			//int count = 0;
+   //         foreach (Material mat in materials)
+   //         {
+			//	alfa = mat.color;
+   //             alfa.a = transparancy;
+   //             materials[count++].SetColor("_Color", alfa);
+
+   //             mat.renderQueue = 3100;
+   //         }
+   //     }
     }
 
     [ClientRpc]

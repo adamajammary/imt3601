@@ -17,7 +17,7 @@ public class SpeedBomb : SpecialAbility{
 public void init(float speed, float time)
     {
         base.init("Textures/AbilityIcons/runfast");
-        base.abilityName = "Sprint";
+        base.abilityName = "SpeedBomb";
         this._speed = speed;
         this._time = time;
         this._animator = GetComponent<Animator>();

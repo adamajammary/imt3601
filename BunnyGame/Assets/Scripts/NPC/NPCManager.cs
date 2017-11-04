@@ -27,7 +27,6 @@ public class NPCManager : NetworkBehaviour {
         this._ready = false;
         if (this.isServer) StartCoroutine(waitForClients());
         StartCoroutine(init());
-        Debug.Log(this._playerCount);
     }
 
     //Waits for clients, then syncs playercount, and spawns npcs

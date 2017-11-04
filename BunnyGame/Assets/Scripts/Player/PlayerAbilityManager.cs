@@ -16,7 +16,7 @@ public class PlayerAbilityManager : NetworkBehaviour {
 	// Update is called once per frame
 	void Update () {
         if (Input.GetKeyDown(KeyCode.O))
-            stealNewAbility("Stealth");
+            stealNewAbility("DustStorm");
 
         for (int i = 0; i < abilities.Count && i < 9; i++) {
             if (Input.GetKeyDown(KeyCode.Alpha1 + i)) {

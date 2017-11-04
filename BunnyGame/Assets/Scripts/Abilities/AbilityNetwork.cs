@@ -157,7 +157,9 @@ public class AbilityNetwork : NetworkBehaviour {
 
     [ClientRpc]
     private void RpcBlind(Vector3 pos, int id) {
-        StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
+        if(GetComponent<BirdController>()) // TODO something else here for other classes? (could just spin their model around to emulate the flapping or something)
+            StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
+
         var player = GameObject.FindGameObjectWithTag("Player");
         if (player.GetComponent<PlayerInformation>().ConnectionID != id) {
             if (Vector3.Distance(player.transform.position, pos) < 20 && !player.GetComponent<PlayerHealth>().IsDead()) {

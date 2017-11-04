@@ -113,16 +113,22 @@ public class FireWall : NetworkBehaviour {
         }
         this._actualWallRenderer.draw(this.transform);
         spawnFire();
-    }   
+    } 
+    
+    public float getRadius() {
+        return transform.localScale.x / 2;
+    }
 
     private void spawnFire() {
         if (UnityEngine.Random.Range(0.0f, 1.0f) < 0.4) return;
         float radius = UnityEngine.Random.Range(0, this._outerBounds);
         float angle = UnityEngine.Random.Range(0, Mathf.PI * 2);
         Vector3 pos = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
-        pos.y = 50;
+        pos.y = this._current.wall.transform.position.y;
         //Check if the point is inside the firewall
-        if (Vector3.Distance(pos, this._current.wall.transform.position) < this._current.wall.transform.localScale.x/2) return;
+
+        if (Vector3.Distance(pos, this._current.wall.transform.position) < getRadius()) return;
+        pos.y = 50;
 
         RaycastHit hit;
         if (Physics.Raycast(pos, Vector3.down, out hit)) {
@@ -164,7 +170,7 @@ public class FireWall : NetworkBehaviour {
             transform.localScale = Vector3.Lerp(_current.wall.transform.localScale, _target.wall.transform.localScale, t);
 
             NPCWorldView.FireWall.pos = transform.position;
-            NPCWorldView.FireWall.radius = transform.localScale.x / 2;
+            NPCWorldView.FireWall.radius = getRadius();
 
             t += _wallShrinkRate * Time.deltaTime;
             yield return 0;

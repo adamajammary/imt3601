@@ -68,7 +68,9 @@
 				float3 specular = pow((dotSpecular), 5) * float4(1, 1, 1, 1);
 				fixed3 light = (i.diff + specular) * shadow + i.ambient;
 				//Burn
-				float dist = distance(i.worldPos, _FireWallPos.xyz);
+				float3 pos = i.worldPos;
+				pos.y = _FireWallPos.y;
+				float dist = distance(pos, _FireWallPos.xyz);
 				float outsideFireWall = saturate(floor(_FireWallRadius / dist));
 				//Final fragment color
 				float seed = _Time * 25.3f;

@@ -31,7 +31,7 @@ public class IslandSetup : MonoBehaviour {
         else {
             foreach (var mat in this._materials) {
                 mat.SetVector("_FireWallPos", getFireWallPos());
-                mat.SetFloat("_FireWallRadius", getFireWallRadius());
+                mat.SetFloat("_FireWallRadius", this._fireWall.GetComponent<FireWall>().getRadius());
             }
         }
     }
@@ -39,10 +39,6 @@ public class IslandSetup : MonoBehaviour {
     private Vector4 getFireWallPos() {
         Vector3 p = this._fireWall.transform.position;
         return new Vector4(p.x, p.y, p.z, 0);
-    }
-
-    private float getFireWallRadius() {
-        return this._fireWall.transform.localScale.x / 2;
     }
 
     private bool newMaterial(Material material) {

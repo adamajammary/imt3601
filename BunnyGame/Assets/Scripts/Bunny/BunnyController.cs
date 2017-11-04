@@ -22,10 +22,10 @@ public class BunnyController : NetworkBehaviour {
 
 
  void Start() { 
-
-        if (SceneManager.GetActiveScene().name != "Island")
+        if (SceneManager.GetActiveScene().name == "Lobby")
             return;
-          NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
+
+        NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
 
         for (int i = 0; i < netAnimator.animator.parameterCount; i++)
             netAnimator.SetParameterAutoSend(i, true);
@@ -100,11 +100,16 @@ public class BunnyController : NetworkBehaviour {
 
     [Command]
     public void CmdShootPoop(Vector3 direction, Vector3 startVel, int id) {
-        GameObject poop       = Instantiate(bunnyPoop);
-        BunnyPoop  poopScript = poop.GetComponent<BunnyPoop>();
-        Vector3 position = (this._poopCameraPos.position + direction * 4.0f);
 
-        poopScript.owner = this.gameObject;
+        GameObject   poop         = Instantiate(bunnyPoop);
+        BunnyPoop    poopScript   = poop.GetComponent<BunnyPoop>();
+        PlayerAttack attackScript = poop.GetComponent<PlayerAttack>();
+        Vector3 position = (this._poopCameraPos.position + direction * 4.0f);
+	   // Vector3      position     = (transform.position + direction * 4.0f);
+
+        //poopScript.owner   = this.gameObject;
+        attackScript.owner = this.gameObject;
+
         poopScript.shoot(direction, position, startVel);
 
         NetworkServer.Spawn(poop);

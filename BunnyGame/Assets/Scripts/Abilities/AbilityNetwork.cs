@@ -170,28 +170,26 @@ public class AbilityNetwork : NetworkBehaviour {
     /////////////////////////////////////////////////////////////////
 
     /////////////////////// Functiuons for SuperSpeed ///////////////
-    // NB! Not needed with reverse attack logic (PlayerAttack.cs)
-    /*[Command]
-    public void CmdSuperSpeed(bool active)
-    {
-        RpcSuperSpeed(active);
+    public void SuperSpeed(bool active) {
+        Transform damageArea = this.transform.GetChild(3);
+
+        if (gameObject != null)
+            damageArea.GetComponent<CapsuleCollider>().enabled = active;
+
+        if (this.isServer)
+            this.RpcSuperSpeed(active);
+        else if (this.isClient)
+            this.CmdSuperSpeed(active);
     }
 
     [ClientRpc]
-    private void RpcSuperSpeed(bool active)*/
-    public void SuperSpeed(bool active)
-    {
-        GameObject damageArea = transform.GetChild(3).gameObject;
-        if (active)
-        {
-            damageArea.GetComponent<CapsuleCollider>().enabled = true;
-            this._fireFart.SetActive(true);
-        }
-        else
-        {
-            damageArea.GetComponent<CapsuleCollider>().enabled = false;
-            this._fireFart.SetActive(false);
-        }
+    private void RpcSuperSpeed(bool active) {
+        this._fireFart.SetActive(active);
+    }
+
+    [Command]
+    public void CmdSuperSpeed(bool active) {
+        this.RpcSuperSpeed(active);
     }
     //////////////////////////////////////////////////////////////////
 }

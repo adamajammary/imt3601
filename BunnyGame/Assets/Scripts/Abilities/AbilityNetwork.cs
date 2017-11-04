@@ -70,27 +70,6 @@ public class AbilityNetwork : NetworkBehaviour {
                 mat.renderQueue = 3100;
             }
         }
-
-
-   //     foreach (Transform child in this.transform.GetChild(modelChildNum))
-   //     {
-			//if(child.gameObject.GetComponent<Renderer>() != null)
-			//	materials = child.gameObject.GetComponent<Renderer>().materials;
-			//else if (child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
-			//	materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
-			//else
-			//	continue;
-
-			//int count = 0;
-   //         foreach (Material mat in materials)
-   //         {
-			//	alfa = mat.color;
-   //             alfa.a = transparancy;
-   //             materials[count++].SetColor("_Color", alfa);
-
-   //             mat.renderQueue = 3100;
-   //         }
-   //     }
     }
 
     [ClientRpc]
@@ -157,7 +136,7 @@ public class AbilityNetwork : NetworkBehaviour {
 
     [ClientRpc]
     private void RpcBlind(Vector3 pos, int id) {
-        if(GetComponent<BirdController>()) // TODO something else here for other classes? (could just spin their model around to emulate the flapping or something)
+        if(GetComponent<BirdController>())      // TODO something else here for other classes? (could just spin their model around to emulate the flapping or something)
             StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
 
         var player = GameObject.FindGameObjectWithTag("Player");
@@ -172,7 +151,8 @@ public class AbilityNetwork : NetworkBehaviour {
     ///////////// Functions for DustTornado ability /////////////////
     [Command]
     public void CmdDustTornado(Vector3 pos, Vector3 dir, GameObject owner) {
-        StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
+        if(GetComponent<BirdController>())      // TODO something else here for other classes? (could just spin their model around to emulate the flapping or something)
+            StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
         GameObject dustTornado = Instantiate(this._dustTornado);
         dustTornado.transform.position = pos;
         dustTornado.GetComponent<DustTornado>().shoot(pos, dir, owner);

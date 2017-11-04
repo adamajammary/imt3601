@@ -16,7 +16,7 @@ public class PlayerAbilityManager : NetworkBehaviour {
 	// Update is called once per frame
 	void Update () {
         if (Input.GetKeyDown(KeyCode.O))
-            stealNewAbility("DustStorm");
+            stealNewAbility("SpeedBomb");
 
         for (int i = 0; i < abilities.Count && i < 9; i++) {
             if (Input.GetKeyDown(KeyCode.Alpha1 + i)) {
@@ -39,11 +39,11 @@ public class PlayerAbilityManager : NetworkBehaviour {
         string[] newAbilities = theirAbilities.Except(yourAbilities).ToArray<string>();
 
 
-        // If the player you killed had abilities you didn't have
-        if(newAbilities.Length > 0) {
+        // If the player you killed had abilities you didn't have and you haven't maxed out on the number of abilities
+        if(newAbilities.Length > 0 && abilities.Count < 10) {
             int index = Random.Range(0, newAbilities.Length);
             stealNewAbility(newAbilities[index]);
-        } else { // If you have all the abilities the other player had
+        } else {
             int index = Random.Range(0, theirAbilities.Length);
             upgradeExistingAbility(newAbilities[index]);
         }
@@ -67,7 +67,7 @@ public class PlayerAbilityManager : NetworkBehaviour {
                 break;
             case "SuperJump":
                 sa = gameObject.AddComponent<SuperJump>();
-                ((SuperJump)sa).init(5);
+                ((SuperJump)sa).init(10);
                 break;
             case "DustTornado":
                 sa = gameObject.AddComponent<DustTornadoAbility>();
@@ -85,6 +85,7 @@ public class PlayerAbilityManager : NetworkBehaviour {
                 Debug.Log("Ability does not exist: \"" + abilityName + "\" (PlayerAbilityManager.cs:stealNewAbility())");
                 return;
         }
+        Debug.Log("Added:" + abilityName);
         abilities.Add(sa);
         display.setupPanel(this);
     }

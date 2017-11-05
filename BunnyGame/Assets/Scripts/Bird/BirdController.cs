@@ -86,20 +86,20 @@ public class BirdController : NetworkBehaviour {
     }
 
     // NB! Not needed with reverse attack logic (PlayerAttack.cs)
-    /*[Command]
+    [Command]
     private void CmdPeck() {
         RpcPeck();
     }
 
     [ClientRpc]
     private void RpcPeck() {
-        StartCoroutine(peck());
-    }*/
+        this._animator.SetTrigger("peck");
+    }
 
     private IEnumerator peck() { //Animation is 1 sec long
         this._pecking = true;
         pecker.enabled = true;
-        this._animator.SetTrigger("peck");
+        CmdPeck();
         yield return new WaitForSeconds(0.8f); //Peak of the peck
         pecker.enabled = false;
         yield return new WaitForSeconds(0.2f); //Turning back

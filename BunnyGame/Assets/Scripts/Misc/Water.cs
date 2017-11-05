@@ -19,9 +19,13 @@ public class Water : MonoBehaviour {
     void OnTriggerStay(Collider other) {
         if (other.tag == "PoopGrenade") return;
 
-        if (other.tag == "Player" || other.tag == "Enemy" || other.tag == "bunnycamera") {
+        if (other.tag == "Player" || other.tag == "bunnycamera") {
             float waterForce = (this._waterSurfaceHeight - other.transform.position.y + 0.5f) * this._waterForceStrength;
             other.GetComponent<PlayerEffects>().onWaterStay(waterForce);
+        }
+        else if (other.tag == "Enemy") {
+            float waterForce = (this._waterSurfaceHeight - other.transform.parent.position.y + 0.5f) * this._waterForceStrength;
+            other.GetComponentInParent<PlayerEffects>().onWaterStay(waterForce);
         }
 
         if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag())

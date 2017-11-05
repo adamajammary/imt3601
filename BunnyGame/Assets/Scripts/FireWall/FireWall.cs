@@ -183,7 +183,7 @@ public class FireWall : NetworkBehaviour {
     void OnTriggerExit(Collider other) {
         if (!this._ready) return;
     
-        if (other.tag == "Player") {
+        if (other.tag == "Player" ) {
             other.GetComponent<PlayerEffects>().insideWall = false;
         }else if (other.tag == "Enemy") {
             other.GetComponent<PlayerEffects>().insideWall = false;
@@ -192,8 +192,6 @@ public class FireWall : NetworkBehaviour {
         } else if (other.tag == "DustTornado") {
             other.GetComponent<DustTornado>().kill();
         }
-        else if (other.tag == "bunnycamera")
-            other.GetComponentInParent<PlayerEffects>().insideWall = true;
 
         if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
             _outsideWallEffect.enabled = true;
@@ -205,12 +203,9 @@ public class FireWall : NetworkBehaviour {
 
         if (other.tag == "Player") {
             other.GetComponent<PlayerEffects>().insideWall = true;
-        }
-        else if (other.tag == "Enemy") {
+        } else if (other.tag == "Enemy") {
             other.GetComponent<PlayerEffects>().insideWall = true;
         }
-        else if (other.tag == "bunnycamera")
-            other.GetComponentInParent<PlayerEffects>().insideWall = true;
 
         if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
             _outsideWallEffect.enabled = false;

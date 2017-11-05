@@ -16,6 +16,7 @@ TagManager:
   - DustTornado
   - mooseAttack
   - PoopGrenade
+  - bunnycamera
   layers:
   - Default
   - TransparentFX

@@ -99,6 +99,8 @@ public class PlayerAbilityManager : NetworkBehaviour {
     [ClientRpc]
     public void RpcSendAbilitiesToKiller(int killerID, string[] abilitynames) {
         GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (!player.GetComponent<PlayerInformation>())
+            return;
         if(player.GetComponent<PlayerInformation>().ConnectionID == killerID && player.GetComponent<PlayerInformation>().isLocalPlayer)
             player.GetComponent<PlayerAbilityManager>().killReward(abilitynames);
     }

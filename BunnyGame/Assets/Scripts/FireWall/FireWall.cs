@@ -50,7 +50,6 @@ public class FireWall : NetworkBehaviour {
     private Image           _outsideWallEffect; //A red transparent UI panel indicating that the player is outside the wall
     private Circle          _current;           //The current circle
     private Circle          _target;            //The target circle
-    private Material        _burned;            //The material used for burned stuff
     private GameObject      _fire;              //Particle effect for fire
     private System.Random   _RNG;               //Number generator, will be seeded the same across all clients
     [SyncVar(hook="init")]
@@ -62,7 +61,6 @@ public class FireWall : NetworkBehaviour {
 
     void Start() {
         _outerBounds = 250;
-        _burned = Resources.Load<Material>("Materials/Burned");
         this._fire = Resources.Load<GameObject>("Prefabs/Fire");
         if (this.isServer) StartCoroutine(waitForClients());
     }
@@ -115,16 +113,22 @@ public class FireWall : NetworkBehaviour {
         }
         this._actualWallRenderer.draw(this.transform);
         spawnFire();
-    }   
+    } 
+    
+    public float getRadius() {
+        return transform.localScale.x / 2;
+    }
 
     private void spawnFire() {
         if (UnityEngine.Random.Range(0.0f, 1.0f) < 0.4) return;
         float radius = UnityEngine.Random.Range(0, this._outerBounds);
         float angle = UnityEngine.Random.Range(0, Mathf.PI * 2);
         Vector3 pos = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
-        pos.y = 50;
+        pos.y = this._current.wall.transform.position.y;
         //Check if the point is inside the firewall
-        if (Vector3.Distance(pos, this._current.wall.transform.position) < this._current.wall.transform.localScale.x/2) return;
+
+        if (Vector3.Distance(pos, this._current.wall.transform.position) < getRadius()) return;
+        pos.y = 50;
 
         RaycastHit hit;
         if (Physics.Raycast(pos, Vector3.down, out hit)) {
@@ -166,7 +170,7 @@ public class FireWall : NetworkBehaviour {
             transform.localScale = Vector3.Lerp(_current.wall.transform.localScale, _target.wall.transform.localScale, t);
 
             NPCWorldView.FireWall.pos = transform.position;
-            NPCWorldView.FireWall.radius = transform.localScale.x / 2;
+            NPCWorldView.FireWall.radius = getRadius();
 
             t += _wallShrinkRate * Time.deltaTime;
             yield return 0;
@@ -187,9 +191,6 @@ public class FireWall : NetworkBehaviour {
             other.GetComponent<NPC>().burn();
         } else if (other.tag == "DustTornado") {
             other.GetComponent<DustTornado>().kill();
-        } else if (other.tag == "ground") {
-            var renderer = other.GetComponent<MeshRenderer>();
-            renderer.material = _burned;
         }
 
         if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {

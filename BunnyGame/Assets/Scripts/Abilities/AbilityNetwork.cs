@@ -154,7 +154,6 @@ public class AbilityNetwork : NetworkBehaviour {
 
     [ClientRpc]
     private void RpcBlind(Vector3 pos, int id) {
-        StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
         var player = GameObject.FindGameObjectWithTag("Player");
         if (player.GetComponent<PlayerInformation>().ConnectionID != id) {
             if (Vector3.Distance(player.transform.position, pos) < 20 && !player.GetComponent<PlayerHealth>().IsDead()) {
@@ -167,7 +166,6 @@ public class AbilityNetwork : NetworkBehaviour {
     ///////////// Functions for DustTornado ability /////////////////
     [Command]
     public void CmdDustTornado(Vector3 pos, Vector3 dir, GameObject owner) {
-        StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
         GameObject dustTornado = Instantiate(this._dustTornado);
         dustTornado.transform.position = pos;
         dustTornado.GetComponent<DustTornado>().shoot(pos, dir, owner);
@@ -176,29 +174,26 @@ public class AbilityNetwork : NetworkBehaviour {
     /////////////////////////////////////////////////////////////////
 
     /////////////////////// Functiuons for SuperSpeed ///////////////
-    // NB! Not needed with reverse attack logic (PlayerAttack.cs)
-    /*[Command]
-    public void CmdSuperSpeed(bool active)
-    {
-        RpcSuperSpeed(active);
+    public void SuperSpeed(bool active) {
+        Transform damageArea = this.transform.GetChild(3);
+
+        if (gameObject != null)
+            damageArea.GetComponent<CapsuleCollider>().enabled = active;
+
+        if (this.isServer)
+            this.RpcSuperSpeed(active);
+        else if (this.isClient)
+            this.CmdSuperSpeed(active);
     }
 
     [ClientRpc]
-    private void RpcSuperSpeed(bool active)*/
-    public void SuperSpeed(bool active)
-    {
-        GameObject damageArea = transform.GetChild(3).gameObject;
-        this._fireFart = transform.GetChild(6).gameObject;
-        if (active)
-        {
-            damageArea.GetComponent<CapsuleCollider>().enabled = true;
-            this._fireFart.SetActive(true);
-        }
-        else
-        {
-            damageArea.GetComponent<CapsuleCollider>().enabled = false;
-            this._fireFart.SetActive(false);
-        }
+    private void RpcSuperSpeed(bool active) {
+        this._fireFart.SetActive(active);
+    }
+
+    [Command]
+    public void CmdSuperSpeed(bool active) {
+        this.RpcSuperSpeed(active);
     }
     //////////////////////////////////////////////////////////////////
 }

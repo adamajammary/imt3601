@@ -65,8 +65,8 @@
 				float3 eyeReflection = reflect(i.lightDirEye, i.eyeNormal);
 				float3 posToViewer = normalize(-i.posEye);
 				float dotSpecular = saturate(dot(eyeReflection, posToViewer));
-				float3 specular = pow((dotSpecular), 5) * float4(1, 1, 1, 1);
-				fixed3 light = (i.diff + specular) * shadow + i.ambient;
+				float3 specular = pow((dotSpecular), 2) * float4(1, 1, 1, 1);
+				fixed3 light = (i.diff + specular * 0.2) * shadow + i.ambient;
 				//Burn
 				float3 pos = i.worldPos;
 				pos.y = _FireWallPos.y;

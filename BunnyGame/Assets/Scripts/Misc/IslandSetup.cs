@@ -4,25 +4,15 @@ using UnityEngine;
 
 public class IslandSetup : MonoBehaviour {
     List<Material> _materials;
+    Shader IslandShader;
     Transform _fireWall;
 
 	// Use this for initialization
 	void Awake () {
         this._fireWall = null;
         this._materials = new List<Material>();
-        Shader IslandShader = Resources.Load<Shader>("Shaders/Island");
-        foreach (Transform t in transform) {
-            t.gameObject.AddComponent<MeshCollider>();
-            var renderer = t.gameObject.GetComponent<MeshRenderer>();
-            var mats = renderer.materials;
-            foreach (var mat in mats) {
-                Color clr = mat.color;
-                mat.shader = IslandShader;
-                mat.color = clr;
-                if (newMaterial(mat))
-                    this._materials.Add(mat);
-            }
-        }
+        IslandShader = Resources.Load<Shader>("Shaders/Island");
+        traverseAndFix(this.transform);
     }
 
     void Update() {
@@ -32,6 +22,29 @@ public class IslandSetup : MonoBehaviour {
             foreach (var mat in this._materials) {
                 mat.SetVector("_FireWallPos", getFireWallPos());
                 mat.SetFloat("_FireWallRadius", this._fireWall.GetComponent<FireWall>().getRadius());
+            }
+        }
+    }
+
+    private void traverseAndFix(Transform root) {
+        foreach (Transform t in transform) {
+            setupObject(t);
+            foreach (Transform tt in t)
+                setupObject(tt);
+        }
+    }
+
+    private void setupObject(Transform t) {
+        if (t.GetComponent<MeshFilter>() != null) {
+            t.gameObject.AddComponent<MeshCollider>();
+            var renderer = t.gameObject.GetComponent<MeshRenderer>();
+            var mats = renderer.materials;
+            foreach (var mat in mats) {
+                Color clr = mat.color;
+                mat.shader = IslandShader;
+                mat.color = clr;
+                if (newMaterial(mat))
+                    this._materials.Add(mat);
             }
         }
     }

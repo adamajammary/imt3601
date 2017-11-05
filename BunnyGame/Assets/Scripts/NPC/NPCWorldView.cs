@@ -184,12 +184,12 @@ public static class NPCWorldView {
 
         _landOffset = new Vector3(
             -(cellCount * cellSize / 2.0f + cellSize / 2.0f),
-            -15,
+             2,
             -(cellCount * cellSize / 2.0f + cellSize / 2.0f)
         );
         _waterOffset = new Vector3(
             -(cellCount * cellSize / 2.0f + cellSize / 2.0f),
-            -18,
+             0,
             -(cellCount * cellSize / 2.0f + cellSize / 2.0f)
         );
 

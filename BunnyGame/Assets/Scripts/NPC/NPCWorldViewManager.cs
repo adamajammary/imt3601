@@ -32,8 +32,11 @@ public class NPCWorldViewManager : MonoBehaviour {
 
     private IEnumerator calcNPCWorld() { //Really wish unity let us thread stuff, but courutines will have to do.
         Time.timeScale = 0; //Freeze time
-        
-        progressUI.SetActive(true);
+
+        progressUI = GameObject.Find("NPCWorldViewProgress");
+        foreach (Transform child in progressUI.transform)
+            child.gameObject.SetActive(true);
+        progressBar = GameObject.Find("ProgressBar").GetComponent<RectTransform>();
 
         float waterProg = 0;
         float blockWaterProg = 0;

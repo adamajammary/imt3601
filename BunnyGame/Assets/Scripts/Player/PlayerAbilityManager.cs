@@ -23,19 +23,8 @@ public class PlayerAbilityManager : NetworkBehaviour {
         }
     }
 
-    public void stealAbility(int id, string[] theirAbilities)
-    {
-        //Debug.Log("stealAbility: " + id + ", " + GetComponent<PlayerInformation>().ConnectionID + ", " + GetComponent<PlayerInformation>().playerName);
-        //if (id != GetComponent<PlayerInformation>().ConnectionID) {
-        //    Debug.Log(GetComponent<PlayerInformation>().playerName+":id not matching");
-        //    return;
-        //}
-        if (!isLocalPlayer) {
-            Debug.Log(GetComponent<PlayerInformation>().playerName+":not local player");
-            return;
-        }
 
-
+    public void killReward(string[] theirAbilities) {
         List<string> yourAbilities = new List<string>();
         foreach (SpecialAbility ability in abilities)
             yourAbilities.Add(ability.abilityName);
@@ -110,10 +99,11 @@ public class PlayerAbilityManager : NetworkBehaviour {
     [ClientRpc]
     public void RpcSendAbilitiesToKiller(int killerID, string[] abilitynames) {
         GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if(player.GetComponent<PlayerInformation>().ConnectionID == killerID)
-            player.GetComponent<PlayerAbilityManager>().stealAbility(killerID, abilitynames);
+        if(player.GetComponent<PlayerInformation>().ConnectionID == killerID && player.GetComponent<PlayerInformation>().isLocalPlayer)
+            player.GetComponent<PlayerAbilityManager>().killReward(abilitynames);
     }
 
+    // Called on the player when they die
     public void sendAbilitiesToKiller(int killerID) {
         List<string> abilitynames = new List<string>();
         foreach (SpecialAbility ability in abilities)

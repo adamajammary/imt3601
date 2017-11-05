@@ -24,7 +24,8 @@ public class DustTornadoAbility : SpecialAbility {
 
         if (this._cooldown == 0 && !isAttacking && hit.distance < 10) {
             StartCoroutine(this.doCoolDown());
-            StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
+            if(GetComponent<BirdController>())
+                StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
             Vector3 shootDir = Camera.main.transform.forward;
             shootDir.y = 0;
             shootDir.Normalize();

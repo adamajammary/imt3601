@@ -79,17 +79,16 @@ public class BunnyController : NetworkBehaviour {
             RaycastHit hit;
 
             if (Physics.Raycast(ray, out hit, 100)) {
-                Vector3 direction = hit.point - this.transform.position;
-               
+                Vector3 direction = hit.point - this._poopCameraPos.position;
                 // Fix shooting when you shoot your own projectile
-                if(hit.transform.tag == "projectile")
-                    direction = ray.GetPoint(50.0f) - this.transform.position;
-
+                if (hit.transform.tag == "projectile")
+                    direction = ray.GetPoint(50.0f) - this._poopCameraPos.position;
+                
                 Debug.Log(hit.transform);
                 Vector3 dirNorm = direction.normalized;
                 this.CmdShootPoop(dirNorm, this._controller.velocity, playerInfo.ConnectionID);
             } else {
-                Vector3 direction = ray.GetPoint(50.0f) - this.transform.position;
+                Vector3 direction = ray.GetPoint(50.0f) - this._poopCameraPos.position;
                 Vector3 dirNorm = direction.normalized;
                 this.CmdShootPoop(dirNorm, this._controller.velocity, playerInfo.ConnectionID);
             }
@@ -105,7 +104,6 @@ public class BunnyController : NetworkBehaviour {
         BunnyPoop    poopScript   = poop.GetComponent<BunnyPoop>();
         PlayerAttack attackScript = poop.GetComponent<PlayerAttack>();
         Vector3 position = (this._poopCameraPos.position + direction * 4.0f);
-	   // Vector3      position     = (transform.position + direction * 4.0f);
 
         //poopScript.owner   = this.gameObject;
         attackScript.owner = this.gameObject;

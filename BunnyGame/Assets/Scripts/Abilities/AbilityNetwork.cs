@@ -75,24 +75,16 @@ public class AbilityNetwork : NetworkBehaviour {
     [ClientRpc]
     public void RpcSetOrginalFox()
     {
-        Material[] materials;
-        Color alfa;
-        float orginal = 1.0f;
-        
-        foreach (Transform child in this.transform.GetChild(modelChildNum)) {
-			if (child.gameObject.GetComponent<Renderer>() != null)
-				materials = child.gameObject.GetComponent<Renderer>().materials;
-			else if (child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
-				materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
-			else
-				continue;
-			int count = 0;
-            foreach (Material mat in materials) {
-				alfa = mat.color;
-                alfa.a = orginal;
-                mat.renderQueue = 2000;
-                materials[count++].SetColor("_Color", alfa);
-			}
+        Color alpha;
+        float original = 1.0f;
+
+        foreach (SkinnedMeshRenderer smr in transform.GetComponentsInChildren<SkinnedMeshRenderer>()) {
+            foreach (Material mat in smr.materials) {
+                alpha = mat.color;
+                alpha.a = original;
+                mat.SetColor("_Color", alpha);
+                mat.renderQueue = 200;
+            }
         }
     }
     /////////////////////////////////////////////////////////////////
@@ -161,28 +153,26 @@ public class AbilityNetwork : NetworkBehaviour {
     /////////////////////////////////////////////////////////////////
 
     /////////////////////// Functiuons for SuperSpeed ///////////////
-    // NB! Not needed with reverse attack logic (PlayerAttack.cs)
-    /*[Command]
-    public void CmdSuperSpeed(bool active)
-    {
-        RpcSuperSpeed(active);
+    public void SuperSpeed(bool active) {
+        Transform damageArea = this.transform.GetChild(3);
+
+        if (gameObject != null)
+            damageArea.GetComponent<CapsuleCollider>().enabled = active;
+
+        if (this.isServer)
+            this.RpcSuperSpeed(active);
+        else if (this.isClient)
+            this.CmdSuperSpeed(active);
     }
 
     [ClientRpc]
-    private void RpcSuperSpeed(bool active)*/
-    public void SuperSpeed(bool active)
-    {
-        GameObject damageArea = transform.GetChild(3).gameObject;
-        if (active)
-        {
-            damageArea.GetComponent<CapsuleCollider>().enabled = true;
-            this._fireFart.SetActive(true);
-        }
-        else
-        {
-            damageArea.GetComponent<CapsuleCollider>().enabled = false;
-            this._fireFart.SetActive(false);
-        }
+    private void RpcSuperSpeed(bool active) {
+        this._fireFart.SetActive(active);
+    }
+
+    [Command]
+    public void CmdSuperSpeed(bool active) {
+        this.RpcSuperSpeed(active);
     }
     //////////////////////////////////////////////////////////////////
 }

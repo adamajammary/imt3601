@@ -23,6 +23,7 @@ public class DustStorm : SpecialAbility {
         Physics.Raycast(transform.position, Vector3.down, out hit);
         if (this._cooldown == 0 && !isAttacking && hit.distance < 10) {
             StartCoroutine(this.doCoolDown());
+            StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
             this._an.CmdDustStorm(hit.point, GetComponent<PlayerInformation>().ConnectionID);
         }
         yield return 0;

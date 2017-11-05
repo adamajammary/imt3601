@@ -183,7 +183,7 @@ public class PlayerHealth : NetworkBehaviour {
 
         if ((NetworkClient.allClients[0] != null) && this.isLocalPlayer) {
             NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_KILLER_ID, new IntegerMessage(killerID));
-            GetComponent<PlayerAbilityManager>().CmdSendAbilitiesToKiller(killerID);
+            GetComponent<PlayerAbilityManager>().sendAbilitiesToKiller(killerID);
         }
     }
 

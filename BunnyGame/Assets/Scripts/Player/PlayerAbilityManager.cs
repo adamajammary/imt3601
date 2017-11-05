@@ -15,8 +15,6 @@ public class PlayerAbilityManager : NetworkBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if (Input.GetKeyDown(KeyCode.O))
-            stealNewAbility("SpeedBomb");
 
         for (int i = 0; i < abilities.Count && i < 9; i++) {
             if (Input.GetKeyDown(KeyCode.Alpha1 + i)) {
@@ -25,11 +23,17 @@ public class PlayerAbilityManager : NetworkBehaviour {
         }
     }
 
-    // Called when the player kills another player
-    [ClientRpc]
-    public void RpcStealAbility(string[] theirAbilities, int id) {
-        if (id != GetComponent<PlayerInformation>().playerControllerId || !isLocalPlayer)
+    public void stealAbility(int id, string[] theirAbilities)
+    {
+        //Debug.Log("stealAbility: " + id + ", " + GetComponent<PlayerInformation>().ConnectionID + ", " + GetComponent<PlayerInformation>().playerName);
+        //if (id != GetComponent<PlayerInformation>().ConnectionID) {
+        //    Debug.Log(GetComponent<PlayerInformation>().playerName+":id not matching");
+        //    return;
+        //}
+        if (!isLocalPlayer) {
+            Debug.Log(GetComponent<PlayerInformation>().playerName+":not local player");
             return;
+        }
 
 
         List<string> yourAbilities = new List<string>();
@@ -38,17 +42,23 @@ public class PlayerAbilityManager : NetworkBehaviour {
 
         string[] newAbilities = theirAbilities.Except(yourAbilities).ToArray<string>();
 
-
         // If the player you killed had abilities you didn't have and you haven't maxed out on the number of abilities
-        if(newAbilities.Length > 0 && abilities.Count < 10) {
+        if (newAbilities.Length > 0 && abilities.Count < 10) {
             int index = Random.Range(0, newAbilities.Length);
+            Debug.Log("Trying to steal ability " + newAbilities[index]);
             stealNewAbility(newAbilities[index]);
-        } else {
-            int index = Random.Range(0, theirAbilities.Length);
-            upgradeExistingAbility(newAbilities[index]);
+        }
+        else {
+            /*
+             * Not sure what to do if a player has all the abilities of who they kill.
+             * Possibilities:
+             *     Nothing
+             *     Upgradeds to the abilities
+             *     Attributes
+             */
+            Debug.Log("Nothing to steal");
         }
     }
-
 
     private void stealNewAbility(string abilityName) {
         SpecialAbility sa;
@@ -77,10 +87,10 @@ public class PlayerAbilityManager : NetworkBehaviour {
                 sa = gameObject.AddComponent<GrenadePoop>();
                 ((GrenadePoop)sa).init();
                 break;
-            case "SpeedBomb":
-                sa = gameObject.AddComponent<SpeedBomb>();
-                ((SpeedBomb)sa).init(30, 2);
-                break;
+            //case "SpeedBomb":  // Disabled because the ability doesn't currently work for all classes
+            //    sa = gameObject.AddComponent<SpeedBomb>();
+            //    ((SpeedBomb)sa).init(30, 2);
+            //    break;
             default:
                 Debug.Log("Ability does not exist: \"" + abilityName + "\" (PlayerAbilityManager.cs:stealNewAbility())");
                 return;
@@ -90,28 +100,28 @@ public class PlayerAbilityManager : NetworkBehaviour {
         display.setupPanel(this);
     }
 
-    private void upgradeExistingAbility(string abilityName) {
-        switch (abilityName) {
-            case "Sprint": break;
-            case "Stealth": break;
-            case "DustStorm": break;
-            case "SuperJump": break;
-            case "DustTornado": break;
-            case "GrenadePoop": break;
-            case "SpeedBomb": break;
-            default: return;
-
-        }
-    }
-
 
 
     [Command]
-    public void CmdSendAbilitiesToKiller(int killerID) {
+    public void CmdSendAbilitiesToKiller(int killerID, string[] abilitynames) {
+        RpcSendAbilitiesToKiller(killerID, abilitynames);
+    }
+
+    [ClientRpc]
+    public void RpcSendAbilitiesToKiller(int killerID, string[] abilitynames) {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if(player.GetComponent<PlayerInformation>().ConnectionID == killerID)
+            player.GetComponent<PlayerAbilityManager>().stealAbility(killerID, abilitynames);
+    }
+
+    public void sendAbilitiesToKiller(int killerID) {
         List<string> abilitynames = new List<string>();
         foreach (SpecialAbility ability in abilities)
             abilitynames.Add(ability.abilityName);
 
-        RpcStealAbility(abilitynames.ToArray(), killerID);
+        if (isServer)
+            RpcSendAbilitiesToKiller(killerID, abilitynames.ToArray());
+        else if(isClient)
+            CmdSendAbilitiesToKiller(killerID, abilitynames.ToArray());
     }
 }

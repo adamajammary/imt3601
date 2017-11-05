@@ -31,6 +31,8 @@ public class BirdController : NetworkBehaviour {
         if (!this.isLocalPlayer)
             return;
 
+        this._pc = GetComponent<PlayerController>();
+
         // Set custom attributes for class:
         PlayerEffects pe = GetComponent<PlayerEffects>();
         pe.CmdSetAttributes(0.7f, 0.8f, 1.2f, 1.0f);
@@ -79,11 +81,8 @@ public class BirdController : NetworkBehaviour {
     }
 
     private void glide() {
-        Debug.Log("GLIDING!1");
         if (!this._pc.getGrounded()) {
-            Debug.Log("GLIDING!2");
             if (this._pc.velocityY < glideSpeed) {
-                Debug.Log("GLIDING!3");
                 this._pc.velocityY = glideSpeed;
             }
             this._animator.SetBool("glide", true);

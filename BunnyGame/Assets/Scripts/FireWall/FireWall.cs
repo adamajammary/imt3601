@@ -184,7 +184,7 @@ public class FireWall : NetworkBehaviour {
     void OnTriggerExit(Collider other) {
         if (!this._ready) return;
     
-        if (other.tag == "Player") {
+        if (other.tag == "Player" ) {
             other.GetComponent<PlayerEffects>().insideWall = false;
         }else if (other.tag == "Enemy") {
             other.GetComponent<PlayerEffects>().insideWall = false;

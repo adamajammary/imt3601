@@ -173,7 +173,7 @@ public class PlayerHealth : NetworkBehaviour {
     private void CmdApplyDamage(AttackMessage message) {
         this.RpcApplyDamage(message);
     }
-
+    
     // Kill the player.
     private void die(int killerID) {
         if (this.isServer)
@@ -181,8 +181,10 @@ public class PlayerHealth : NetworkBehaviour {
         else if (this.isClient)
             this.CmdDie(killerID);
 
-        if ((NetworkClient.allClients[0] != null) && this.isLocalPlayer)
+        if ((NetworkClient.allClients[0] != null) && this.isLocalPlayer) {
             NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_KILLER_ID, new IntegerMessage(killerID));
+            GetComponent<PlayerAbilityManager>().sendAbilitiesToKiller(killerID);
+        }
     }
 
     [ClientRpc]

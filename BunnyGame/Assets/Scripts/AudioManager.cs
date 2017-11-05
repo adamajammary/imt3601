@@ -52,7 +52,7 @@ public class AudioManager : MonoBehaviour {
         int clipIndex = Random.Range(0, _musicClips.Length);
         while (true) {
             _music.PlayOneShot(_musicClips[clipIndex]);
-            Debug.Log("Playing " + _musicClips[clipIndex].name);
+            //Debug.Log("Playing " + _musicClips[clipIndex].name);
             yield return new WaitForSeconds(_musicClips[clipIndex].length);
             clipIndex = (clipIndex + 1) % _musicClips.Length;
         }
@@ -130,7 +130,8 @@ public class AudioManager : MonoBehaviour {
         players.AddRange(GameObject.FindGameObjectsWithTag("Enemy"));
 
         foreach (GameObject player in players)
-            player.GetComponent<PlayerAudio>().updateVolume(effectVolume);
+            if(player.GetComponent<PlayerAudio>())
+                player.GetComponent<PlayerAudio>().updateVolume(effectVolume);
     }
 
 

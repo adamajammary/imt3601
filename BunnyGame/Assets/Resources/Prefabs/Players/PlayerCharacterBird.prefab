@@ -218,6 +218,7 @@ GameObject:
   - component: {fileID: 95643120566951948}
   - component: {fileID: 114038619766128842}
   - component: {fileID: 114153852447869012}
+  - component: {fileID: 114586907385876596}
   m_Layer: 8
   m_Name: PlayerCharacterBird
   m_TagString: Player
@@ -883,6 +884,18 @@ MonoBehaviour:
     i15: 219
   m_ServerOnly: 0
   m_LocalPlayerAuthority: 1
+--- !u!114 &114586907385876596
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1513430975508516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: baf1568ae57015645808169672b00ac0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  abilities: []
 --- !u!114 &114638522396439714
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -917,7 +930,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c6ed6ade47953248a50fff70594b3cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  abilities: []
   walkSpeed: 5
   runSpeed: 12
   gravity: -12

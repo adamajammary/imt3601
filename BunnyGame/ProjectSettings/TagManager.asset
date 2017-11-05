@@ -15,6 +15,7 @@ TagManager:
   - pecker
   - DustTornado
   - mooseAttack
+  - PoopGrenade
   layers:
   - Default
   - TransparentFX

@@ -130,7 +130,8 @@ public class AudioManager : MonoBehaviour {
         players.AddRange(GameObject.FindGameObjectsWithTag("Enemy"));
 
         foreach (GameObject player in players)
-            player.GetComponent<PlayerAudio>().updateVolume(effectVolume);
+            if(player.GetComponent<PlayerAudio>())
+                player.GetComponent<PlayerAudio>().updateVolume(effectVolume);
     }
 
 

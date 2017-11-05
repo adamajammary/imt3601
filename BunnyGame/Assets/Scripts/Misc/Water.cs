@@ -16,7 +16,9 @@ public class Water : MonoBehaviour {
         mat.renderQueue = 3000;
     }
 
-    void OnTriggerStay(Collider other) { 
+    void OnTriggerStay(Collider other) {
+        if (other.tag == "PoopGrenade") return;
+
         if (other.tag == "Player" || other.tag == "Enemy") {
             float waterForce = (this._waterSurfaceHeight - other.transform.position.y + 0.5f) * this._waterForceStrength;
             other.GetComponent<PlayerEffects>().onWaterStay(waterForce);

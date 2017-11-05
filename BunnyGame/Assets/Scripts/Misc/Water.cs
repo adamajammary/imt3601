@@ -35,7 +35,7 @@ public class Water : MonoBehaviour {
         if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag())
             waterScreenEffect.enabled = true;
 
-        Debug.Log(other.name + " :: " + GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag());
+        //Debug.Log(other.name + " :: " + GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag());
     }
 
     void OnTriggerExit(Collider other) {

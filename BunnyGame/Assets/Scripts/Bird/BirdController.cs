@@ -79,9 +79,13 @@ public class BirdController : NetworkBehaviour {
     }
 
     private void glide() {
+        Debug.Log("GLIDING!1");
         if (!this._pc.getGrounded()) {
-            if (this._pc.velocityY < glideSpeed)
-                this._pc.velocityY = glideSpeed;                
+            Debug.Log("GLIDING!2");
+            if (this._pc.velocityY < glideSpeed) {
+                Debug.Log("GLIDING!3");
+                this._pc.velocityY = glideSpeed;
+            }
             this._animator.SetBool("glide", true);
         }
     }

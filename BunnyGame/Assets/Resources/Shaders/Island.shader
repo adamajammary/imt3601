@@ -20,8 +20,7 @@
 			#include "UnityCG.cginc"
 			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
-			#include "noise.hlsl"
-			#include "inRange.hlsl"
+			#include "utils.hlsl"
 			#pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
 
 			struct v2f {
@@ -62,11 +61,12 @@
 				fixed shadow = SHADOW_ATTENUATION(i);
 				//light
 				//	Specular
-				float3 eyeReflection = reflect(i.lightDirEye, i.eyeNormal);
+				/*float3 eyeReflection = reflect(-i.lightDirEye, i.eyeNormal);
 				float3 posToViewer = normalize(-i.posEye);
 				float dotSpecular = saturate(dot(eyeReflection, posToViewer));
-				float3 specular = pow((dotSpecular), 2) * float4(1, 1, 1, 1);
-				fixed3 light = (i.diff + specular * 0.2) * shadow + i.ambient;
+				dotSpecular = max(dotSpecular, 0);*/
+				float3 specular = calcSpecular(i.lightDirEye, i.eyeNormal, i.posEye, 5);
+				fixed3 light = (i.diff + specular * 0.5) * shadow + i.ambient;
 				//Burn
 				float3 pos = i.worldPos;
 				pos.y = _FireWallPos.y;

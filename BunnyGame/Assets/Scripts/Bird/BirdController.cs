@@ -9,6 +9,7 @@ public class BirdController : NetworkBehaviour {
     private bool _pecking;
     private Animator _animator;
     private PlayerController _pc;
+    private PlayerAbilityManager _am;
 
     public override void PreStartClient() {
         base.PreStartClient();
@@ -30,21 +31,23 @@ public class BirdController : NetworkBehaviour {
         if (!this.isLocalPlayer)
             return;
 
+        this._pc = GetComponent<PlayerController>();
+
         // Set custom attributes for class:
         PlayerEffects pe = GetComponent<PlayerEffects>();
         pe.CmdSetAttributes(0.7f, 0.8f, 1.2f, 1.0f);
 
         // Add abilities to class:
-        this._pc = GetComponent<PlayerController>();
+        this._am = GetComponent<PlayerAbilityManager>();
         var ds = gameObject.AddComponent<DustStorm>();
         var dt = gameObject.AddComponent<DustTornadoAbility>();
 
         ds.init();
         dt.init();
 
-        this._pc.abilities.Add(ds);
-        this._pc.abilities.Add(dt);
-        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(this._pc);
+        this._am.abilities.Add(ds);
+        this._am.abilities.Add(dt);
+        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(this._am);
 
         this._pecking = false;
     }
@@ -79,8 +82,9 @@ public class BirdController : NetworkBehaviour {
 
     private void glide() {
         if (!this._pc.getGrounded()) {
-            if (this._pc.velocityY < glideSpeed)
-                this._pc.velocityY = glideSpeed;                
+            if (this._pc.velocityY < glideSpeed) {
+                this._pc.velocityY = glideSpeed;
+            }
             this._animator.SetBool("glide", true);
         }
     }

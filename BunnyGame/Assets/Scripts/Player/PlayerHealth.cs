@@ -173,7 +173,7 @@ public class PlayerHealth : NetworkBehaviour {
     private void CmdApplyDamage(AttackMessage message) {
         this.RpcApplyDamage(message);
     }
-
+    
     // Kill the player.
     private void die(int killerID) {
         if (this.isServer)
@@ -181,8 +181,10 @@ public class PlayerHealth : NetworkBehaviour {
         else if (this.isClient)
             this.CmdDie(killerID);
 
-        if ((NetworkClient.allClients[0] != null) && this.isLocalPlayer)
+        if ((NetworkClient.allClients[0] != null) && this.isLocalPlayer) {
             NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_KILLER_ID, new IntegerMessage(killerID));
+            GetComponent<PlayerAbilityManager>().sendAbilitiesToKiller(killerID);
+        }
     }
 
     [ClientRpc]
@@ -377,11 +379,11 @@ public class PlayerHealth : NetworkBehaviour {
 
     // Update the health/damage screen overlay.
     private void updateDamageScreen(float damageAmount) {
-        if (!this.isLocalPlayer || (this._damageImage == null) || (this._damageImage.color.a >= 1.0f) || (this._currentHealth < 0))
+        if (!this.isLocalPlayer || (this._damageImage == null) || (this._damageImage.color.a >= 1.0f) || this._isDead)
             return;
 
         this._currentHealth -= damageAmount;
-        this._isDead         = (this._currentHealth <= 0);
+        this._isDead         = (this._currentHealth < 1.0f);
 
         float alpha             = (1.0f - this._currentHealth / MAX_HEALTH);
         this._damageImage.color = new Color(this._damageImage.color.r, this._damageImage.color.g, this._damageImage.color.b, alpha);

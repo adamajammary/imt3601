@@ -327,6 +327,7 @@ GameObject:
   - component: {fileID: 65787153161494126}
   - component: {fileID: 114831858758883044}
   - component: {fileID: 114697687207183198}
+  - component: {fileID: 114267212435374764}
   m_Layer: 8
   m_Name: PlayerCharacterFox
   m_TagString: Player
@@ -1046,7 +1047,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c6ed6ade47953248a50fff70594b3cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  abilities: []
   walkSpeed: 5
   runSpeed: 12
   gravity: -12
@@ -1077,6 +1077,18 @@ MonoBehaviour:
   param3: 
   param4: 
   param5: 
+--- !u!114 &114267212435374764
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1812289213968426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: baf1568ae57015645808169672b00ac0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  abilities: []
 --- !u!114 &114321069112404922
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1115,6 +1127,7 @@ MonoBehaviour:
   animalSound: {fileID: 0}
   frequencyModifier: 0.4
   distanceFromGroundToCenter: 2
+  volumeModifier: 1
 --- !u!114 &114831858758883044
 MonoBehaviour:
   m_ObjectHideFlags: 1

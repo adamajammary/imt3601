@@ -96,6 +96,7 @@ public class FireWall : NetworkBehaviour {
         this.recalculateWalls();
         this._targetWallRenderer.draw(this._target.wall.transform);
         this._ready = true;
+        Debug.Log("READY");
     }
 
     // Update is called once per frame
@@ -183,7 +184,7 @@ public class FireWall : NetworkBehaviour {
     void OnTriggerExit(Collider other) {
         if (!this._ready) return;
     
-        if (other.tag == "Player") {
+        if (other.tag == "Player" ) {
             other.GetComponent<PlayerEffects>().insideWall = false;
         }else if (other.tag == "Enemy") {
             other.GetComponent<PlayerEffects>().insideWall = false;

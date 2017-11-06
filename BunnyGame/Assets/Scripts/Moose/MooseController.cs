@@ -37,12 +37,12 @@ public class MooseController : NetworkBehaviour{
         pe.CmdSetAttributes(1.5f, 1.0f, 1.0f, 0.8f);
 
         // Add abilities to class:
-        PlayerController playerController = GetComponent<PlayerController>();
+        PlayerAbilityManager abilityManager = GetComponent<PlayerAbilityManager>();
         SpeedBomb sp = gameObject.AddComponent<SpeedBomb>();
         sp.init(30, 4);
-        playerController.abilities.Add(sp);
+        abilityManager.abilities.Add(sp);
 
-        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
+        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(abilityManager);
     }
 
     // Update is called once per frame

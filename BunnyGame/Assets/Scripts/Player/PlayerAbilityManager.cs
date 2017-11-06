@@ -76,10 +76,10 @@ public class PlayerAbilityManager : NetworkBehaviour {
                 sa = gameObject.AddComponent<GrenadePoop>();
                 ((GrenadePoop)sa).init();
                 break;
-            //case "SpeedBomb":  // Disabled because the ability doesn't currently work for all classes
-            //    sa = gameObject.AddComponent<SpeedBomb>();
-            //    ((SpeedBomb)sa).init(30, 2);
-            //    break;
+            case "SpeedBomb":  // Disabled because the ability doesn't currently work for all classes
+                sa = gameObject.AddComponent<SpeedBomb>();
+                ((SpeedBomb)sa).init(30, 2);
+                break;
             default:
                 Debug.Log("Ability does not exist: \"" + abilityName + "\" (PlayerAbilityManager.cs:stealNewAbility())");
                 return;

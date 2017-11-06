@@ -27,8 +27,8 @@ public class AbilityNetwork : NetworkBehaviour {
         this._dustParticles = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustStorm");
         this._dustTornado = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustTornado");
 
-        if (this.transform.childCount > 6)
-            this._fireFart = this.transform.GetChild(6).gameObject;
+      //  if (this.transform.childCount > 6)
+            this._fireFart = this.transform.GetChild(4).gameObject;
     }
   
 
@@ -161,6 +161,9 @@ public class AbilityNetwork : NetworkBehaviour {
     /////////////////////// Functiuons for SuperSpeed ///////////////
     public void SuperSpeed(bool active) {
         Transform damageArea = this.transform.GetChild(3);
+        PlayerAttack attackScript = damageArea.GetComponent<PlayerAttack>();
+        attackScript.owner = this.gameObject;
+        
 
         if (gameObject != null)
             damageArea.GetComponent<CapsuleCollider>().enabled = active;

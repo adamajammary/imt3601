@@ -106,7 +106,7 @@ public class WorldGrid {
 
     private void initGrid() {
         for (int y = 0; y < yOffsets.Length; y++) {
-            for (int z = 0; z < cellCount; y++) {
+            for (int z = 0; z < cellCount; z++) {
                 for (int x = 0; x < cellCount; x++) {
                     initCell(x, y, z);
                 }
@@ -123,7 +123,7 @@ public class WorldGrid {
     private void initCell(int x, int y, int z) {
         this._worldGrid[x, y, z] = new Cell();
         this._worldGrid[x, y, z].blocked = false;
-        this._worldGrid[x, y, z].pos = new Vector3(x * cellSize + cellSize / 2, 0, y * cellSize + cellSize / 2) 
+        this._worldGrid[x, y, z].pos = new Vector3(x * cellSize + cellSize / 2, 0, z * cellSize + cellSize / 2) 
                                      + new Vector3(xzOffsets.x, yOffsets[y], xzOffsets.y);
         this._worldGrid[x, y, z].x = x;
         this._worldGrid[x, y, z].y = y;
@@ -156,8 +156,8 @@ public class WorldGrid {
     public int cellCount { get { return _cellCount; } }
     public float worldSize { get {return _worldSize; } }
     public float cellSize { get { return _cellSize; } }
-    public static float[] yOffsets { get { return _yOffsets; } }
-    public static Vector2 xzOffsets { get { return _xzOffsets; } }
+    public float[] yOffsets { get { return _yOffsets; } }
+    public Vector2 xzOffsets { get { return _xzOffsets; } }
     //================================
 
     public Cell getCell(int x, int y, int z) {
@@ -167,6 +167,20 @@ public class WorldGrid {
     public Cell getCell(Vector3 pos, int y) {
         int[] index = convertWorld2Cell(pos);
         return this._worldGrid[index[0], y, index[1]];
+    }
+
+    public Cell getCell(Vector3 pos) {
+        int[] index = convertWorld2Cell(pos);
+        return this._worldGrid[index[0], getClosestLevel(pos), index[1]];
+    }
+
+    public int getClosestLevel(Vector3 pos) {
+        int level = 0;
+        for(int i = 1; i < yOffsets.Length; i++) {
+            if (Mathf.Abs(yOffsets[i] - pos.y) < Mathf.Abs(yOffsets[level] - pos.y))
+                level = i;
+        }
+        return level;
     }
 
     public static int[] convertWorld2Cell(Vector3 world) {

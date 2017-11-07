@@ -13,7 +13,7 @@ public class IslandData : MonoBehaviour {
     private float[] _yOffsets;
 
 	// Use this for initialization
-	void Start () {
+	void Awake () {
         turnOffPointsRendering();
         switch (name) {
             case "Island":

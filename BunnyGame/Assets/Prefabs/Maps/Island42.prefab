@@ -1541,7 +1541,7 @@ GameObject:
   - component: {fileID: 114097995048888314}
   m_Layer: 0
   m_Name: Island42
-  m_TagString: ground
+  m_TagString: Island
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

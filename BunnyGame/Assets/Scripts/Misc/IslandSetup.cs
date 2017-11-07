@@ -35,6 +35,7 @@ public class IslandSetup : MonoBehaviour {
     }
 
     private void setupObject(Transform t) {
+        t.tag = "Island";
         if (t.GetComponent<MeshFilter>() != null) {
             t.gameObject.AddComponent<MeshCollider>();
             var renderer = t.gameObject.GetComponent<MeshRenderer>();

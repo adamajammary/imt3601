@@ -32,6 +32,7 @@ public class PlayerController : NetworkBehaviour {
     private PlayerAbilityManager _abilityManager;
     
     public bool running = false;
+    public bool inWater = false;
 
     private bool _moveDirectionLocked = false;
     private float _targetRotation = 0;
@@ -63,11 +64,16 @@ public class PlayerController : NetworkBehaviour {
         _moveDirectionLocked = Input.GetKey(KeyCode.LeftAlt);
 
         if (!this._CC) {
-            if (!this._noInputMovement)
-                Move(inputDir);
+            if (!this._noInputMovement) {
+                //if (!this.inWater)
+                    Move(inputDir);
+               // else
+               //     MoveInWater(inputDir);
+            }
             else
                 NoInputMovement();
-            if (Input.GetKeyDown(KeyCode.Space))
+
+            if (Input.GetKeyDown(KeyCode.Space) && !this.inWater)
                 this.jump();
         }
 
@@ -115,34 +121,53 @@ public class PlayerController : NetworkBehaviour {
             _targetRotation = _cameraTransform.eulerAngles.y;
 
         transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation,
-                                                    ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
+                                                                   ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
 
         float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
         this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
 
-        this.velocityY += Time.deltaTime * gravity;
+        this.velocityY += Time.deltaTime * gravity * (this.inWater ? 0 : 1);
 
         Vector3 moveDir = transform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
-        moveDir.y = 0;
+        if(!this.inWater)
+            moveDir.y = 0;
+
+
+        // Water movement
+        if(this.inWater) {
+            if (Input.GetKey(KeyCode.Space))
+                velocityY += 2f;
+            else if (Input.GetKey(KeyCode.C))
+                velocityY -= 2f;
+
+            velocityY -= Mathf.Sign(velocityY) * 0.2f;
+
+            velocityY = Mathf.Clamp(velocityY, -10, 10);
+        }
 
         Vector3 velocity = moveDir.normalized * currentSpeed * playerEffects.getSpeed() + Vector3.up * velocityY;
-       
         this.controller.Move(velocity * Time.deltaTime);
+
 
         if (controller.isGrounded)
             velocityY = 0;
     }
 
     public void jump() {
-        if (controller.isGrounded && !onWall()) { 
+        if ((controller.isGrounded) && !onWall()) { 
             float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight * this.playerEffects.getJump()); 
             this.velocityY = jumpVelocity;
         }
     }
 
+    public void onLeaveWater() {
+        this.inWater = false;
+        jump();
+    }
+
     //Controll player in air after jump
     float GetModifiedSmoothTime(float smoothTime) {
-        if (controller.isGrounded)
+        if (controller.isGrounded || this.inWater)
             return smoothTime;
 
         if (smoothTime == 0)

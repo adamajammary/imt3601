@@ -25,7 +25,7 @@ public class PlayerEffects : NetworkBehaviour {
     private float _damageImpactVelocity = -20;
     private float _currentImpactVelocity = 0;
 
-    private int _waterDamage = 2;
+    private int _waterDamage = 5;
     private float _timeInWater = 0;
     public float _maxTimeInWater = 10;
 

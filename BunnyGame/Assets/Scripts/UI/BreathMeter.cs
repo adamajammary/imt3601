@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-[ExecuteInEditMode]
 public class BreathMeter : MonoBehaviour {
     public float breath;
 
@@ -36,12 +35,6 @@ public class BreathMeter : MonoBehaviour {
         }
 
         meter.anchorMax = new Vector2(breath, 1);
-
-
-        if (Input.GetKey(KeyCode.O))
-            breath -= Time.deltaTime;
-        if (Input.GetKey(KeyCode.P))
-            breath += Time.deltaTime;
     }
 
     private IEnumerator hideMeter(){

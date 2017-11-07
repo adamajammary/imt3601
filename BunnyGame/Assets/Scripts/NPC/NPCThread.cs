@@ -43,7 +43,9 @@ public class NPCThread {
 
     //==============NPC Loop==================================================
     void threadRunner() {
+        Debug.Log("NPCTHREAD1");
         while (NPCWorldView.runNpcThread) {
+            Debug.Log("NPCTHREAD2");
             if (this._instructions.isEmpty() && !this._wait) {
                 this._isUpdating = true;
                 foreach (var npcBrain in this._npcBrains) {
@@ -58,5 +60,6 @@ public class NPCThread {
                 this._deadNpcs.Clear();
             }
         }
+        Debug.Log("NPCTHREAD3");
     }
 }

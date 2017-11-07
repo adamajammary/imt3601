@@ -29,23 +29,18 @@ public class NPCManager : NetworkBehaviour {
 
     //Waits for clients, then syncs playercount, and spawns npcs
     private IEnumerator waitForClients() {
-        Debug.Log("WAIT FOR CLIENTS1"); yield return 0;
-        Debug.Log("WAIT FOR CLIENTS2"); yield return 0;
-        Debug.Log(WorldData.ready);
         while (!WorldData.ready) yield return 0;
-        Debug.Log("WAIT FOR CLIENTS3"); yield return 0;
+
         string[] npcPrefabNames = { "CatNPC", "DogNPC", "EagleNPC", "WhaleNPC", "ChikenNPC" };
         List<GameObject> npcs = new List<GameObject>();
-        Debug.Log("WAIT FOR CLIENTS4"); yield return 0;
+        
         foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
-        Debug.Log("WAIT FOR CLIENTS5"); yield return 0;
         for (int i = 0; i < 100; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
-        Debug.Log("WAIT FOR CLIENTS6"); yield return 0;
+
         int playerCount = Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
-        Debug.Log("WAIT FOR CLIENTS7"); yield return 0;
         while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
             yield return 0;
-        Debug.Log("WAIT FOR CLIENTS8"); yield return 0;
+
         this._playerCount = playerCount; //sync playerCount to clients, now that all are here
     }
 
@@ -56,17 +51,17 @@ public class NPCManager : NetworkBehaviour {
     //The need for keeping two list comes from the fact that the Unity API is not thread safe.
     //The NPCThread uses a thread safe representation of the World provided by NPCWorldView.
     private IEnumerator init() {
-        Debug.Log("NPC MANAGER 1!");
+
         while (!WorldData.ready) yield return 0;
-        Debug.Log("NPC MANAGER 2!");
+
         //Wait for all NPCs to spawn
         while (GameObject.FindGameObjectsWithTag("npc").Length != 100)
             yield return 0;
-        Debug.Log("NPC MANAGER 3!");
+
         //Wait for all players to spawn, +1 for localplayer 
         while (this._playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1))
             yield return 0;
-        Debug.Log("NPC MANAGER 4!");
+
         //gather data about players for the NPCs
         GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
@@ -81,17 +76,17 @@ public class NPCManager : NetworkBehaviour {
         for (int i = 0; i < this._players.Count; i++)
             players.Add(i, new NPCWorldView.GameCharacter(i));
 
-        GameObject[] turtles = GameObject.FindGameObjectsWithTag("npc");
-        for (int i = 0; i < turtles.Length; i++) {
-            this._npcs.Add(i, turtles[i]);
+        GameObject[] npcs = GameObject.FindGameObjectsWithTag("npc");
+        for (int i = 0; i < npcs.Length; i++) {
+            this._npcs.Add(i, npcs[i]);
             NPCWorldView.npcs.Add(i, new NPCWorldView.GameCharacter(i));
         }
 
-        this._instructions = new BlockingQueue<NPCThread.instruction>();
-        this._npcThread = new NPCThread(this._instructions);
         this._ready = true;
         NPCWorldView.ready = true;
-        Debug.Log("NPC MANAGER 5!");
+        NPCWorldView.runNpcThread = true;
+        this._instructions = new BlockingQueue<NPCThread.instruction>();
+        this._npcThread = new NPCThread(this._instructions);
     }
 
     // Update is called once per frame
@@ -169,13 +164,11 @@ public class NPCManager : NetworkBehaviour {
     private void CmdSpawnNPC(GameObject npc) {
         var npcInstance = Instantiate(npc);
         WorldGrid.Cell cell;
-        Debug.Log("NPC1");
         do { //Find a random position for the NPC
             int x = Random.Range(0, WorldData.cellCount);
             int z = Random.Range(0, WorldData.cellCount);
             cell = WorldData.worldGrid.getCell(x, 1, z);
         } while (cell.blocked);
-        Debug.Log("NPC2");
         //Angle is used to generate a direction
         float angle = Random.Range(0, Mathf.PI * 2);
         Vector3 dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));

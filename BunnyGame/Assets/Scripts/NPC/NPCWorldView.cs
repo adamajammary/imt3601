@@ -40,13 +40,13 @@ public static class NPCWorldView {
 
         public Vector3 getMapPos() {
             lock (this) {
-                return _worldGrid.getCell(this._pos).pos;
+                return WorldData.worldGrid.getCell(this._pos).pos;
             }
         }
 
         public WorldGrid.Cell getCell() {
             lock (this) {
-                return _worldGrid.getCell(this._pos);
+                return WorldData.worldGrid.getCell(this._pos);
             }
         }
 
@@ -71,8 +71,6 @@ public static class NPCWorldView {
     private static Dictionary<int, GameCharacter> _players;
     private static FireWall.Circle _fireWall;
     private static bool _runNpcThread;
-
-    private static WorldGrid _worldGrid;
 
     private static bool _ready;
     //===============================================================================

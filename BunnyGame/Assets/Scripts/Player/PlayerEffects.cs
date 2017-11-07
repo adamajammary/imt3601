@@ -18,11 +18,16 @@ public class PlayerEffects : NetworkBehaviour {
     private PlayerHealth        _health;
     private PlayerAudio         _playerAudio;
     private Image               _blindEffect;
+    private BreathMeter         _breathMeter;
     
     private int   _fallDamage = 40;
     private bool  _fallDamageImmune = false;
     private float _damageImpactVelocity = -20;
     private float _currentImpactVelocity = 0;
+
+    private int _waterDamage = 2;
+    private float _timeInWater = 0;
+    public float _maxTimeInWater = 10;
 
     // Use this for initialization
     void Start () {
@@ -33,6 +38,7 @@ public class PlayerEffects : NetworkBehaviour {
         this._health        = this.GetComponent<PlayerHealth>();
         this._playerAudio   = GetComponent<PlayerAudio>();
         this._blindEffect   = GameObject.Find("BlindOverlay").GetComponent<Image>();
+        this._breathMeter   = GameObject.Find("BreathMeter").GetComponent<BreathMeter>();
     }
 	
 	// Update is called once per frame
@@ -40,6 +46,8 @@ public class PlayerEffects : NetworkBehaviour {
         handleGroundHit();
         if (!this.isLocalPlayer) return;
         if (!this.insideWall) wallDamage();
+
+        handleBreath();
     }
 
     //=========Attrbutes=====================================================================================================================
@@ -175,6 +183,17 @@ public class PlayerEffects : NetworkBehaviour {
             }
         }
         else if(isLocalPlayer) _currentImpactVelocity = _cc.velocity.y;
+    }
+
+    private void handleBreath() {
+        if (_pc.inWater && _timeInWater < _maxTimeInWater)
+            _timeInWater += Time.deltaTime;
+        else if (!_pc.inWater && _timeInWater > 0)
+            _timeInWater -= Time.deltaTime;
+
+        this._breathMeter.breath = 1 - _timeInWater / _maxTimeInWater;
+        if (_timeInWater > _maxTimeInWater)
+            this.GetComponent<PlayerHealth>().TakeDamage(Time.deltaTime * _waterDamage, (int)KillerID.KILLER_ID_WATER);
     }
 
     private void OnTriggerExit(Collider other) {

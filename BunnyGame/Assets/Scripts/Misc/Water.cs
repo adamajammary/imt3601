@@ -36,12 +36,10 @@ public class Water : MonoBehaviour {
             waterScreenEffect.enabled = false;
 
 
-        if (other.tag == "Player") {
-            other.transform.GetComponent<PlayerController>().onLeaveWater();
-        }
-        else if (other.tag == "bunnycamera") {
-            other.transform.parent.GetComponent<PlayerController>().onLeaveWater();
-        }
+        if (other.tag == "Player")
+            other.GetComponent<PlayerController>().inWater = false;
+        else if (other.tag == "bunnycamera")
+            other.transform.parent.GetComponent<PlayerController>().inWater = false;
     }
 }
 

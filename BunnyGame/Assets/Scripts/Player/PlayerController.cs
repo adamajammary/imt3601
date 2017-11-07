@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
@@ -30,8 +31,10 @@ public class PlayerController : NetworkBehaviour {
     public CharacterController controller;
     private PlayerEffects playerEffects;
     private PlayerAbilityManager _abilityManager;
+    private PlayerHealth _playerHealth;
     
     public bool running = false;
+
     public bool inWater = false;
 
     private bool _moveDirectionLocked = false;
@@ -47,12 +50,14 @@ public class PlayerController : NetworkBehaviour {
             return;
         
         this._cameraTransform = Camera.main.transform;
-        this.controller = this.GetComponent<CharacterController>();
-        this.playerEffects = GetComponent<PlayerEffects>();
-        this._abilityManager = GetComponent<PlayerAbilityManager>();
+        this.controller       = this.GetComponent<CharacterController>();
+        this.playerEffects    = this.GetComponent<PlayerEffects>();
+        this._abilityManager  = this.GetComponent<PlayerAbilityManager>();
+        this._playerHealth    = this.GetComponent<PlayerHealth>();
 
         this.airControlPercent = 1;
 	}
+
 
     void Update() {
         if (!this.isLocalPlayer) // NB! wallDamage should now work on clients
@@ -64,12 +69,8 @@ public class PlayerController : NetworkBehaviour {
         _moveDirectionLocked = Input.GetKey(KeyCode.LeftAlt);
 
         if (!this._CC) {
-            if (!this._noInputMovement) {
-                //if (!this.inWater)
+            if (!this._noInputMovement)
                     Move(inputDir);
-               // else
-               //     MoveInWater(inputDir);
-            }
             else
                 NoInputMovement();
 
@@ -124,16 +125,18 @@ public class PlayerController : NetworkBehaviour {
                                                                    ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
 
         float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
+        if (inWater)
+            targetSpeed *= 0.5f;
+
         this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
 
         this.velocityY += Time.deltaTime * gravity * (this.inWater ? 0 : 1);
 
         Vector3 moveDir = transform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
-        if(!this.inWater)
-            moveDir.y = 0;
+        moveDir.y = 0;
 
 
-        // Water movement
+        // Water y-dir movement
         if(this.inWater) {
             if (Input.GetKey(KeyCode.Space))
                 velocityY += 2f;
@@ -141,7 +144,6 @@ public class PlayerController : NetworkBehaviour {
                 velocityY -= 2f;
 
             velocityY -= Mathf.Sign(velocityY) * 0.2f;
-
             velocityY = Mathf.Clamp(velocityY, -10, 10);
         }
 
@@ -158,11 +160,6 @@ public class PlayerController : NetworkBehaviour {
             float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight * this.playerEffects.getJump()); 
             this.velocityY = jumpVelocity;
         }
-    }
-
-    public void onLeaveWater() {
-        this.inWater = false;
-        jump();
     }
 
     //Controll player in air after jump

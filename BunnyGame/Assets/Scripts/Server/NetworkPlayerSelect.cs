@@ -4,7 +4,9 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 
 public enum KillerID {
-    KILLER_ID_FALL = -1000, KILLER_ID_WALL
+    KILLER_ID_FALL = -1000,
+    KILLER_ID_WALL,
+    KILLER_ID_WATER
 }
 
 public enum NetworkMessageType {

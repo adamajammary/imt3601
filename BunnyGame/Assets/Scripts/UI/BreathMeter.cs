@@ -23,22 +23,20 @@ public class BreathMeter : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        Debug.Log(breath);
-
-
         if (!isVisible && breath < 0.99f) {
             meter.GetComponent<CanvasRenderer>().SetAlpha(1);
             bg.GetComponent<CanvasRenderer>().SetAlpha(1);
             isVisible = true;
         } else if (isVisible && breath > 0.99f) {
-            StartCoroutine(hideMeter());
+            StartCoroutine(hideMeter(1));
         }
 
         meter.anchorMax = new Vector2(breath, 1);
     }
 
-    private IEnumerator hideMeter(){
-        yield return new WaitForSeconds(1);
+    // Hide the meter with a X second delay
+    private IEnumerator hideMeter(float delay){
+        yield return new WaitForSeconds(delay);
         if (breath < 0.99)
             yield break;
 

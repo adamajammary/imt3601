@@ -123,7 +123,8 @@ public class WorldGrid {
     private void initCell(int x, int y, int z) {
         this._worldGrid[x, y, z] = new Cell();
         this._worldGrid[x, y, z].blocked = false;
-        this._worldGrid[x, y, z].pos = new Vector3(x * cellSize + cellSize / 2, 0, y * cellSize + cellSize / 2) + offset;
+        this._worldGrid[x, y, z].pos = new Vector3(x * cellSize + cellSize / 2, 0, y * cellSize + cellSize / 2) 
+                                     + new Vector3(xzOffsets.x, yOffsets[y], xzOffsets.y);
         this._worldGrid[x, y, z].x = x;
         this._worldGrid[x, y, z].y = y;
         this._worldGrid[x, y, z].g = 9999999;

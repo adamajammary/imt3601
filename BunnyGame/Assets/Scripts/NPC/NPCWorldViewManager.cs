@@ -16,8 +16,7 @@ public class NPCWorldViewManager : MonoBehaviour {
 
     private float _cellSize;  //The size of cells in NPCWorldView
     private int _cellCount;   //Amount of cells in NPCWorldView
-
-    // Use this for initialization
+ // Use this for initialization
     void Start() {
         NPCWorldView.init();
         _cellSize = NPCWorldView.cellSize;
@@ -27,6 +26,7 @@ public class NPCWorldViewManager : MonoBehaviour {
         else
             NPCWorldView.ready = true;
     }
+   
 
     
 

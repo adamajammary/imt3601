@@ -3,38 +3,35 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public static class WorldData {
-
-    static string map = "Island42";
-
-
     //===============================================================================
-    public const int cellCount = 150;
-    public const float worldSize = 400;
-    public const float cellSize = worldSize / cellCount;
-
-    private static Vector2 _xzOffset;
-    private static Dictionary<string, float[]> _mapOffsets;
-    private static WorldGrid _worldGrid;
-
-    private static bool _ready;
+    private static int          _cellCount;
+    private static float        _worldSize;
+    private static float        _cellSize;
+    private static float[]      _yOffsets;
+    private static Vector2      _xzOffset;
+    private static WorldGrid    _worldGrid;
+    private static string       _name;
+    private static bool         _ready;
     //===============================================================================
     static WorldData() {
-        float[] islandOffsets = { 0, 5 };
-        float[] island42Offsets = { 0, 5, 20, 25, 30 };
-        _mapOffsets = new Dictionary<string, float[]>();
-        _mapOffsets.Add("Island", islandOffsets);
-        _mapOffsets.Add("Island42", island42Offsets);
+        clear();
+    }
+
+    public static void init(IslandData data) {
+        _ready = false;
+
+        _cellCount  = data.cellCount;
+        _worldSize  = data.worldSize;
+        _cellSize   = worldSize / cellCount;
+        _yOffsets   = data.yOffsets;
+        _name       = data.name;
+
         _xzOffset = new Vector2(
             -(cellCount * cellSize / 2.0f + cellSize / 2.0f),
             -(cellCount * cellSize / 2.0f + cellSize / 2.0f)
         );
 
-        init();
-    }
-
-    public static void init() {
-        _ready = false;
-        _worldGrid = new WorldGrid(map, _mapOffsets[map], _xzOffset, cellCount, worldSize);       
+        _worldGrid = new WorldGrid(name, yOffsets, xzOffset, cellCount, worldSize);          
     }
 
     public static void clear() { 
@@ -42,8 +39,13 @@ public static class WorldData {
         _worldGrid = null;
     }
     //===============================================================================
+    public static int cellCount { get { return _cellCount; } }
+    public static float worldSize { get { return _worldSize; } }
+    public static float cellSize { get { return _cellSize; } }
+    public static float[] yOffsets { get { return _yOffsets; } }
     public static Vector2 xzOffset { get { return _xzOffset; } }
     public static bool ready { get { return _ready; } set { _ready = value; } }
+    public static string name { get { return _name; } }
     public static WorldGrid worldGrid { get { return _worldGrid; } }
     //===============================================================================
 }

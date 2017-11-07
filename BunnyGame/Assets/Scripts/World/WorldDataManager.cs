@@ -37,8 +37,8 @@ public class WorldDataManager : MonoBehaviour {
         float prog = 0;
 
         float time = Time.realtimeSinceStartup;
-        Debug.Log("WorldDataManager: Setting up NPCWorldView by detecting obstacles!");
-        //NPCs were having a tough time with this cell
+        Debug.Log("WorldDataManager: Setting up WorldData by detecting obstacles!");
+
         foreach (Transform level in this._islandData.avoidPoints) {
             foreach (Transform avoidPoint in level) {
                 var difficultCell = WorldData.worldGrid.getCell(avoidPoint.transform.position); ;
@@ -52,7 +52,7 @@ public class WorldDataManager : MonoBehaviour {
             progressBar.sizeDelta = new Vector2(prog * 1000, 100);
             yield return 0;
         }
-        Debug.Log("WorldDataManager: Finished detecting obstacles for NPCWorldView, time elapsed: " + (Time.realtimeSinceStartup - time));
+        Debug.Log("WorldDataManager: Finished detecting obstacles for WorldData, time elapsed: " + (Time.realtimeSinceStartup - time));
 
         progressUI.SetActive(false);
 
@@ -63,34 +63,26 @@ public class WorldDataManager : MonoBehaviour {
     }
 
     //Quick way of blocking out water cells in land plane, also overextends to keep NPCs out of water
-    //private IEnumerator blockWaterInLand(System.Action<float> progress) {
-    //    int Iter = 0;
-    //    int totalIter = _cellCount * _cellCount;
-    //    int yieldRate = 2 * _cellCount;
-    //    //LOOP DI LOOP
-    //    for (int y = 0; y < _cellCount; y++) {
-    //        for (int x = 0; x < _cellCount; x++) {
-    //            for (int i = -1; i < 2; i++) { //Over extend
-    //                for (int j = -1; j < 2; j++) {
-    //                    if (!NPCWorldView.getCell(true, x + j, y + i).blocked)
-    //                        NPCWorldView.getCell(true, x + j, y + i).blocked = !NPCWorldView.getCell(false, x, y).blocked;
-    //                }
-    //            }
-    //            Iter++;
-    //            if (Iter % yieldRate == 0) {
-    //                progress((float)Iter / (float)totalIter);
-    //                yield return 0;
-    //            }
-    //        }
-    //    }
-    //    progress(1);
-    //}
-    //Finds obstacles in every cell of NPCWorldView, and marks them as blocked
+    private void blockWaterInLand(int level) {
+        WorldGrid grid = WorldData.worldGrid;
+        //LOOP DI LOOP
+        for (int z = 0; z < grid.cellCount; z++) {
+            for (int x = 0; x < grid.cellCount; x++) {
+                for (int i = -1; i < 2; i++) { //Over extend
+                    for (int j = -1; j < 2; j++) {
+                        if (!grid.getCell(x + j, level, z + i).blocked)
+                            grid.getCell(x + j, level, z + i).blocked = !grid.getCell(x, 0, z).blocked;
+                    }
+                }                
+            }
+        }
+    }
+    //Finds obstacles in every cell of WorldGrid, and marks them as blocked
     //Areas that are closed off by blocked cells will also be blocked
     private IEnumerator findObstacles(System.Action<float> progress) {
         WorldGrid grid = WorldData.worldGrid;
         int Iter = 0;
-        int totalIter = grid.yOffsets.Length * grid.cellCount * grid.cellCount;
+        int totalIter = grid.yOffsets.Length * grid.cellCount * grid.cellCount * 2;
         int yieldRate = grid.cellCount;
 
         for (int y = 0; y < grid.yOffsets.Length; y++) {
@@ -108,31 +100,31 @@ public class WorldDataManager : MonoBehaviour {
             }
         }
 
-        //WorldGrid.Cell[] targets;
-        ////Generate targets depending on plane type
-        //if (land) {
-        //    targets = new WorldGrid.Cell[] { NPCWorldView.getCell(land, landPos.position) };
-        //} else {
-        //    targets = new WorldGrid.Cell[waterBodies.Length];
-        //    for (int i = 0; i < waterBodies.Length; i++) {
-        //        targets[i] = NPCWorldView.getCell(land, waterBodies[i].position);
-        //    }
-        //}
+        
 
-        //bool lastCellBlocked = false;
-        //for (int y = 0; y < _cellCount; y++) {
-        //    for (int x = 0; x < _cellCount; x++) {
-        //        var cell = NPCWorldView.getCell(land, x, y);
-        //        if (!cell.blocked && lastCellBlocked)
-        //            this.fillAreaIfBlocked(land, cell, targets);
-        //        lastCellBlocked = cell.blocked;
-        //        Iter++;
-        //        if (Iter % yieldRate == 0) {
-        //            progress((float)Iter / (float)totalIter);
-        //            yield return 0;
-        //        }
-        //    }
-        //}
+        bool lastCellBlocked = false;
+        for (int y = 0; y < grid.yOffsets.Length; y++) {
+
+            WorldGrid.Cell[] targets = new WorldGrid.Cell[this._islandData.connectPoints[y].childCount];
+            for (int i = 0; i < targets.Length; i++) {
+                targets[i] = grid.getCell(this._islandData.connectPoints[y].GetChild(i).position);
+            }
+            if (y > 0) blockWaterInLand(y);
+
+            for (int z = 0; z < grid.cellCount; z++) {
+                for (int x = 0; x < grid.cellCount; x++) {
+                    var cell = grid.getCell(x, y, z);
+                    if (!cell.blocked && lastCellBlocked)
+                        this.fillAreaIfBlocked(y, cell, targets);
+                    lastCellBlocked = cell.blocked;
+                    Iter++;
+                    if (Iter % yieldRate == 0) {
+                        progress((float)Iter / (float)totalIter);
+                        yield return 0;
+                    }
+                }
+            }
+        }
         progress(1);
     }
 
@@ -146,7 +138,8 @@ public class WorldDataManager : MonoBehaviour {
 
     //This is basically a*, if it cant find a path from startPos to any target node, then all the nodes in
     //  the closed list are blocked nodes.
-    void fillAreaIfBlocked(bool land, WorldGrid.Cell startCell, WorldGrid.Cell[] targets) {
+    void fillAreaIfBlocked(int level, WorldGrid.Cell startCell, WorldGrid.Cell[] targets) {
+        WorldGrid grid = WorldData.worldGrid;
         Dictionary<Vector3, WorldGrid.Cell> closed = null;
         foreach (var target in targets) {
             SortedList<float, WorldGrid.Cell> open =
@@ -156,7 +149,7 @@ public class WorldDataManager : MonoBehaviour {
             var goal = target;
             var current = startCell;
 
-            NPCWorldView.resetAStarData();
+            grid.resetAStarData();
             current.g = 0;
             open.Add(current.f, current); //Push the start node
             while (open.Count > 0) {

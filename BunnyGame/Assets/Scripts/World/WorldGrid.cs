@@ -161,10 +161,14 @@ public class WorldGrid {
     //================================
 
     public Cell getCell(int x, int y, int z) {
+        x = clamp(x);
+        y = clamp(y);
+        z = clamp(z);
         return this._worldGrid[x, y, z];
     }
 
     public Cell getCell(Vector3 pos, int y) {
+        y = clamp(y);
         int[] index = convertWorld2Cell(pos);
         return this._worldGrid[index[0], y, index[1]];
     }
@@ -183,7 +187,7 @@ public class WorldGrid {
         return level;
     }
 
-    public static int[] convertWorld2Cell(Vector3 world) {
+    public int[] convertWorld2Cell(Vector3 world) {
         int[] cellPos = { 0, 0 };
         world -= new Vector3(_xzOffsets.x, 0, _xzOffsets.y);
         world /= _cellSize;
@@ -194,7 +198,7 @@ public class WorldGrid {
         return cellPos;
     }
 
-    private static int clamp(int input) {
+    private int clamp(int input) {
         input = (input >= 0) ? input : 0;
         input = (input < _cellCount) ? input : _cellCount - 1;
         return input;

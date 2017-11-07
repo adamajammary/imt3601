@@ -12,9 +12,9 @@ public class ServerSetup : NetworkBehaviour {
             fireWall = Instantiate(fireWall);
             NetworkServer.Spawn(fireWall);
 
-            //GameObject npcManager = Resources.Load<GameObject>("Prefabs/NPCManager");
-            //npcManager = Instantiate(npcManager);
-            //NetworkServer.Spawn(npcManager);
+            GameObject npcManager = Resources.Load<GameObject>("Prefabs/NPCManager");
+            npcManager = Instantiate(npcManager);
+            NetworkServer.Spawn(npcManager);
         }
 	}
 }

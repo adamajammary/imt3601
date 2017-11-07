@@ -66,7 +66,6 @@ GameObject:
   - component: {fileID: 4959806735303006}
   - component: {fileID: 114023548694583208}
   - component: {fileID: 114684915946104982}
-  - component: {fileID: 114392278232915640}
   m_Layer: 0
   m_Name: NPCManager
   m_TagString: Untagged
@@ -227,29 +226,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1696758b75d90d4419b0e3e96fc5fb9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &114392278232915640
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1251516565716470}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 061a4f0739a459d449c9c5f6a084bcc9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  debugRenderLand: 0
-  debugRenderWater: 0
-  waterBodies:
-  - {fileID: 4058483966942732}
-  - {fileID: 4561842773249256}
-  - {fileID: 4490124764938036}
-  difficultSpots:
-  - {fileID: 4437783978001508}
-  - {fileID: 4415590440194116}
-  landPos: {fileID: 4444402438968868}
-  progressBar: {fileID: 0}
-  progressUI: {fileID: 0}
 --- !u!114 &114684915946104982
 MonoBehaviour:
   m_ObjectHideFlags: 1

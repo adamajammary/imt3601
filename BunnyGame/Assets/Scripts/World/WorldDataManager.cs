@@ -58,7 +58,7 @@ public class WorldDataManager : MonoBehaviour {
 
         Time.timeScale = 1; //resume game
 
-        //WorldData.worldGrid.writeToFile();
+        WorldData.worldGrid.writeToFile();
         WorldData.ready = true;
     }
 

@@ -180,9 +180,10 @@ public class PlayerController : NetworkBehaviour {
 
         float[] distances = new float[offsets.Length];
         RaycastHit hit = new RaycastHit();
-
+        int layerMask = (1 << 19);
         for (int i = 0; i < offsets.Length; i++) {
-            Physics.Raycast(transform.position + offsets[i] + Vector3.up, Vector3.down, out hit);
+            Ray ray = new Ray(transform.position + offsets[i] + Vector3.up, Vector3.down);
+            Physics.Raycast(ray, out hit, 10.0f, layerMask);
             distances[i] = hit.distance;
         }
 

@@ -18,7 +18,7 @@ public class NPCManager : NetworkBehaviour {
 
     // Use this for initialization
     void Start() {
-        _cellCount = NPCWorldView.cellCount;
+        _cellCount = WorldData.cellCount;
 
         this._players = new Dictionary<int, GameObject>();
         this._npcs = new Dictionary<int, GameObject>();
@@ -76,14 +76,14 @@ public class NPCManager : NetworkBehaviour {
             this._players.Add(i + 1, enemies[i]);
 
         //Add players to NPCWorldView so that the NPCThread can use data about them
-        var players = NPCWorldView.getPlayers();
+        var players = NPCWorldView.players;
         for (int i = 0; i < this._players.Count; i++)
             players.Add(i, new NPCWorldView.GameCharacter(i));
 
         GameObject[] turtles = GameObject.FindGameObjectsWithTag("npc");
         for (int i = 0; i < turtles.Length; i++) {
             this._npcs.Add(i, turtles[i]);
-            NPCWorldView.getNpcs().Add(i, new NPCWorldView.GameCharacter(i));
+            NPCWorldView.npcs.Add(i, new NPCWorldView.GameCharacter(i));
         }
 
         this._instructions = new BlockingQueue<NPCThread.instruction>();
@@ -104,7 +104,7 @@ public class NPCManager : NetworkBehaviour {
     private void updateNPCWorldView() {
         if (this._npcThread.wait) return;
         //Update NPCS
-        var npcs = NPCWorldView.getNpcs();
+        var npcs = NPCWorldView.npcs;
         foreach (var npc in this._npcs) {
             if (npc.Value != null) {
                 Vector3 goal = npc.Value.GetComponent<NPC>().getGoal();
@@ -113,7 +113,7 @@ public class NPCManager : NetworkBehaviour {
                 this._deadNpcs.Add(npc.Key);
         }
         //Update Players
-        var players = NPCWorldView.getPlayers();
+        var players = NPCWorldView.players;
         foreach (var player in this._players) {
             if (player.Value != null) {
                 players[player.Key].update(player.Value.transform.position, player.Value.transform.forward, Vector3.negativeInfinity);
@@ -127,7 +127,7 @@ public class NPCManager : NetworkBehaviour {
     void removeDeadStuff() {
         if (this._deadNpcs.Count > 0 || this._deadNpcs.Count > 0) {
             if (this._npcs.Count <= 1) {
-                NPCWorldView.setRunNPCThread(false);
+                NPCWorldView.runNpcThread = false;
                 this._deadNpcs.Clear();
                 this._deadPlayers.Clear();
                 this._ready = false;
@@ -135,12 +135,12 @@ public class NPCManager : NetworkBehaviour {
             } else
                 if (this._npcThread.isUpdating) { this._npcThread.wait = true; return; /*Wait for npc thread to catch up */}
 
-            var players = NPCWorldView.getPlayers();
+            var players = NPCWorldView.npcs;
             foreach (int dead in this._deadPlayers) {
                 this._players.Remove(dead);
                 players.Remove(dead);
             }
-            var npcs = NPCWorldView.getNpcs();
+            var npcs = NPCWorldView.npcs;
             foreach (int dead in this._deadNpcs) {
                 this._npcs.Remove(dead);
                 npcs.Remove(dead);
@@ -164,19 +164,17 @@ public class NPCManager : NetworkBehaviour {
     [Command]
     private void CmdSpawnNPC(GameObject npc) {
         var npcInstance = Instantiate(npc);
-        NPCWorldView.worldCellData landCell;
-        NPCWorldView.worldCellData waterCell;
+        WorldGrid.Cell cell;
         do { //Find a random position for the NPC
             int x = Random.Range(0, this._cellCount);
-            int y = Random.Range(0, this._cellCount);
-            landCell = NPCWorldView.getCell(true, x, y);
-            waterCell = NPCWorldView.getCell(false, x, y);
-        } while (landCell.blocked || !waterCell.blocked);
+            int z = Random.Range(0, this._cellCount);
+            cell = WorldData.worldGrid.getCell(x, 1, z);
+        } while (cell.blocked);
 
         //Angle is used to generate a direction
         float angle = Random.Range(0, Mathf.PI * 2);
         Vector3 dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
-        npcInstance.GetComponent<NPC>().spawn(landCell.pos, dir);
+        npcInstance.GetComponent<NPC>().spawn(cell.pos, dir);
 
         NetworkServer.Spawn(npcInstance);
 
@@ -184,10 +182,10 @@ public class NPCManager : NetworkBehaviour {
 
     //It's important to stop the NPCThread when quitting
     void OnApplicationQuit() {
-        NPCWorldView.setRunNPCThread(false);
+        NPCWorldView.runNpcThread = true;
     }
 
     void OnDestroy() {
-        NPCWorldView.setRunNPCThread(false);
+        NPCWorldView.runNpcThread = false;
     }
 }

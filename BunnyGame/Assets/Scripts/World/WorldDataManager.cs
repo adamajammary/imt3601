@@ -28,8 +28,7 @@ public class WorldDataManager : MonoBehaviour {
             StartCoroutine(calcWorldData());
         else
             WorldData.ready = true;
-
-        }
+    }
 
     private IEnumerator calcWorldData() { //Really wish unity let us thread stuff, but courutines will have to do.
         Time.timeScale = 0; //Freeze time

@@ -6,7 +6,6 @@ using UnityEngine.Networking;
 public class NPCManager : NetworkBehaviour {
     [SyncVar]
     private int _playerCount = -1;
-    private int _cellCount; //Amount of cells in NPCWorldView
 
     private Dictionary<int, GameObject> _players;       //Used to update NPCWorldView
     private Dictionary<int, GameObject> _npcs;          //Used to update NPCWorldView
@@ -18,35 +17,36 @@ public class NPCManager : NetworkBehaviour {
 
     // Use this for initialization
     void Start() {
-        _cellCount = WorldData.cellCount;
-
         this._players = new Dictionary<int, GameObject>();
         this._npcs = new Dictionary<int, GameObject>();
         this._deadPlayers = new List<int>();
         this._deadNpcs = new List<int>();
         this._ready = false;
-        if (this.isServer) StartCoroutine(waitForClients());
+        if (this.isServer)
+            StartCoroutine(waitForClients());
         StartCoroutine(init());
     }
 
     //Waits for clients, then syncs playercount, and spawns npcs
     private IEnumerator waitForClients() {
-        if (this.isServer) {
-            while (!NPCWorldView.ready) yield return 0;
-            string[] npcPrefabNames = { "CatNPC", "DogNPC", "EagleNPC", "WhaleNPC", "ChikenNPC" };
-            List<GameObject> npcs = new List<GameObject>();
-
-            foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
-            for (int i = 0; i < 100; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
-
-
-            int playerCount = Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
-
-            while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
-                yield return 0;
-
-            this._playerCount = playerCount; //sync playerCount to clients, now that all are here
-        }
+        Debug.Log("WAIT FOR CLIENTS1"); yield return 0;
+        Debug.Log("WAIT FOR CLIENTS2"); yield return 0;
+        Debug.Log(WorldData.ready);
+        while (!WorldData.ready) yield return 0;
+        Debug.Log("WAIT FOR CLIENTS3"); yield return 0;
+        string[] npcPrefabNames = { "CatNPC", "DogNPC", "EagleNPC", "WhaleNPC", "ChikenNPC" };
+        List<GameObject> npcs = new List<GameObject>();
+        Debug.Log("WAIT FOR CLIENTS4"); yield return 0;
+        foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
+        Debug.Log("WAIT FOR CLIENTS5"); yield return 0;
+        for (int i = 0; i < 100; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
+        Debug.Log("WAIT FOR CLIENTS6"); yield return 0;
+        int playerCount = Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
+        Debug.Log("WAIT FOR CLIENTS7"); yield return 0;
+        while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
+            yield return 0;
+        Debug.Log("WAIT FOR CLIENTS8"); yield return 0;
+        this._playerCount = playerCount; //sync playerCount to clients, now that all are here
     }
 
     //Spawn NPCs, then register players/npcs in datastructures in this class, and NPCWorldView
@@ -56,16 +56,17 @@ public class NPCManager : NetworkBehaviour {
     //The need for keeping two list comes from the fact that the Unity API is not thread safe.
     //The NPCThread uses a thread safe representation of the World provided by NPCWorldView.
     private IEnumerator init() {
-        while (!NPCWorldView.ready) yield return 0;
-
+        Debug.Log("NPC MANAGER 1!");
+        while (!WorldData.ready) yield return 0;
+        Debug.Log("NPC MANAGER 2!");
         //Wait for all NPCs to spawn
         while (GameObject.FindGameObjectsWithTag("npc").Length != 100)
             yield return 0;
-
+        Debug.Log("NPC MANAGER 3!");
         //Wait for all players to spawn, +1 for localplayer 
         while (this._playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1))
             yield return 0;
-
+        Debug.Log("NPC MANAGER 4!");
         //gather data about players for the NPCs
         GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
@@ -89,6 +90,8 @@ public class NPCManager : NetworkBehaviour {
         this._instructions = new BlockingQueue<NPCThread.instruction>();
         this._npcThread = new NPCThread(this._instructions);
         this._ready = true;
+        NPCWorldView.ready = true;
+        Debug.Log("NPC MANAGER 5!");
     }
 
     // Update is called once per frame
@@ -131,6 +134,7 @@ public class NPCManager : NetworkBehaviour {
                 this._deadNpcs.Clear();
                 this._deadPlayers.Clear();
                 this._ready = false;
+                NPCWorldView.clear();
                 return;
             } else
                 if (this._npcThread.isUpdating) { this._npcThread.wait = true; return; /*Wait for npc thread to catch up */}
@@ -165,12 +169,13 @@ public class NPCManager : NetworkBehaviour {
     private void CmdSpawnNPC(GameObject npc) {
         var npcInstance = Instantiate(npc);
         WorldGrid.Cell cell;
+        Debug.Log("NPC1");
         do { //Find a random position for the NPC
-            int x = Random.Range(0, this._cellCount);
-            int z = Random.Range(0, this._cellCount);
+            int x = Random.Range(0, WorldData.cellCount);
+            int z = Random.Range(0, WorldData.cellCount);
             cell = WorldData.worldGrid.getCell(x, 1, z);
         } while (cell.blocked);
-
+        Debug.Log("NPC2");
         //Angle is used to generate a direction
         float angle = Random.Range(0, Mathf.PI * 2);
         Vector3 dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
@@ -183,9 +188,11 @@ public class NPCManager : NetworkBehaviour {
     //It's important to stop the NPCThread when quitting
     void OnApplicationQuit() {
         NPCWorldView.runNpcThread = true;
+        NPCWorldView.clear();
     }
 
     void OnDestroy() {
         NPCWorldView.runNpcThread = false;
+        NPCWorldView.clear();
     }
 }

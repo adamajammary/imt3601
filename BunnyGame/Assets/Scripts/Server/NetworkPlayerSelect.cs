@@ -4,7 +4,9 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 
 public enum KillerID {
-    KILLER_ID_FALL = -1000, KILLER_ID_WALL
+    KILLER_ID_FALL = -1000,
+    KILLER_ID_WALL,
+    KILLER_ID_WATER
 }
 
 public enum NetworkMessageType {
@@ -399,6 +401,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         switch ((KillerID)killerID) {
             case KillerID.KILLER_ID_FALL: message.killer = "KILLER_ID_FALL"; break;
             case KillerID.KILLER_ID_WALL: message.killer = "KILLER_ID_WALL"; break;
+            case KillerID.KILLER_ID_WATER: message.killer = "KILLER_ID_WATER"; break;
             default:                      message.killer = (killerID >= 0 ? this._players[killerID].name : ""); break;
         }
 

@@ -145,7 +145,7 @@ public class FireWall : NetworkBehaviour {
     }
 
     private void UpdateWallUI() {
-        _wallTransitionUI.sizeDelta = new Vector2(150 * this._wallShrinkTimer / _wallShrinkTime, 10);
+        _wallTransitionUI.anchorMax = new Vector2(this._wallShrinkTimer / _wallShrinkTime, 1);
     }
 
     // Calculates a new target wall, sets current wall to last target

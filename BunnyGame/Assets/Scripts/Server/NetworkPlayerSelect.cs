@@ -23,7 +23,8 @@ public enum NetworkMessageType {
     MSG_MATCH_DROP,
     MSG_MATCH_DISCONNECT,
     MSG_RANKINGS,
-    NR_OF_NETMESSAGE_TYPES
+    NR_OF_NETMESSAGE_TYPES,
+    MSG_MAP_SELECT
 }
 
 public class Player {

@@ -18,7 +18,7 @@
 			#include "UnityCG.cginc"
 			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
-			#include "noise.hlsl"
+			#include "utils.hlsl"
 			#pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
 
 			struct v2f {
@@ -58,11 +58,7 @@
 				//shadow
 				fixed shadow = SHADOW_ATTENUATION(i);
 				//light
-				//	Specular
-				float3 eyeReflection = reflect(i.lightDirEye, i.eyeNormal);
-				float3 posToViewer = normalize(-i.posEye);
-				float dotSpecular = saturate(dot(eyeReflection, posToViewer));
-				float3 specular = pow((dotSpecular), 5) *_LightColor0;
+				float3 specular = calcSpecular(i.lightDirEye, i.eyeNormal, i.posEye, 5);
 				fixed3 light = (i.diff + specular) * shadow + i.ambient;
 				//Final fragment color
 				fixed4 c = _Col;

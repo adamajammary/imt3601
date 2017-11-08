@@ -1,3 +1,20 @@
+
+//Function for calulating specular light
+float3 calcSpecular(float3 eyeLightDir, float3 eyeNormal, float3 eyePos, float exponent){
+	float3 eyeReflection = reflect(-eyeLightDir, eyeNormal);
+	float3 posToViewer = normalize(-eyePos);
+	float dotSpecular = saturate(dot(eyeReflection, posToViewer));
+	dotSpecular = max(dotSpecular, 0);
+	float3 specular = pow((dotSpecular), exponent);
+	return specular;
+}
+
+
+// Returns 1 if lower < input < upper, for 0 <= input <= 1. The functions purpose is to avoid code branching with if statements.  
+float inRange (float input, float lower, float upper){
+	return (ceil(input - lower) - ceil(input - upper));
+}
+
 //From looking at varius noise functions
 // it looks like they're pretty much based on 
 // some hash function, input coordinates and interpolation.

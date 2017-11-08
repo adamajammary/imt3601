@@ -93,20 +93,27 @@ public class PlayerAudio : MonoBehaviour {
         else if (hit.transform.GetComponent<MeshRenderer>() == null)
             return "";
 
-        
-        if (hit.transform.CompareTag("ground")) {
+        if (hit.transform.CompareTag("Island")) {
             switch (hit.transform.GetComponent<MeshRenderer>().material.name.TrimEnd(" (Instance)".ToCharArray())) {
+                case "material_9___1665":
+                case "material_9___1669":
                 case "mat9":
                 case "mat10":
                 case "mat12":
                     return "leaf";
+                case "material_16___1665":
+                case "material_16___1669":
                 case "mat16":
                 case "mat17":
                     return "stone";
+                case "material_18___1665":
+                    return "dirt";
                 case "mat18": // !! This is because the big mountain is in the same mesh as the ground... so I have to manually check whether it is stone or dirt...
-                    if (hit.point.y > -16.3f && Vector3.Distance(transform.position, new Vector3(24,transform.position.y,44)) < 80)
+                    if (hit.point.y > 2.5f && Vector3.Distance(transform.position, new Vector3(24,transform.position.y,44)) < 80)
                          return "stone";
                     else return "dirt";
+                case "material_19___1665":
+                case "material_19___1669":
                 case "mat20":
                     return "wood";
                 default:
@@ -115,7 +122,6 @@ public class PlayerAudio : MonoBehaviour {
         }
         return "";
     }
-
 
     private IEnumerator playFootSteps() {
         RaycastHit hit = new RaycastHit();

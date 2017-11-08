@@ -20,8 +20,7 @@
 			#include "UnityCG.cginc"
 			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
-			#include "noise.hlsl"
-			#include "inRange.hlsl"
+			#include "utils.hlsl"
 			#pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
 
 			struct v2f {
@@ -31,7 +30,7 @@
 				float3 eyeNormal : TEXCOORD2;
 				float3 worldPos : TEXCOORD3;
 				SHADOW_COORDS(4) // put shadows data into TEXCOORD1
-				fixed4 diff : COLOR0;
+				fixed3 diff : COLOR0;
 				fixed3 ambient : COLOR1;
 			};
 
@@ -50,7 +49,7 @@
 				o.lightDirEye = normalize(_WorldSpaceLightPos0); //It's a directional light
 				//Light
 				half nl = max(0, dot(worldNormal, _WorldSpaceLightPos0.xyz));
-				o.diff = nl * float4( 1, 1, 1, 1 );
+				o.diff = nl;
 				o.ambient = ShadeSH9(half4(worldNormal, 1));
 				//Shadow
 				TRANSFER_SHADOW(o)
@@ -61,12 +60,8 @@
 				//shadow
 				fixed shadow = SHADOW_ATTENUATION(i);
 				//light
-				//	Specular
-				float3 eyeReflection = reflect(i.lightDirEye, i.eyeNormal);
-				float3 posToViewer = normalize(-i.posEye);
-				float dotSpecular = saturate(dot(eyeReflection, posToViewer));
-				float3 specular = pow((dotSpecular), 2) * float4(1, 1, 1, 1);
-				fixed3 light = (i.diff + specular * 0.2) * shadow + i.ambient;
+				float3 specular = calcSpecular(i.lightDirEye, i.eyeNormal, i.posEye, 5);
+				fixed3 light = (i.diff + specular * 0.4) * shadow + i.ambient;
 				//Burn
 				float3 pos = i.worldPos;
 				pos.y = _FireWallPos.y;

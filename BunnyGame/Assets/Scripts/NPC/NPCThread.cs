@@ -31,7 +31,7 @@ public class NPCThread {
         this._deadNpcs = new List<NPCBrain>();
         this._wait = false;
 
-        var npcs = NPCWorldView.getNpcs();
+        var npcs = NPCWorldView.npcs;
         foreach (var npc in npcs.Values)
             this._npcBrains.Add(new NPCBrain(npc, this._instructions));
 
@@ -43,7 +43,7 @@ public class NPCThread {
 
     //==============NPC Loop==================================================
     void threadRunner() {
-        while (NPCWorldView.getRunNPCThread()) {
+        while (NPCWorldView.runNpcThread) {
             if (this._instructions.isEmpty() && !this._wait) {
                 this._isUpdating = true;
                 foreach (var npcBrain in this._npcBrains) {

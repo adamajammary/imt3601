@@ -51,42 +51,43 @@ public class NPCManager : NetworkBehaviour {
     //The need for keeping two list comes from the fact that the Unity API is not thread safe.
     //The NPCThread uses a thread safe representation of the World provided by NPCWorldView.
     private IEnumerator init() {
-
+        Debug.Log("NPC INIT 1");
         while (!WorldData.ready) yield return 0;
-
+        Debug.Log("NPC INIT 2");
         //Wait for all NPCs to spawn
         while (GameObject.FindGameObjectsWithTag("npc").Length != 100)
             yield return 0;
-
+        Debug.Log("NPC INIT 3");
         //Wait for all players to spawn, +1 for localplayer 
         while (this._playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1))
             yield return 0;
-
+        Debug.Log("NPC INIT 4");
         //gather data about players for the NPCs
         GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-
+        Debug.Log("NPC INIT 5");
         //Add players to the list of players
         this._players.Add(0, localPlayer);
         for (int i = 0; i < enemies.Length; i++)
             this._players.Add(i + 1, enemies[i]);
-
+        Debug.Log("NPC INIT 6");
         //Add players to NPCWorldView so that the NPCThread can use data about them
         var players = NPCWorldView.players;
         for (int i = 0; i < this._players.Count; i++)
             players.Add(i, new NPCWorldView.GameCharacter(i));
-
+        Debug.Log("NPC INIT 7");
         GameObject[] npcs = GameObject.FindGameObjectsWithTag("npc");
         for (int i = 0; i < npcs.Length; i++) {
             this._npcs.Add(i, npcs[i]);
             NPCWorldView.npcs.Add(i, new NPCWorldView.GameCharacter(i));
         }
-
+        Debug.Log("NPC INIT 8");
         this._ready = true;
         NPCWorldView.ready = true;
         NPCWorldView.runNpcThread = true;
         this._instructions = new BlockingQueue<NPCThread.instruction>();
         this._npcThread = new NPCThread(this._instructions);
+        Debug.Log("NPC INIT 9");
     }
 
     // Update is called once per frame

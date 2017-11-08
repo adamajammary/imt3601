@@ -182,6 +182,10 @@ public class WorldDataManager : MonoBehaviour {
             closed.ElementAt(i).Value.blocked = true;
     }
 
+    private void OnApplicationQuit() {
+        WorldData.clear();
+    }
+
     private void OnDestroy() {
         WorldData.clear();
     }

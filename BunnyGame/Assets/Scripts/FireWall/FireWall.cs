@@ -96,7 +96,6 @@ public class FireWall : NetworkBehaviour {
         this.recalculateWalls();
         this._targetWallRenderer.draw(this._target.wall.transform);
         this._ready = true;
-        Debug.Log("READY");
     }
 
     // Update is called once per frame
@@ -146,7 +145,7 @@ public class FireWall : NetworkBehaviour {
     }
 
     private void UpdateWallUI() {
-        _wallTransitionUI.sizeDelta = new Vector2(150 * this._wallShrinkTimer / _wallShrinkTime, 10);
+        _wallTransitionUI.anchorMax = new Vector2(this._wallShrinkTimer / _wallShrinkTime, 1);
     }
 
     // Calculates a new target wall, sets current wall to last target

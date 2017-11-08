@@ -19,28 +19,27 @@ public class Water : MonoBehaviour {
     void OnTriggerStay(Collider other) {
         if (other.tag == "PoopGrenade") return;
 
-        if (other.tag == "Player") {
-            float waterForce = (this._waterSurfaceHeight - other.transform.position.y + 0.5f) * this._waterForceStrength;
-            other.GetComponent<PlayerEffects>().onWaterStay(waterForce);
-        }
-        else if (other.tag == "Enemy") {
-            float waterForce = (this._waterSurfaceHeight - other.transform.position.y + 0.5f) * this._waterForceStrength;
-            other.GetComponent<PlayerEffects>().onWaterStay(waterForce);
-        }
-        else if(other.tag == "bunnycamera") {
-            float waterForce = (this._waterSurfaceHeight - other.transform.parent.position.y + 0.5f) * this._waterForceStrength;
-            other.transform.parent.GetComponent<PlayerEffects>().onWaterStay(waterForce);
-        }
 
         if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag())
             waterScreenEffect.enabled = true;
 
-        //Debug.Log(other.name + " :: " + GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag());
+
+        if (other.tag == "Player")
+            other.GetComponent<PlayerController>().inWater = true;
+        else if (other.tag == "bunnycamera")
+            other.transform.parent.GetComponent<PlayerController>().inWater = true;
+        
     }
 
     void OnTriggerExit(Collider other) {
         if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag())
             waterScreenEffect.enabled = false;
+
+
+        if (other.tag == "Player")
+            other.GetComponent<PlayerController>().inWater = false;
+        else if (other.tag == "bunnycamera")
+            other.transform.parent.GetComponent<PlayerController>().inWater = false;
     }
 }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
@@ -295,6 +296,8 @@ public class PlayerHealth : NetworkBehaviour {
             this._gameOverText.text = string.Format("YOU FELL TO YOUR DEATH!\n\tPlacement: #{0}\t\tKills: {1}\n", message.placement, message.kills);
         else if (message.killer == "KILLER_ID_WALL")
             this._gameOverText.text = string.Format("YOU WERE BURNED TO DEATH!\n\tPlacement: #{0}\t\tKills: {1}\n", message.placement, message.kills);
+        else if (message.killer == "KILLER_ID_WATER")
+            this._gameOverText.text = string.Format("YOU DROWNED!\n\tPlacement: #{0}\t\tKills: {1}\n", message.placement, message.kills);
         else if (message.killer != "")
             this._gameOverText.text = string.Format("YOU WERE KILLED BY {0}!\n\tPlacement: #{1}\t\tKills: {2}\n", message.killer, message.placement, message.kills);
         else

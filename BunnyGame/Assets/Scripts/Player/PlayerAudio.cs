@@ -107,6 +107,7 @@ public class PlayerAudio : MonoBehaviour {
                 case "mat17":
                     return "stone";
                 case "material_18___1665":
+                    return "dirt";
                 case "mat18": // !! This is because the big mountain is in the same mesh as the ground... so I have to manually check whether it is stone or dirt...
                     if (hit.point.y > 2.5f && Vector3.Distance(transform.position, new Vector3(24,transform.position.y,44)) < 80)
                          return "stone";

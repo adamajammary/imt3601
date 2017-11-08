@@ -94,7 +94,7 @@ public class PlayerAudio : MonoBehaviour {
             return "";
 
         
-        if (hit.transform.CompareTag("ground")) {
+        if (hit.transform.CompareTag("Island")) {
             switch (hit.transform.GetComponent<MeshRenderer>().material.name.TrimEnd(" (Instance)".ToCharArray())) {
                 case "mat9":
                 case "mat10":

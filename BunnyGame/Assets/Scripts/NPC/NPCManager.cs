@@ -62,6 +62,7 @@ public class NPCManager : NetworkBehaviour {
         while (this._playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1))
             yield return 0;
         Debug.Log("NPC INIT 4");
+        NPCWorldView.init();
         //gather data about players for the NPCs
         GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
@@ -84,7 +85,6 @@ public class NPCManager : NetworkBehaviour {
         Debug.Log("NPC INIT 8");
         this._ready = true;
         NPCWorldView.ready = true;
-        NPCWorldView.runNpcThread = true;
         this._instructions = new BlockingQueue<NPCThread.instruction>();
         this._npcThread = new NPCThread(this._instructions);
         Debug.Log("NPC INIT 9");

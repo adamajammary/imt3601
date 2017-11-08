@@ -110,7 +110,6 @@ public class NPCBrain {
             if (inDanger()) {
                this._brain._state.Push(new FleeDanger(this._brain));
             } else if (detectObstacle()) {
-                Debug.Log("FOUND OBSTACLE");
                this._brain._state.Push(new AvoidObstacle(this._brain));
             }
         }
@@ -175,7 +174,6 @@ public class NPCBrain {
         }
 
         protected WorldGrid.Cell findTargetCell(Vector3 prefDir) {
-            Debug.Log("FINDING TARGET");
             WorldGrid.Cell target = null;
             Vector3 testDir;
             float degInc = 180 / 8;
@@ -211,9 +209,8 @@ public class NPCBrain {
         }
 
         protected void AStar(WorldGrid.Cell startCell, WorldGrid.Cell goal) {
-            Debug.Log("ASTAR");
             if (goal == null || startCell == null) return;
-            Debug.Log("ASTAR, GONNA FIND PATH");
+
             //if (this._goal == goal.pos) return;
             Dictionary<Vector3, WorldGrid.Cell> closed =
                 new Dictionary<Vector3, WorldGrid.Cell>();                                             //For quickly looking up closed nodes
@@ -241,7 +238,6 @@ public class NPCBrain {
                         tmp = tmp.parent;
                     }
                     this._path.Push(tmp);
-                    Debug.Log("PATH LENGTH:" + this._path.Count);
                     return;
                 }
                 if (open.Count == 0 && closed.ContainsKey(current.pos))

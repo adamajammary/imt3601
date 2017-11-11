@@ -176,6 +176,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_ATTACK,        this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_LOBBY_UPDATE,  this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_MATCH_DROP,    this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_MAP_SELECT,    this.recieveNetworkMessage);
 
         this._players.Clear();
     }
@@ -280,6 +281,9 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             case (short)NetworkMessageType.MSG_MATCH_DROP:
                 this.recieveMatchDropMessage();
                 break;
+            case (short)NetworkMessageType.MSG_MAP_SELECT:
+                this.recieveMapSelectMessage(message);
+                break;
             default:
                 Debug.Log("ERROR! Unknown message type: " + message.msgType);
                 break;
@@ -369,6 +373,11 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             if (conn != null)
                 this.sendLobbyPlayersMessage(conn.connectionId);
         }
+    }
+
+    private void recieveMapSelectMessage(NetworkMessage message) {
+        string map = message.ReadMessage<StringMessage>().value;
+        Debug.Log(map);
     }
 
     // Tell the client to disconnect from the match.

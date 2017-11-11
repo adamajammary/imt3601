@@ -672,7 +672,7 @@ Prefab:
     - target: {fileID: 224575951776748962, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_LocalPosition.y
-      value: -188.79999
+      value: -152.9
       objectReference: {fileID: 0}
     - target: {fileID: 224974316468650396, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
@@ -707,27 +707,27 @@ Prefab:
     - target: {fileID: 114385478169777340, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_Text
-      value: "Pick a map \n(Non functional)\nYou get a random map\n"
+      value: Vote for a map
       objectReference: {fileID: 0}
     - target: {fileID: 224103208096310872, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_LocalPosition.y
-      value: 144
+      value: 137.3
       objectReference: {fileID: 0}
     - target: {fileID: 224103208096310872, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: 94
+      value: 87.3
       objectReference: {fileID: 0}
     - target: {fileID: 224103208096310872, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_SizeDelta.y
-      value: 90
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 224575951776748962, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: -188.8
+      value: -152.9
       objectReference: {fileID: 0}
     - target: {fileID: 224103208096310872, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}

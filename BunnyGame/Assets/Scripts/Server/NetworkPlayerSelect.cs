@@ -385,10 +385,6 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         else
             this._mapVotes.Add(message.conn, map);
 
-        foreach (var vote in this._mapVotes) {
-            Debug.Log(vote.Value);
-        }
-
         sendMapVotes();
     }
 
@@ -427,6 +423,9 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             if (vote.Value == maxVotes)
                 winnerMaps.Add(vote.Key);
         }
+
+        this._mapVotes = new Dictionary<NetworkConnection, string>(); //Clear vote data
+
         return winnerMaps[Random.Range(0, winnerMaps.Count)];
     }
 

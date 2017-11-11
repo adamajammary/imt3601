@@ -412,6 +412,24 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         return votes;
     }
 
+    //Returns the map with the most votes, if theres multiple winners one winner is chosen at random
+    public string getMap() {
+        List<string> winnerMaps = new List<string>();
+        var votes = getVotes();
+
+        int maxVotes = 0;
+        foreach(int voteCount in votes.Values) {
+            if (maxVotes < voteCount)
+                maxVotes = voteCount;
+        }
+
+        foreach (var vote in votes) {
+            if (vote.Value == maxVotes)
+                winnerMaps.Add(vote.Key);
+        }
+        return winnerMaps[Random.Range(0, winnerMaps.Count)];
+    }
+
     // Tell the client to disconnect from the match.
     private void sendDisconnectMessage(int id) {
         NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_MATCH_DISCONNECT, new IntegerMessage());

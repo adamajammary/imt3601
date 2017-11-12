@@ -281,7 +281,7 @@ public class LobbyHUD : MonoBehaviour {
 
         if (title != null) {
             matchName = (this._matchName != "" ? this._matchName : "default");
-            matchName = (matchName.Length < 11 ? matchName : matchName.Substring(0, 10) + "...");
+            //matchName = (matchName.Length < 11 ? matchName : matchName.Substring(0, 10) + "...");
 
             title.GetComponent<Text>().text = string.Format("Match: {0}", matchName);
         }

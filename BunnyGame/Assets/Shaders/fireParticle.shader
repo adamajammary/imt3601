@@ -15,7 +15,7 @@
 			#pragma fragment frag
 			
 			#include "UnityCG.cginc"
-			#include "noise.hlsl"
+			#include "utils.hlsl"
 
 			struct appdata {
 				float4 vertex : POSITION;

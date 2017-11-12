@@ -1,4 +1,6 @@
 ﻿using UnityEngine.Networking;
+using UnityEngine;
+using System.Collections;
 
 public class SetUpLocalPlayer : NetworkBehaviour {
 
@@ -18,7 +20,20 @@ public class SetUpLocalPlayer : NetworkBehaviour {
             }
             this.tag = "Player";
             transform.GetChild(0).gameObject.SetActive(true);
+            StartCoroutine(SpawnPlayer());
         } else
             this.tag = "Enemy";        
+    }
+
+    private IEnumerator SpawnPlayer() {
+        while (!WorldData.ready) yield return 0;        
+
+        WorldGrid.Cell cell;
+        do { //Find a random position for the player
+            int x = Random.Range(0, WorldData.cellCount);
+            int z = Random.Range(0, WorldData.cellCount);
+            cell = WorldData.worldGrid.getCell(x, 1, z);
+        } while (cell.blocked);
+        transform.position = cell.pos;
     }
 }

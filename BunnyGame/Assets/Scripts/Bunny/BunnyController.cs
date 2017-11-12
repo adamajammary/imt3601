@@ -84,7 +84,7 @@ public class BunnyController : NetworkBehaviour {
                 if (hit.transform.tag == "projectile")
                     direction = ray.GetPoint(50.0f) - this._poopCameraPos.position;
                 
-                Debug.Log(hit.transform);
+                //Debug.Log(hit.transform);
                 Vector3 dirNorm = direction.normalized;
                 this.CmdShootPoop(dirNorm, this._controller.velocity, playerInfo.ConnectionID);
             } else {
@@ -121,7 +121,7 @@ public class BunnyController : NetworkBehaviour {
         if (animator != null)
         {
             animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
-            animator.SetBool("isJumping", !GetComponent<CharacterController>().isGrounded);
+            animator.SetBool("isJumping", !GetComponent<CharacterController>().isGrounded && !GetComponent<PlayerController>().inWater);
             animator.SetFloat("height", GetComponent<PlayerController>().velocityY);
         }
 

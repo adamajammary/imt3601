@@ -58,6 +58,7 @@ public class NPCManager : NetworkBehaviour {
         //Wait for all players to spawn, +1 for localplayer 
         while (this._playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1))
             yield return 0;
+
         NPCWorldView.init();
         //gather data about players for the NPCs
         GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");

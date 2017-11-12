@@ -24,7 +24,8 @@ public enum NetworkMessageType {
     MSG_MATCH_DISCONNECT,
     MSG_RANKINGS,
     NR_OF_NETMESSAGE_TYPES,
-    MSG_MAP_SELECT
+    MSG_MAP_SELECT,
+    MSG_MAP_VOTE
 }
 
 public class Player {
@@ -86,6 +87,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
     private string[]                _models       = { "PlayerCharacterBunny", "PlayerCharacterFox", "PlayerCharacterBird", "PlayerCharacterMoose" };
     private Dictionary<int, Player> _players = new Dictionary<int, Player>();
+    private Dictionary<NetworkConnection, string> _mapVotes = new Dictionary<NetworkConnection, string>();
 
     private int getNrOfPlayersAlive() {
         int playersAlive = 0;
@@ -176,6 +178,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_ATTACK,        this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_LOBBY_UPDATE,  this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_MATCH_DROP,    this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_MAP_SELECT,    this.recieveNetworkMessage);
 
         this._players.Clear();
     }
@@ -280,6 +283,9 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             case (short)NetworkMessageType.MSG_MATCH_DROP:
                 this.recieveMatchDropMessage();
                 break;
+            case (short)NetworkMessageType.MSG_MAP_SELECT:
+                this.recieveMapSelectMessage(message);
+                break;
             default:
                 Debug.Log("ERROR! Unknown message type: " + message.msgType);
                 break;
@@ -369,6 +375,58 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             if (conn != null)
                 this.sendLobbyPlayersMessage(conn.connectionId);
         }
+    }
+
+    private void recieveMapSelectMessage(NetworkMessage message) {
+        string map = message.ReadMessage<StringMessage>().value;
+
+        if (this._mapVotes.ContainsKey(message.conn))
+            this._mapVotes[message.conn] = map;
+        else
+            this._mapVotes.Add(message.conn, map);
+
+        sendMapVotes();
+    }
+
+    private void sendMapVotes() {
+        var votes = getVotes();
+        string message = "";
+        foreach (var vote in votes) {
+            message += "|" + vote.Key + ":" + vote.Value;            
+        }
+        NetworkServer.SendToAll((short)NetworkMessageType.MSG_MAP_VOTE, new StringMessage(message));
+    }
+
+    Dictionary<string, int> getVotes() {
+        Dictionary<string, int> votes = new Dictionary<string, int>();
+        foreach (var vote in this._mapVotes.Values) {
+            if (votes.ContainsKey(vote))
+                votes[vote] += 1;
+            else
+                votes.Add(vote, 1);
+        }
+        return votes;
+    }
+
+    //Returns the map with the most votes, if theres multiple winners one winner is chosen at random
+    public string getMap() {
+        List<string> winnerMaps = new List<string>();
+        var votes = getVotes();
+
+        int maxVotes = 0;
+        foreach(int voteCount in votes.Values) {
+            if (maxVotes < voteCount)
+                maxVotes = voteCount;
+        }
+
+        foreach (var vote in votes) {
+            if (vote.Value == maxVotes)
+                winnerMaps.Add(vote.Key);
+        }
+
+        this._mapVotes = new Dictionary<NetworkConnection, string>(); //Clear vote data
+
+        return winnerMaps[Random.Range(0, winnerMaps.Count)];
     }
 
     // Tell the client to disconnect from the match.

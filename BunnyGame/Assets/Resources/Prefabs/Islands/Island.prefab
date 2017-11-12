@@ -2852,6 +2852,7 @@ GameObject:
   - component: {fileID: 4825798538101680}
   - component: {fileID: 114867394256104226}
   - component: {fileID: 114493957614284068}
+  - component: {fileID: 114632121368067090}
   m_Layer: 19
   m_Name: Island
   m_TagString: Island
@@ -18639,6 +18640,38 @@ MonoBehaviour:
   - {fileID: 4778806061397522}
   - {fileID: 4287231881481474}
   name: Island
+--- !u!114 &114632121368067090
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1703445727045148}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 204
+    i1: 115
+    i2: 71
+    i3: 200
+    i4: 49
+    i5: 236
+    i6: 144
+    i7: 68
+    i8: 58
+    i9: 200
+    i10: 176
+    i11: 231
+    i12: 199
+    i13: 232
+    i14: 9
+    i15: 122
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 0
 --- !u!114 &114867394256104226
 MonoBehaviour:
   m_ObjectHideFlags: 1

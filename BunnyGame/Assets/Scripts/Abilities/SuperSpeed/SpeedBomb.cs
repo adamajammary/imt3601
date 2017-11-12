@@ -6,8 +6,8 @@ public class SpeedBomb : SpecialAbility{
 
     private Animator         _animator;
     private GameObject       _attackArea;
-    private GameObject       _capsule1;
-    private GameObject       _capsule2;
+  //  private GameObject       _capsule1;
+  //  private GameObject       _capsule2;
     private AbilityNetwork   _networkAbility;
     private PlayerController _playerController;
     private float            _speed;

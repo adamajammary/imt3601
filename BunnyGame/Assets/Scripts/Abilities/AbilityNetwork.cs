@@ -184,4 +184,42 @@ public class AbilityNetwork : NetworkBehaviour {
         this.RpcSuperSpeed(active);
     }
     //////////////////////////////////////////////////////////////////
+
+    /////////////////////// Stomp ability ///////////////////////////
+
+    public void Stomp(GameObject owner, float AOE, Vector3 impact)
+    {
+        if (this.isServer)
+            this.RpcStomp(owner,AOE,impact);
+        else if (this.isClient)
+            this.CmdStomp(owner,AOE,impact);
+    }
+
+    [Command]
+    private void CmdStomp(GameObject owner, float AOE, Vector3 impact)
+    {
+        this.StompNow(owner, AOE, impact);
+    }
+
+    [ClientRpc]
+    private void RpcStomp(GameObject owner, float AOE, Vector3 impact)
+    {
+        this.StompNow(owner, AOE, impact);
+    }
+
+    private void StompNow(GameObject owner, float AOE, Vector3 impact)
+    {
+        int playerlayer = 1 << 8;
+        int npcLayer = 1 << 14;
+        int layermask = playerlayer | npcLayer;
+        Collider[] hit = Physics.OverlapSphere(impact, AOE, layermask);
+        for (int i = 0; i < hit.Length; i++)
+        {
+            if (hit[i].tag == "Player" && hit[i].isTrigger && hit[i].gameObject != owner)
+            {
+                hit[i].gameObject.GetComponent<PlayerEffects>().stompKnockBack(impact);
+                Debug.Log(hit[i].name);
+            }
+        }
+    }
 }

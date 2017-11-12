@@ -213,4 +213,10 @@ public class PlayerEffects : NetworkBehaviour {
         NetworkServer.Spawn(blood);
         Destroy(blood, 5.0f);
     }
+
+    //======================STOMP===============================================================================
+    public void stompKnockBack(Vector3 impactPos)
+    {
+        StartCoroutine(knockBack(impactPos));
+    }
 }

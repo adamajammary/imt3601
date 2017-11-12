@@ -552,6 +552,14 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
                 Leaderboard.SaveScore(rankings[i].name, (double)rankings[i].score);
         }
 
+        if (id == NetworkServer.serverHostId) {
+            Leaderboard.SaveStats(this._models[rankings[0].animal]);
+
+            // DEBUG: Print stats to console
+            for (int i = 0; i < this._models.Length; i++)
+                Leaderboard.GetStats(this._models[i]);
+        }
+
         NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_RANKINGS, message);
     }
 }

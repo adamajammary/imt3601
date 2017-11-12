@@ -87,7 +87,7 @@ public class MooseController : NetworkBehaviour{
     {
         _isAttackingAnim = true;
         ramArea.GetComponent<BoxCollider>().enabled = true;
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1.0f);
         ramArea.GetComponent<BoxCollider>().enabled = false;
         _isAttackingAnim = false;
     }

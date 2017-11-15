@@ -689,6 +689,7 @@ GameObject:
   - component: {fileID: 114104310228875824}
   - component: {fileID: 114946369009629926}
   - component: {fileID: 114491346422794140}
+  - component: {fileID: 114258684323718634}
   m_Layer: 19
   m_Name: Island42
   m_TagString: Island
@@ -6384,6 +6385,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68f21f0b0b46eac43a01f5a7cf63ec74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &114258684323718634
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1339375467231936}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b419f72986b38549aace150a5382c8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  portal: {fileID: 1977361486921424, guid: 80f0510fac6d76c408b8485a9b0521e5, type: 2}
 --- !u!114 &114491346422794140
 MonoBehaviour:
   m_ObjectHideFlags: 1

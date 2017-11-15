@@ -84,7 +84,7 @@ public class WorldDataManager : MonoBehaviour {
         int totalIter = grid.yOffsets.Length * grid.cellCount * grid.cellCount * 2;
         int yieldRate = grid.cellCount;
 
-        for (int y = 2; y < grid.yOffsets.Length; y++) {
+        for (int y = 0; y < grid.yOffsets.Length; y++) {
             for (int z = 0; z < grid.cellCount; z++) {
                 for (int x = 0; x < grid.cellCount; x++) {
                     var cell = grid.getCell(x, y, z);
@@ -99,31 +99,29 @@ public class WorldDataManager : MonoBehaviour {
             }
         }
 
+        bool lastCellBlocked = false;
+        for (int y = 0; y < grid.yOffsets.Length; y++) {
 
+            WorldGrid.Cell[] targets = new WorldGrid.Cell[this._islandData.connectPoints[y].childCount];
+            for (int i = 0; i < targets.Length; i++) {
+                targets[i] = grid.getCell(this._islandData.connectPoints[y].GetChild(i).position);
+            }
+            if (y == 1) blockWaterInLand(y);
 
-        //bool lastCellBlocked = false;
-        //for (int y = 2; y < grid.yOffsets.Length; y++) {
-
-        //    WorldGrid.Cell[] targets = new WorldGrid.Cell[this._islandData.connectPoints[y].childCount];
-        //    for (int i = 0; i < targets.Length; i++) {
-        //        targets[i] = grid.getCell(this._islandData.connectPoints[y].GetChild(i).position);
-        //    }
-        //    if (y == 1) blockWaterInLand(y);
-
-        //    for (int z = 0; z < grid.cellCount; z++) {
-        //        for (int x = 0; x < grid.cellCount; x++) {
-        //            var cell = grid.getCell(x, y, z);
-        //            if (!cell.blocked && lastCellBlocked)
-        //                this.fillAreaIfBlocked(y, cell, targets);
-        //            lastCellBlocked = cell.blocked;
-        //            Iter++;
-        //            if (Iter % yieldRate == 0) {
-        //                progress((float)Iter / (float)totalIter);
-        //                yield return 0;
-        //            }
-        //        }
-        //    }
-        //}
+            for (int z = 0; z < grid.cellCount; z++) {
+                for (int x = 0; x < grid.cellCount; x++) {
+                    var cell = grid.getCell(x, y, z);
+                    if (!cell.blocked && lastCellBlocked)
+                        this.fillAreaIfBlocked(y, cell, targets);
+                    lastCellBlocked = cell.blocked;
+                    Iter++;
+                    if (Iter % yieldRate == 0) {
+                        progress((float)Iter / (float)totalIter);
+                        yield return 0;
+                    }
+                }
+            }
+        }
         progress(1);
     }
 

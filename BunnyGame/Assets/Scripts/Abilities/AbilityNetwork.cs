@@ -27,8 +27,8 @@ public class AbilityNetwork : NetworkBehaviour {
         this._dustParticles = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustStorm");
         this._dustTornado = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustTornado");
 
-        if (this.transform.childCount > 6)
-            this._fireFart = this.transform.GetChild(6).gameObject;
+      //  if (this.transform.childCount > 6)
+            this._fireFart = this.transform.GetChild(4).gameObject;
     }
   
 
@@ -161,6 +161,9 @@ public class AbilityNetwork : NetworkBehaviour {
     /////////////////////// Functiuons for SuperSpeed ///////////////
     public void SuperSpeed(bool active) {
         Transform damageArea = this.transform.GetChild(3);
+        PlayerAttack attackScript = damageArea.GetComponent<PlayerAttack>();
+        attackScript.owner = this.gameObject;
+        
 
         if (gameObject != null)
             damageArea.GetComponent<CapsuleCollider>().enabled = active;
@@ -181,4 +184,42 @@ public class AbilityNetwork : NetworkBehaviour {
         this.RpcSuperSpeed(active);
     }
     //////////////////////////////////////////////////////////////////
+
+    /////////////////////// Stomp ability ///////////////////////////
+
+    public void Stomp(GameObject owner, float AOE, Vector3 impact)
+    {
+        if (this.isServer)
+            this.RpcStomp(owner,AOE,impact);
+        else if (this.isClient)
+            this.CmdStomp(owner,AOE,impact);
+    }
+
+    [Command]
+    private void CmdStomp(GameObject owner, float AOE, Vector3 impact)
+    {
+        this.StompNow(owner, AOE, impact);
+    }
+
+    [ClientRpc]
+    private void RpcStomp(GameObject owner, float AOE, Vector3 impact)
+    {
+        this.StompNow(owner, AOE, impact);
+    }
+
+    private void StompNow(GameObject owner, float AOE, Vector3 impact)
+    {
+        int playerlayer = 1 << 8;
+        int npcLayer = 1 << 14;
+        int layermask = playerlayer | npcLayer;
+        Collider[] hit = Physics.OverlapSphere(impact, AOE, layermask);
+        for (int i = 0; i < hit.Length; i++)
+        {
+            if (hit[i].tag == "Player" && hit[i].isTrigger && hit[i].gameObject != owner)
+            {
+                hit[i].gameObject.GetComponent<PlayerEffects>().stompKnockBack(impact);
+                Debug.Log(hit[i].name);
+            }
+        }
+    }
 }

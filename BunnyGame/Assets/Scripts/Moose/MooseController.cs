@@ -39,8 +39,11 @@ public class MooseController : NetworkBehaviour{
         // Add abilities to class:
         PlayerAbilityManager abilityManager = GetComponent<PlayerAbilityManager>();
         SpeedBomb sp = gameObject.AddComponent<SpeedBomb>();
+        Stomp stomp = gameObject.AddComponent<Stomp>();
+        stomp.init();
         sp.init(30, 4);
         abilityManager.abilities.Add(sp);
+        abilityManager.abilities.Add(stomp);
 
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(abilityManager);
     }
@@ -55,39 +58,14 @@ public class MooseController : NetworkBehaviour{
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
             StartCoroutine(this.toggleRam());
-            //this.ram();
     }
 
-    // NB! Not needed with reverse attack logic (PlayerAttack.cs)
-    /*private void ram()
-    {
-        if (this.GetComponent<PlayerHealth>().IsDead())
-            return;
 
-        if (this.isServer)
-            this.RpcRam();
-        else if (this.isClient)
-            this.CmdRam();
-    }
-
-    [Command]
-    private void CmdRam()
-    {
-        this.RpcRam();
-    }
-
-    [ClientRpc]
-    private void RpcRam()
-    {
-        StartCoroutine(this.toggleRam());
-    }*/
-
-    // Biting is enabled for 1 tick after called
     private IEnumerator toggleRam()
     {
         _isAttackingAnim = true;
         ramArea.GetComponent<BoxCollider>().enabled = true;
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1.0f);
         ramArea.GetComponent<BoxCollider>().enabled = false;
         _isAttackingAnim = false;
     }

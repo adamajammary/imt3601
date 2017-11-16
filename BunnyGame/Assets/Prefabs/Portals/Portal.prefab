@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 33990259760916188}
   - component: {fileID: 136483540709261358}
   - component: {fileID: 23696428639813704}
+  - component: {fileID: 114329702231447656}
   m_Layer: 0
   m_Name: Portal
   m_TagString: Untagged
@@ -83,6 +84,18 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1977361486921424}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &114329702231447656
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1977361486921424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 131525f4117454c4d8829eba75fe0f81, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  magicTrail: {fileID: 1474306342381668, guid: 5331ebdcc3636974a9719267b89b8964, type: 2}
 --- !u!136 &136483540709261358
 CapsuleCollider:
   m_ObjectHideFlags: 1

@@ -1,6 +1,7 @@
 ﻿Shader "Custom/Smell" {
 	Properties{
 		_MainTex("Texture", 2D) = "white" {}
+		_Color("Color", Color) = (0, 1, 0, 1)
 	}
 	SubShader {
 		Tags{ "RenderType" = "Transparent" "Queue" = "Transparent-5" }
@@ -28,6 +29,7 @@
 
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
+			uniform float4 _Color;
 
 			v2f vert(appdata v) {
 				v2f o;
@@ -44,11 +46,10 @@
 				n = noise(samplePos*n);
 
 				fixed3 black = { 0, 0, 0 };
-				fixed3 green = { 0, 1, 0 };
 
 				fixed4 col = { 1, 1, 1, 1 };
 				float cutoff = ceil((0.5 - (length(i.uv - 0.5) + n * 0.2)) * 2 - 0.1);
-				col.rgb = lerp(green, black, n);
+				col.rgb = lerp(_Color.rgb, black, n);
 				col *= cutoff;
 				return col;
 			}

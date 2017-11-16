@@ -101,6 +101,8 @@ public class ThirdPersonCamera : MonoBehaviour {
     }
 
     public string getTargetTag() {
+        if (_target == null)
+            return "null";
         return _target.tag;
     }
 }

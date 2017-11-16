@@ -19,11 +19,6 @@ public class Water : MonoBehaviour {
     void OnTriggerStay(Collider other) {
         if (other.tag == "PoopGrenade") return;
 
-
-        //if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag())
-        //    waterScreenEffect.enabled = true;
-
-
         if (other.tag == "Player") {
             other.GetComponent<PlayerController>().inWater = true;
             waterScreenEffect.enabled = true;
@@ -38,10 +33,6 @@ public class Water : MonoBehaviour {
     }
 
     void OnTriggerExit(Collider other) {
- //       if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag())
- //           waterScreenEffect.enabled = false;
-
-
         if (other.tag == "Player") {
             other.GetComponent<PlayerController>().inWater = false;
             waterScreenEffect.enabled = false;

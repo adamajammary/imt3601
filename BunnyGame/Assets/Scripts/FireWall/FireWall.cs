@@ -120,7 +120,7 @@ public class FireWall : NetworkBehaviour {
     }
 
     private void spawnFire() {
-        if (UnityEngine.Random.Range(0.0f, 1.0f) < 0.4) return;
+        if (UnityEngine.Random.Range(0.0f, 1.0f) < 0.05) return;
         float radius = UnityEngine.Random.Range(0, this._outerBounds);
         float angle = UnityEngine.Random.Range(0, Mathf.PI * 2);
         Vector3 pos = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;

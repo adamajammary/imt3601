@@ -155,17 +155,26 @@ public class NPCManager : NetworkBehaviour {
     //Spawns a NPC with a random direction
     [Command]
     private void CmdSpawnNPC(GameObject npc) {
+        int y = (Random.Range(0.0f, 1.0f) < 0.3f) ? Random.Range(1, WorldData.yOffsets.Length) : 1;
+        if (y != 1) Debug.Log("YEAH");
+
         var npcInstance = Instantiate(npc);
         WorldGrid.Cell cell;
         do { //Find a random position for the NPC
             int x = Random.Range(0, WorldData.cellCount);
             int z = Random.Range(0, WorldData.cellCount);
-            cell = WorldData.worldGrid.getCell(x, 1, z);
+            cell = WorldData.worldGrid.getCell(x, y, z);
         } while (cell.blocked);
         //Angle is used to generate a direction
         float angle = Random.Range(0, Mathf.PI * 2);
         Vector3 dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
-        npcInstance.GetComponent<NPC>().spawn(cell.pos, dir);
+        //Spawn position
+        int layermask = (1 << 19);
+        Ray ray = new Ray(cell.pos + Vector3.up * 5, Vector3.down);
+        RaycastHit hit;
+        Physics.Raycast(ray, out hit, 10, layermask);
+        //Spawn npc
+        npcInstance.GetComponent<NPC>().spawn(hit.point, dir);
 
         NetworkServer.Spawn(npcInstance);
 

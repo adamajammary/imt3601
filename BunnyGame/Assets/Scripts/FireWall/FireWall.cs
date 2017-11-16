@@ -131,16 +131,12 @@ public class FireWall : NetworkBehaviour {
         pos.y = 50;
 
         RaycastHit hit;
-        if (Physics.Raycast(pos, Vector3.down, out hit)) {
-            if (hit.collider.tag == "ground") {
-                var mat = hit.collider.gameObject.GetComponent<MeshRenderer>().material;
-                if (mat.name.Contains("mat18")) {
-                    var fire = Instantiate(this._fire);
-                    fire.transform.position = hit.point;
-                    fire.transform.GetChild(0).localScale *= UnityEngine.Random.Range(0.5f, 1.5f);
-                    Destroy(fire, 10.0f);
-                }
-            }
+        int layermask = (1 << 19);
+        if (Physics.Raycast(pos, Vector3.down, out hit, 100, layermask)) {
+            var fire = Instantiate(this._fire);
+            fire.transform.position = hit.point;
+            fire.transform.GetChild(0).localScale *= UnityEngine.Random.Range(0.5f, 1.5f);
+            Destroy(fire, 10.0f);            
         }
     }
 

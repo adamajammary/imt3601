@@ -178,13 +178,31 @@ public class WorldGrid {
         return this._worldGrid[index[0], getClosestLevel(pos), index[1]];
     }
 
+    public Cell getCellNoWater(Vector3 pos) {
+        int[] index = convertWorld2Cell(pos);
+        return this._worldGrid[index[0], getClosestLevelNoWater(pos), index[1]];
+    }
+
     public int getClosestLevel(Vector3 pos) {
         int level = 0;
-        for(int i = 1; i < yOffsets.Length; i++) {
+        for (int i = 1; i < yOffsets.Length; i++) {
             if (Mathf.Abs(yOffsets[i] - pos.y) < Mathf.Abs(yOffsets[level] - pos.y))
                 level = i;
         }
         return level;
+    }    
+
+    public int getClosestLevel(Vector3 pos, int start, int end) {
+        int level = start;
+        for (int i = start + 1; i < end; i++) {
+            if (Mathf.Abs(yOffsets[i] - pos.y) < Mathf.Abs(yOffsets[level] - pos.y))
+                level = i;
+        }
+        return level;
+    }
+
+    public int getClosestLevelNoWater(Vector3 pos) {
+        return getClosestLevel(pos, 1, yOffsets.Length);
     }
 
     public int[] convertWorld2Cell(Vector3 world) {

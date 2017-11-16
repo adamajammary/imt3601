@@ -35,7 +35,7 @@ public class IslandData : MonoBehaviour {
     // Can switch this to loading from file in the future
     private void Island42Init() {
         this._cellCount = 150;
-        this._worldSize = 400;        
+        this._worldSize = 350;        
     }
 
     private void IslandInit() {

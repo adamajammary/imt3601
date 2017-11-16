@@ -23,6 +23,7 @@ public class SpectatorController : MonoBehaviour {
     private float currentSpeed = 0;
 
     private GameObject _freeCameraTarget;
+    private GameObject _player;
 
     private float _yaw = 0;
     private float _pitch = 0;
@@ -40,7 +41,6 @@ public class SpectatorController : MonoBehaviour {
             name = "Spectator Camera [Free Mode]"
         };
         _freeCameraTarget.AddComponent<CharacterController>();
-
 
         this.enabled = false;
     }

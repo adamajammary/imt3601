@@ -191,6 +191,15 @@ public class PlayerHealth : NetworkBehaviour {
     [ClientRpc]
     private void RpcDie(int killerID) {
         this.gameObject.transform.GetChild(1).gameObject.SetActive(false);
+
+        GetComponent<PlayerController>().enabled = false;
+        GetComponent<Collider>().enabled = false;
+        GetComponent<PlayerEffects>().enabled = false;
+
+        for (int i = 0; i < transform.childCount; i++)
+            transform.GetChild(i).gameObject.SetActive(false);
+
+        this._isDead = true;
     }
 
     [Command]

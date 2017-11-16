@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class PortalManager : MonoBehaviour {
+public class PortalManager : NetworkBehaviour {
     public GameObject portal;
 
     private int[] portalCounts = new int[]{ 4, 1, 1 };
@@ -10,7 +11,8 @@ public class PortalManager : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        StartCoroutine(init());        
+        if (this.isServer)
+            StartCoroutine(init());        
 	}
 
     private Vector3 getPortalPos(int y) {
@@ -37,16 +39,25 @@ public class PortalManager : MonoBehaviour {
         return hit.point;
     }
 
+    [ClientRpc]
+    private void RpcSpawnPortals(Vector3 one, Vector3 two) {
+        Portal p1 = Instantiate(portal, one, Quaternion.identity).GetComponent<Portal>();
+        Portal p2 = Instantiate(portal, two, Quaternion.identity).GetComponent<Portal>();
+        p1.setTarget(p2);
+        p2.setTarget(p1);
+    }
+
     private IEnumerator init() {
         while (!WorldData.ready) yield return 0;
+
+        int playerCount = UnityEngine.Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
+        while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
+            yield return 0;
 
         //Level 1 to 2 portals
         for (int level = 0; level < portalCounts.Length; level++) {
             for (int i = 0; i < portalCounts[level]; i++) {
-                Portal p1 = Instantiate(portal, getPortalPos(level + 1), Quaternion.identity).GetComponent<Portal>();
-                Portal p2 = Instantiate(portal, getPortalPos(level + 2), Quaternion.identity).GetComponent<Portal>();
-                p1.setTarget(p2);
-                p2.setTarget(p1);
+                RpcSpawnPortals(getPortalPos(level + 1), getPortalPos(level + 2));
             }
         }
     }

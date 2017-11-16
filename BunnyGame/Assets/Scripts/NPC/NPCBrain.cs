@@ -58,7 +58,7 @@ public class NPCBrain {
             eyes[1] = Quaternion.AngleAxis(fov, Vector3.up) * dir;
             eyes[2] = Quaternion.AngleAxis(-fov, Vector3.up) * dir;
             foreach (var eye in eyes) {
-                if (WorldData.worldGrid.rayCast(1, npc.getPos(), npc.getPos() + eye * viewDist) != float.MaxValue)
+                if (WorldData.worldGrid.rayCast(npc.getLevel(), npc.getPos(), npc.getPos() + eye * viewDist) != float.MaxValue)
                     return true;
             }
             return false;
@@ -169,7 +169,7 @@ public class NPCBrain {
             var npc = this._brain._npc;
             if (npc.getGoal() == Vector3.down) return;
             if (npc.getGoal() != this._goal) { //This happends when a client is out of sync with master, and they calculate different paths
-                AStar(npc.getCell(), WorldData.worldGrid.getCell(npc.getGoal(), 1));
+                AStar(npc.getCell(), WorldData.worldGrid.getCellNoWater(npc.getGoal()));
             }
         }
 
@@ -201,7 +201,7 @@ public class NPCBrain {
             float cellSize = WorldData.worldGrid.cellSize;
             for (mult = start; mult < probeLen; mult++) {
                 Vector3 rayEnd = pos + dir * cellSize * mult;
-                var cell = WorldData.worldGrid.getCell(rayEnd, 1);
+                var cell = WorldData.worldGrid.getCellNoWater(rayEnd);
                 if (!cell.blocked)
                     return cell;
             }

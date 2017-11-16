@@ -99,8 +99,6 @@ public class WorldDataManager : MonoBehaviour {
             }
         }
 
-        
-
         bool lastCellBlocked = false;
         for (int y = 0; y < grid.yOffsets.Length; y++) {
 
@@ -108,7 +106,7 @@ public class WorldDataManager : MonoBehaviour {
             for (int i = 0; i < targets.Length; i++) {
                 targets[i] = grid.getCell(this._islandData.connectPoints[y].GetChild(i).position);
             }
-            if (y > 0) blockWaterInLand(y);
+            if (y == 1) blockWaterInLand(y);
 
             for (int z = 0; z < grid.cellCount; z++) {
                 for (int x = 0; x < grid.cellCount; x++) {

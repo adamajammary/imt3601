@@ -122,50 +122,17 @@ public class PlayerEffects : NetworkBehaviour {
         if (!this.isLocalPlayer)
             return;
 
-        // NB! Handled in PlayerAttack.cs
-        /*if ((other.gameObject.tag == "foxbite") && (other.gameObject.transform.parent.gameObject.tag == "Enemy")) {
-            FoxController foxScript = other.GetComponentInParent<FoxController>();
-            PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
-
-            if ((this._health != null) && (foxScript != null) && !this._health.IsDead()) {
-                this.CmdBloodParticle(foxScript.biteImpact());
-                this._health.TakeDamage(calcDamage(other.transform.parent.gameObject, foxScript.GetDamage()), otherInfo.ConnectionID);
-            }
-        } else if (other.gameObject.tag == "projectile") {
-            BunnyPoop poopScript = other.gameObject.GetComponent<BunnyPoop>();
-            PlayerInformation otherInfo = poopScript.owner.GetComponent<PlayerInformation>();
-            if ((this._health != null) && (poopScript != null) && !this._health.IsDead() && poopScript.owner.gameObject != this.gameObject) {
-                this.CmdBloodParticle(other.gameObject.transform.position);
-                this._health.TakeDamage(calcDamage(poopScript.owner, poopScript.GetDamage()), otherInfo.ConnectionID);
-            }
-
-            Destroy(other.gameObject);
-        } else if (other.gameObject.tag == "pecker" && other.transform.parent.tag == "Enemy") {
-            pecker p = other.gameObject.GetComponent<pecker>();
-            PlayerInformation otherInfo = p.owner.GetComponent<PlayerInformation>();
-            if ((this._health != null) && !this._health.IsDead()) {
-                this.CmdBloodParticle(other.gameObject.transform.position);
-                this._health.TakeDamage(calcDamage(p.owner, p.GetDamage()), otherInfo.ConnectionID);
-            }
-        } else if ((other.gameObject.tag == "mooseAttack") && (other.gameObject.transform.parent.gameObject.tag == "Enemy"))
-        {
-            MooseController MooseScript = other.GetComponentInParent<MooseController>();
-            PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
-
-            if ((this._health != null) && (MooseScript != null) && !this._health.IsDead())
-            {
-                this.CmdBloodParticle(MooseScript.ramImpact());
-                this._health.TakeDamage(calcDamage(other.transform.parent.gameObject, MooseScript.GetDamage()), otherInfo.ConnectionID);
-            }
-        } else */
         if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
         }
     }
 
     private void wallDamage() {
-        //this.GetComponent<PlayerHealth>().TakeDamage(10 * Time.deltaTime, -1);
         this.GetComponent<PlayerHealth>().TakeDamage(10 * Time.deltaTime, (int)KillerID.KILLER_ID_WALL);
+    }
+
+    public void setFallDamageImmune(bool value) {
+        this._fallDamageImmune = value;
     }
 
     public void onWaterStay(float waterForce) {

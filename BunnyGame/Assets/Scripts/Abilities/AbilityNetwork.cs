@@ -20,15 +20,15 @@ public class AbilityNetwork : NetworkBehaviour {
     private GameObject _dustParticles;
     private GameObject _dustTornado;
     private GameObject _fireFart;
+    private GameObject _stompEffect;
 
     void Start() {
         this._poopGrenade = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopGrenade");
         this._explosion = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopExplosion");
         this._dustParticles = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustStorm");
         this._dustTornado = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustTornado");
-
-      //  if (this.transform.childCount > 6)
-            this._fireFart = this.transform.GetChild(4).gameObject;
+        this._fireFart = this.transform.GetChild(4).gameObject;
+        this._stompEffect = this.transform.GetChild(5).gameObject;
     }
   
 
@@ -213,6 +213,7 @@ public class AbilityNetwork : NetworkBehaviour {
         int npcLayer = 1 << 14;
         int layermask = playerlayer | npcLayer;
         Collider[] hit = Physics.OverlapSphere(impact, AOE, layermask);
+        StartCoroutine(stompParticle());
         for (int i = 0; i < hit.Length; i++)
         {
             if (hit[i].tag == "Player" && hit[i].isTrigger && hit[i].gameObject != owner)
@@ -221,5 +222,16 @@ public class AbilityNetwork : NetworkBehaviour {
                 Debug.Log(hit[i].name);
             }
         }
+    }
+
+    private IEnumerator stompParticle()
+    {
+        this._stompEffect.SetActive(true);
+        this._stompEffect.GetComponent<ParticleSystem>().Play();
+
+        yield return new WaitForSeconds(5.0f);
+
+        this._stompEffect.GetComponent<ParticleSystem>().Stop();
+        this._stompEffect.SetActive(false);
     }
 }

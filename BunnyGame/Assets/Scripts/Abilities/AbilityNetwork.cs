@@ -20,15 +20,18 @@ public class AbilityNetwork : NetworkBehaviour {
     private GameObject _dustParticles;
     private GameObject _dustTornado;
     private GameObject _fireFart;
+    private GameObject _stompPos;
+    private GameObject _stompEff;
+
 
     void Start() {
         this._poopGrenade = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopGrenade");
         this._explosion = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopExplosion");
         this._dustParticles = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustStorm");
         this._dustTornado = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustTornado");
-
-      //  if (this.transform.childCount > 6)
-            this._fireFart = this.transform.GetChild(4).gameObject;
+        this._stompEff = Resources.Load<GameObject>("Prefabs/stompEffect");
+        this._fireFart = this.transform.GetChild(4).gameObject;
+        this._stompPos = this.transform.GetChild(5).gameObject;
     }
   
 
@@ -213,6 +216,7 @@ public class AbilityNetwork : NetworkBehaviour {
         int npcLayer = 1 << 14;
         int layermask = playerlayer | npcLayer;
         Collider[] hit = Physics.OverlapSphere(impact, AOE, layermask);
+        StartCoroutine(stompParticle());
         for (int i = 0; i < hit.Length; i++)
         {
             if (hit[i].tag == "Player" && hit[i].isTrigger && hit[i].gameObject != owner)
@@ -221,5 +225,16 @@ public class AbilityNetwork : NetworkBehaviour {
                 Debug.Log(hit[i].name);
             }
         }
+    }
+
+    private IEnumerator stompParticle()
+    {
+        GameObject dust = Instantiate(this._stompEff);
+        dust.transform.position = this._stompPos.transform.position;
+        dust.GetComponent<ParticleSystem>().Play();
+        NetworkServer.Spawn(dust);
+        Destroy(dust, 5.0f);
+
+        yield return new WaitForSeconds(5.0f);
     }
 }

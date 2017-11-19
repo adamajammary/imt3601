@@ -18,7 +18,8 @@ public class Stomp : SpecialAbility
 
     override public IEnumerator useAbility()
     {
-        if (base._cooldown > 0)
+        PlayerController playerController = GetComponent<PlayerController>();
+        if (base._cooldown > 0 || !playerController.controller.isGrounded)
             yield break;
 
         StartCoroutine(base.doCoolDown());

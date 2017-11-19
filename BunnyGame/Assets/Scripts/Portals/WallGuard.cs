@@ -83,6 +83,9 @@ public class WallGuard : NetworkBehaviour {
         if (this._player.transform.position.y > 15 || this._player.transform.position.y < 6)
             return false;
 
+        if (this._player.GetComponent<PlayerController>().getCC())
+            return false;
+
         foreach(var zone in safeZones) {
            if (zone.bounds.Contains(this._player.transform.position))
                 return false;

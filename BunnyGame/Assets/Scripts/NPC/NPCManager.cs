@@ -156,7 +156,6 @@ public class NPCManager : NetworkBehaviour {
     [Command]
     private void CmdSpawnNPC(GameObject npc) {
         int y = (Random.Range(0.0f, 1.0f) < 0.3f) ? Random.Range(1, WorldData.yOffsets.Length) : 1;
-        if (y != 1) Debug.Log("YEAH");
 
         var npcInstance = Instantiate(npc);
         WorldGrid.Cell cell;

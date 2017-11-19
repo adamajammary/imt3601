@@ -56,7 +56,6 @@ public class Portal : MonoBehaviour {
             t += Time.deltaTime * speed;
             yield return 0;
         }
-        player.GetComponent<PlayerEffects>().setFallDamageImmune(false);
     }
 
     private Vector3 getSplinePos(float t) {

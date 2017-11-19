@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
@@ -10,6 +11,24 @@ public class MapSelect : NetworkBehaviour {
 
     private void OnEnable() {
         this._buttons = transform.GetComponentsInChildren<Button>();
+
+        foreach (Button button in this._buttons) {
+            button.GetComponent<Image>().color         = Color.white;
+            button.GetComponentInChildren<Text>().text = (button.name + ": 0");
+        }
+
+        StartCoroutine(this.registerNetworkHandlers(1.0f));
+    }
+
+    public IEnumerator registerNetworkHandlers(float seconds) {
+        yield return new WaitForSeconds(seconds);
+        this.registerNetworkHandlers();
+    }
+
+    // Registers the network message types that this client will listen to.
+    private void registerNetworkHandlers() {
+        if ((NetworkClient.allClients.Count > 0) && !NetworkClient.allClients[0].connection.CheckHandler((short)NetworkMessageType.MSG_MAP_VOTE))
+            NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_MAP_VOTE, recieveVoteMessage);
     }
 
     // Send the network message to the server.
@@ -17,12 +36,10 @@ public class MapSelect : NetworkBehaviour {
         if (NetworkClient.allClients.Count < 1)
             return;
 
-        if (!NetworkClient.allClients[0].connection.CheckHandler((short)NetworkMessageType.MSG_MAP_VOTE))
-            NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_MAP_VOTE, recieveVoteMessage);
-
+        this.registerNetworkHandlers();
         NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_MAP_SELECT, new StringMessage(map));
 
-        //Update UI
+        // Update UI
         foreach (Button button in this._buttons)
             button.GetComponent<Image>().color = (button.name == map ? Color.yellow : Color.white);
     }
@@ -40,7 +57,7 @@ public class MapSelect : NetworkBehaviour {
             }
         }       
 
-        //Update UI
+        // Update UI
         foreach (Button button in this._buttons) {
             if (votes.ContainsKey(button.name))
                 button.GetComponentInChildren<Text>().text = button.name + ": " + votes[button.name];

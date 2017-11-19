@@ -142,6 +142,8 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
         if (this._players.ContainsKey(conn.connectionId))
             this._players[conn.connectionId].isDead = false;
+
+        this.resetMapSelect(conn);
     }
 
     // This is called on the server when a client disconnects.
@@ -152,6 +154,8 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             this._players[conn.connectionId].placement = Mathf.Max(1, this.getNrOfPlayersAlive());
             this._players[conn.connectionId].isDead    = true;
         }
+
+        this.resetMapSelect(conn);
 
         // Send updated lobby player info to all players.
         if (this.offlineScene == "Lobby")
@@ -182,6 +186,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_MAP_SELECT,    this.recieveNetworkMessage);
 
         this._players.Clear();
+        this._mapVotes.Clear();
     }
 
     // This is called on the server when a new client connects to the server.
@@ -197,6 +202,8 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             this._players.Add(conn.connectionId, player);
         else
             this._players[conn.connectionId] = player;
+
+        this.resetMapSelect(conn);
     }
 
     // This is called on the server when a client disconnects.
@@ -208,6 +215,8 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             this._players[conn.connectionId].placement = Mathf.Max(1, this.getNrOfPlayersAlive());
             this._players[conn.connectionId].isDead    = true;
         }
+
+        this.resetMapSelect(conn);
 
         if (conn.lastError != NetworkError.Ok) {
             if ((conn.lastError != NetworkError.Timeout) && LogFilter.logError)
@@ -378,6 +387,13 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         }
     }
 
+    private void resetMapSelect(NetworkConnection conn) {
+        if (this._mapVotes.ContainsKey(conn))
+            this._mapVotes.Remove(conn);
+
+        this.sendMapVotes();
+    }
+
     private void recieveMapSelectMessage(NetworkMessage message) {
         string map = message.ReadMessage<StringMessage>().value;
 
@@ -386,26 +402,29 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         else
             this._mapVotes.Add(message.conn, map);
 
-        sendMapVotes();
+        this.sendMapVotes();
     }
 
     private void sendMapVotes() {
-        var votes = getVotes();
+        var votes = this.getVotes();
         string message = "";
-        foreach (var vote in votes) {
+
+        foreach (var vote in votes)
             message += "|" + vote.Key + ":" + vote.Value;            
-        }
+
         NetworkServer.SendToAll((short)NetworkMessageType.MSG_MAP_VOTE, new StringMessage(message));
     }
 
     Dictionary<string, int> getVotes() {
         Dictionary<string, int> votes = new Dictionary<string, int>();
+
         foreach (var vote in this._mapVotes.Values) {
             if (votes.ContainsKey(vote))
                 votes[vote] += 1;
             else
                 votes.Add(vote, 1);
         }
+
         return votes;
     }
 

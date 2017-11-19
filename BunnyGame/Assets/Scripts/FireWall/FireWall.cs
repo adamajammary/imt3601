@@ -120,15 +120,22 @@ public class FireWall : NetworkBehaviour {
     }
 
     private void spawnFire() {
-        if (UnityEngine.Random.Range(0.0f, 1.0f) < 0.05) return;
-        float radius = UnityEngine.Random.Range(0, this._outerBounds);
-        float angle = UnityEngine.Random.Range(0, Mathf.PI * 2);
-        Vector3 pos = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
-        pos.y = this._current.wall.transform.position.y;
+        if (!WorldData.ready) return;
+        if (UnityEngine.Random.Range(0.0f, 1.0f) > 0.1) return;
+
+        Vector3 pos;
+        WorldGrid.Cell cell;
+        do { //Find a random position for the NPC
+            int x = UnityEngine.Random.Range(0, WorldData.cellCount);
+            int z = UnityEngine.Random.Range(0, WorldData.cellCount);
+            cell = WorldData.worldGrid.getCell(x, 1, z);
+            pos = cell.pos;
+        } while (cell.blocked);
+
         //Check if the point is inside the firewall
 
         if (Vector3.Distance(pos, this._current.wall.transform.position) < getRadius()) return;
-        pos.y = 50;
+        pos.y = 10;
 
         RaycastHit hit;
         int layermask = (1 << 19);

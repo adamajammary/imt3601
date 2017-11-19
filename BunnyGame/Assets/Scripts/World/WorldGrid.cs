@@ -22,7 +22,7 @@ public class WorldGrid {
     }
 
     public class Cell {
-        public int x, y;
+        public int x, y, z;
         public bool blocked;
         //Got "manhatten" plusNeighbours and diag crossNeighbours, because not all path finding will allow diag pathing.
         public List<Cell> plusNeighbours;
@@ -127,6 +127,7 @@ public class WorldGrid {
                                      + new Vector3(xzOffsets.x, yOffsets[y], xzOffsets.y);
         this._worldGrid[x, y, z].x = x;
         this._worldGrid[x, y, z].y = y;
+        this._worldGrid[x, y, z].z = z;
         this._worldGrid[x, y, z].g = 9999999;
         this._worldGrid[x, y, z].h = 9999999;
     }

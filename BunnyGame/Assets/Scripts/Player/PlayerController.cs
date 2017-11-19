@@ -156,7 +156,7 @@ public class PlayerController : NetworkBehaviour {
     }
 
     public void jump() {
-        if ((controller.isGrounded) && !onWall()) { 
+        if ((controller.isGrounded) && !onWall(0.1f)) { 
             float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight * this.playerEffects.getJump()); 
             this.velocityY = jumpVelocity;
         }
@@ -196,7 +196,7 @@ public class PlayerController : NetworkBehaviour {
         }
     }
 
-    private bool onWall() {
+    private bool onWall(float offset) {
         const float deltaLimit = 1.6f;
         Vector3[] offsets = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
 
@@ -204,7 +204,7 @@ public class PlayerController : NetworkBehaviour {
         RaycastHit hit = new RaycastHit();
         int layerMask = (1 << 19);
         for (int i = 0; i < offsets.Length; i++) {
-            Ray ray = new Ray(transform.position + offsets[i] + Vector3.up, Vector3.down);
+            Ray ray = new Ray(transform.position + offsets[i] * offset + Vector3.up, Vector3.down);
             Physics.Raycast(ray, out hit, 10.0f, layerMask);
             distances[i] = hit.distance;
         }

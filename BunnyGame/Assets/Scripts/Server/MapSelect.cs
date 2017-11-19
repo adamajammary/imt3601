@@ -1,16 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
-using System;
 
 public class MapSelect : NetworkBehaviour {
 
     private Button[] _buttons;
 
-    private void Start() {
+    private void OnEnable() {
         this._buttons = transform.GetComponentsInChildren<Button>();
     }
 
@@ -19,14 +17,14 @@ public class MapSelect : NetworkBehaviour {
         if (NetworkClient.allClients.Count < 1)
             return;
 
-        if ((NetworkClient.allClients.Count > 0) && !NetworkClient.allClients[0].connection.CheckHandler((short)NetworkMessageType.MSG_MAP_VOTE))
+        if (!NetworkClient.allClients[0].connection.CheckHandler((short)NetworkMessageType.MSG_MAP_VOTE))
             NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_MAP_VOTE, recieveVoteMessage);
 
         NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_MAP_SELECT, new StringMessage(map));
 
         //Update UI
-        foreach (Button button in this._buttons) 
-            button.GetComponent<Image>().color = (button.name == map ? Color.yellow : Color.white);            
+        foreach (Button button in this._buttons)
+            button.GetComponent<Image>().color = (button.name == map ? Color.yellow : Color.white);
     }
 
     private void recieveVoteMessage(NetworkMessage message) {

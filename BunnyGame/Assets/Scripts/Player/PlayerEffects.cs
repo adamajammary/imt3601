@@ -19,6 +19,7 @@ public class PlayerEffects : NetworkBehaviour {
     private PlayerAudio         _playerAudio;
     private Image               _blindEffect;
     private BreathMeter         _breathMeter;
+    private GameObject          _trail;
     
     private int   _fallDamage = 40;
     private bool  _fallDamageImmune = false;
@@ -39,6 +40,7 @@ public class PlayerEffects : NetworkBehaviour {
         this._playerAudio   = GetComponent<PlayerAudio>();
         this._blindEffect   = GameObject.Find("BlindOverlay").GetComponent<Image>();
         this._breathMeter   = GameObject.Find("BreathMeter").GetComponent<BreathMeter>();
+        this._trail = Resources.Load<GameObject>("Prefabs/MagicTrail");
     }
 	
 	// Update is called once per frame
@@ -74,6 +76,20 @@ public class PlayerEffects : NetworkBehaviour {
         //Debug.Log("Damage: " + damage + "DamageMult: " + damageMult + "Toughness: " + this._toughness);
         //Debug.Log("Final damage: " + damage * damageMult / this._toughness);
         return damage * damageMult / this._toughness;
+    }
+
+    //=========Island42======================================================================================================================
+    [Command]
+    public void CmdAddTrail(float duration) {
+        RpcAddTrail(duration);
+    }
+
+    [ClientRpc]
+    private void RpcAddTrail(float duration) {
+        GameObject trail = Instantiate(this._trail);
+        trail.transform.parent = transform;
+        trail.transform.localPosition = Vector3.zero;
+        Destroy(trail, duration);
     }
 
     //=========Poop Grenade==================================================================================================================

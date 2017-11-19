@@ -6,6 +6,7 @@ using UnityEngine.Networking;
 public class WallGuard : NetworkBehaviour {
 
     public GameObject trail;
+    public BoxCollider[] safeZones; 
 
     private GameObject _player;
     private float _wallTimer;
@@ -23,21 +24,18 @@ public class WallGuard : NetworkBehaviour {
             tryGetPlayer();
         } else {
             if (onWall() && !this._movingPlayer) {
-                Debug.Log(_wallTimer);
                 _wallTimer += Time.deltaTime;
-                if (_wallTimer > 2.5f && !this._movingPlayer)
+                if (_wallTimer > 1.0f && !this._movingPlayer)
                     StartCoroutine(movePlayerOffWall());
             } else {
                 _wallTimer = 0;
-            }
-
-                
+            }                
         }
 	}
 
     private IEnumerator movePlayerOffWall() {
         this._movingPlayer = true;
-        CmdMagicTrail(this._player);
+        this._player.GetComponent<PlayerEffects>().CmdAddTrail(1.0f);
        
         const float speed = 1.0f;
         float t = 0;
@@ -76,21 +74,6 @@ public class WallGuard : NetworkBehaviour {
         return Vector3.Lerp(t1, t2, t);
     }
 
-    [Command]
-    private void CmdMagicTrail(GameObject player) {
-        Debug.Log("WALL1");
-        RpcMagicTrail(player);
-    }
-
-    [ClientRpc]
-    private void RpcMagicTrail(GameObject player) {
-        Debug.Log("WALL2");
-        GameObject obj = Instantiate(trail);
-        obj.transform.parent = player.transform;
-        obj.transform.localPosition = Vector3.zero;
-        Destroy(obj, 1.0f);
-    }
-
     void tryGetPlayer() { //Due to networking, this is needed because this gameobject will spawn before the player
         this._player = GameObject.FindGameObjectWithTag("Player");
     }
@@ -100,23 +83,11 @@ public class WallGuard : NetworkBehaviour {
         if (this._player.transform.position.y > 15 || this._player.transform.position.y < 6)
             return false;
 
-        const float deltaLimit = 1.8f;
-        Vector3[] offsets = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
-
-        float[] distances = new float[offsets.Length];
-        RaycastHit hit = new RaycastHit();
-        int layerMask = (1 << 19);
-        for (int i = 0; i < offsets.Length; i++) {
-            Ray ray = new Ray(this._player.transform.position + offsets[i] * 1.5f + Vector3.up, Vector3.down);
-            Physics.Raycast(ray, out hit, 20.0f, layerMask);
-            distances[i] = hit.distance;
+        foreach(var zone in safeZones) {
+           if (zone.bounds.Contains(this._player.transform.position))
+                return false;
         }
 
-        foreach (var dist in distances) {
-            if (Mathf.Abs(dist) > deltaLimit) {
-                return true;
-            }                
-        }
-        return false;
+        return true;
     }
 }

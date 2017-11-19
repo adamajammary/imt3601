@@ -492,7 +492,7 @@ MonoBehaviour:
   - {fileID: 1703445727045148, guid: cc7347c831ec90443ac8b0e7c7e8097a, type: 2}
   - {fileID: 1339375467231936, guid: e1d9eec787ff006409a185c289667a84, type: 2}
   m_CustomConfig: 0
-  m_MaxConnections: 4
+  m_MaxConnections: 6
   m_ConnectionConfig:
     m_PacketSize: 1440
     m_FragmentSize: 500
@@ -582,7 +582,7 @@ Prefab:
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_LocalPosition.y
-      value: 248
+      value: 286
       objectReference: {fileID: 0}
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}

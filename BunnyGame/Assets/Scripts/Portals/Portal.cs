@@ -47,6 +47,7 @@ public class Portal : MonoBehaviour {
     }
 
     private IEnumerator portPlayer(GameObject player) {
+        player.GetComponent<PlayerEffects>().CmdAddTrail(2);
         const float speed = 0.5f;
         float t = 0;
        

@@ -87,8 +87,10 @@ public class NPCBrain {
             foreach (var player in players.Values)
                 if (Vector3.Distance(npc.getPos(), player.getPos()) < 20)
                     return true;
-           
-            float dist = Vector3.Distance(npc.getPos(), NPCWorldView.FireWall.pos);
+
+            Vector3 pos = npc.getPos();
+            pos.y = NPCWorldView.FireWall.pos.y;
+            float dist = Vector3.Distance(pos, NPCWorldView.FireWall.pos);
             if ((NPCWorldView.FireWall.radius - dist) < 20)
                 return true;
 

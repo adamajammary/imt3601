@@ -47,6 +47,7 @@ public class Portal : MonoBehaviour {
     }
 
     private IEnumerator portPlayer(GameObject player) {
+        player.GetComponent<PlayerEffects>().CmdAddTrail(2);
         const float speed = 0.5f;
         float t = 0;
        
@@ -56,7 +57,6 @@ public class Portal : MonoBehaviour {
             t += Time.deltaTime * speed;
             yield return 0;
         }
-        player.GetComponent<PlayerEffects>().setFallDamageImmune(false);
     }
 
     private Vector3 getSplinePos(float t) {

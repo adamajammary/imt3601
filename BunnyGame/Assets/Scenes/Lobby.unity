@@ -471,7 +471,7 @@ MonoBehaviour:
   - {fileID: 1790276298759878, guid: f265853c0643f3c45899f50e9806aedb, type: 2}
   - {fileID: 1828098953541876, guid: 809e53d4ef88533478dbac980d337183, type: 2}
   - {fileID: 1126086686145494, guid: 8ae5ab1b99a18bb4e97be54e780f0256, type: 2}
-  - {fileID: 1346927511485046, guid: 57578a9c1be616c448fada5d1314aa78, type: 2}
+  - {fileID: 1484869021851860, guid: 57578a9c1be616c448fada5d1314aa78, type: 2}
   - {fileID: 1817407890075162, guid: 2db4d04252aa88e4a977db6c0335ce1e, type: 2}
   - {fileID: 1505676613656044, guid: 7d1d1b3bd59ed5c4c8ad593e92aa2052, type: 2}
   - {fileID: 1302410119966460, guid: 3bc6e887c92c5894d996be7193b85c0b, type: 2}
@@ -487,6 +487,7 @@ MonoBehaviour:
   - {fileID: 1251516565716470, guid: 1a25c5ed595ad0c45ad56cf4692eb3b4, type: 2}
   - {fileID: 1703445727045148, guid: cc7347c831ec90443ac8b0e7c7e8097a, type: 2}
   - {fileID: 1339375467231936, guid: e1d9eec787ff006409a185c289667a84, type: 2}
+  - {fileID: 1864606487326706, guid: d94a747e83314334ba2bc7eb58bc6620, type: 2}
   m_CustomConfig: 0
   m_MaxConnections: 4
   m_ConnectionConfig:
@@ -573,12 +574,12 @@ Prefab:
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_LocalPosition.x
-      value: 637.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_LocalPosition.y
-      value: 307
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}

@@ -20,15 +20,18 @@ public class AbilityNetwork : NetworkBehaviour {
     private GameObject _dustParticles;
     private GameObject _dustTornado;
     private GameObject _fireFart;
-    private GameObject _stompEffect;
+    private GameObject _stompPos;
+    private GameObject _stompEff;
+
 
     void Start() {
         this._poopGrenade = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopGrenade");
         this._explosion = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopExplosion");
         this._dustParticles = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustStorm");
         this._dustTornado = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustTornado");
+        this._stompEff = Resources.Load<GameObject>("Prefabs/stompEffect");
         this._fireFart = this.transform.GetChild(4).gameObject;
-        this._stompEffect = this.transform.GetChild(5).gameObject;
+        this._stompPos = this.transform.GetChild(5).gameObject;
     }
   
 
@@ -226,12 +229,12 @@ public class AbilityNetwork : NetworkBehaviour {
 
     private IEnumerator stompParticle()
     {
-        this._stompEffect.SetActive(true);
-        this._stompEffect.GetComponent<ParticleSystem>().Play();
+        GameObject dust = Instantiate(this._stompEff);
+        dust.transform.position = this._stompPos.transform.position;
+        dust.GetComponent<ParticleSystem>().Play();
+        NetworkServer.Spawn(dust);
+        Destroy(dust, 5.0f);
 
         yield return new WaitForSeconds(5.0f);
-
-        this._stompEffect.GetComponent<ParticleSystem>().Stop();
-        this._stompEffect.SetActive(false);
     }
 }

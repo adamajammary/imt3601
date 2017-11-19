@@ -85,6 +85,7 @@ public class AttackMessage : MessageBase {
 //
 public class NetworkPlayerSelect : NetworkLobbyManager {
 
+    private string[]                _islands      = { "Island", "Island42" };
     private string[]                _models       = { "PlayerCharacterBunny", "PlayerCharacterFox", "PlayerCharacterBird", "PlayerCharacterMoose" };
     private Dictionary<int, Player> _players = new Dictionary<int, Player>();
     private Dictionary<NetworkConnection, string> _mapVotes = new Dictionary<NetworkConnection, string>();
@@ -413,15 +414,23 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         List<string> winnerMaps = new List<string>();
         var votes = getVotes();
 
-        int maxVotes = 0;
-        foreach(int voteCount in votes.Values) {
-            if (maxVotes < voteCount)
-                maxVotes = voteCount;
-        }
+        // Votes (select the top voted island)
+        if (votes.Count > 0) {
+            int maxVotes = 0;
 
-        foreach (var vote in votes) {
-            if (vote.Value == maxVotes)
-                winnerMaps.Add(vote.Key);
+            foreach(int voteCount in votes.Values) {
+                if (maxVotes < voteCount)
+                    maxVotes = voteCount;
+            }
+
+            foreach (var vote in votes) {
+                if (vote.Value == maxVotes)
+                    winnerMaps.Add(vote.Key);
+            }
+        // No votes (select from all available islands)
+        } else {
+            foreach (string island in this._islands)
+                winnerMaps.Add(island);
         }
 
         this._mapVotes = new Dictionary<NetworkConnection, string>(); //Clear vote data

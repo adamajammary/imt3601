@@ -211,7 +211,6 @@ public class PlayerController : NetworkBehaviour {
 
         foreach (var dist in distances) {
             foreach (var dist2 in distances) {
-                Debug.Log(Mathf.Abs(dist - dist2));
                 if (Mathf.Abs(dist - dist2) > deltaLimit) {
                     return true;
                 }

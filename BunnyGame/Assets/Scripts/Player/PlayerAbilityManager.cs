@@ -80,6 +80,10 @@ public class PlayerAbilityManager : NetworkBehaviour {
                 sa = gameObject.AddComponent<SpeedBomb>();
                 ((SpeedBomb)sa).init(30, 2);
                 break;
+            case "Stomp":
+                sa = gameObject.AddComponent<Stomp>();
+                ((Stomp)sa).init();
+                break;
             default:
                 Debug.Log("Ability does not exist: \"" + abilityName + "\" (PlayerAbilityManager.cs:stealNewAbility())");
                 return;

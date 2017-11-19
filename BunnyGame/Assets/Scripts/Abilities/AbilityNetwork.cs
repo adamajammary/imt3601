@@ -201,7 +201,7 @@ public class AbilityNetwork : NetworkBehaviour {
     [Command]
     private void CmdStomp(GameObject owner, float AOE, Vector3 impact)
     {
-        this.StompNow(owner, AOE, impact);
+        this.RpcStomp(owner, AOE, impact);
     }
 
     [ClientRpc]

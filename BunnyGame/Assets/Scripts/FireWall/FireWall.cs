@@ -196,7 +196,11 @@ public class FireWall : NetworkBehaviour {
             other.GetComponent<DustTornado>().kill();
         }
 
-        if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
+        if (other.tag == "bunnycamera") {
+            if (other.transform.parent.tag == "Player")
+                _outsideWallEffect.enabled = true;
+        }
+        else if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
             _outsideWallEffect.enabled = true;
         }
     }
@@ -210,7 +214,11 @@ public class FireWall : NetworkBehaviour {
             other.GetComponent<PlayerEffects>().insideWall = true;
         }
 
-        if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
+        if (other.tag == "bunnycamera") {
+            if (other.transform.parent.tag == "Player")
+                _outsideWallEffect.enabled = false;
+        }
+        else if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
             _outsideWallEffect.enabled = false;
         }
     }

@@ -111,8 +111,8 @@ public class BunnyController : NetworkBehaviour {
 
     private IEnumerator getEnemies(int playerCount) {
         do {
-            this._enemies = GameObject.FindGameObjectsWithTag("Enemy");
             yield return 0;
+            this._enemies = GameObject.FindGameObjectsWithTag("Enemy");
         } while (this._enemies.Length + 1 != playerCount);
         this._enemyInRange = new bool[this._enemies.Length];
         for (int i = 0; i < this._enemyInRange.Length; i++)

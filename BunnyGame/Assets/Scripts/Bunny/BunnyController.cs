@@ -15,6 +15,9 @@ public class BunnyController : NetworkBehaviour {
 
     private AudioClip _alertSound;
     private RawImage _alertOverlay;
+    private GameObject[] _enemies;
+    private bool[] _enemyInRange;
+    private const float _alertDistance = 30.0f;
 
    public override void PreStartClient()
     {
@@ -63,6 +66,7 @@ public class BunnyController : NetworkBehaviour {
 
         this._alertOverlay = GameObject.Find("Alert").GetComponent<RawImage>();
         this._alertSound = Resources.Load<AudioClip>("Audio/BunnyAlert");
+        CmdGetEnemies();
     }
 
  
@@ -75,8 +79,20 @@ public class BunnyController : NetworkBehaviour {
         if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1))
             this.shoot();
 
-        if (Input.GetKeyDown(KeyCode.T))
-            alert();
+        //Bunny passive "sixth sense"
+        if (this._enemies != null) {
+            for (int i = 0; i < this._enemies.Length; i++) {
+                if (this._enemies[i] != null) {
+                    if (Vector3.Distance(this._enemies[i].transform.position, transform.position) < _alertDistance) {
+                        if (!this._enemyInRange[i])
+                            alert();
+                        this._enemyInRange[i] = true;
+                    } else {
+                        this._enemyInRange[i] = false;
+                    }
+                }
+            }
+        }
     }
 
     private void alert() {
@@ -91,6 +107,26 @@ public class BunnyController : NetworkBehaviour {
             yield return 0;
         }
         this._alertOverlay.enabled = false;
+    }
+
+    private IEnumerator getEnemies(int playerCount) {
+        do {
+            this._enemies = GameObject.FindGameObjectsWithTag("Enemy");
+            yield return 0;
+        } while (this._enemies.Length + 1 != playerCount);
+        this._enemyInRange = new bool[this._enemies.Length];
+        for (int i = 0; i < this._enemyInRange.Length; i++)
+            this._enemyInRange[i] = false;
+    }
+
+    [Command]
+    private void CmdGetEnemies() {
+        TargetGetEnemies(this.connectionToClient, Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers);
+    }
+
+    [TargetRpc]
+    private void TargetGetEnemies(NetworkConnection conn, int playerCount) {
+        StartCoroutine(getEnemies(playerCount));
     }
 
     private void shoot() {

@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class BunnyController : NetworkBehaviour {
 
@@ -10,6 +12,9 @@ public class BunnyController : NetworkBehaviour {
     private GameObject bunnyPoop;
     private PlayerInformation playerInfo;
     private Transform _poopCameraPos;            // For aiming with camera offset
+
+    private AudioClip _alertSound;
+    private RawImage _alertOverlay;
 
    public override void PreStartClient()
     {
@@ -55,6 +60,9 @@ public class BunnyController : NetworkBehaviour {
 
 
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(abilityManager);
+
+        this._alertOverlay = GameObject.Find("Alert").GetComponent<RawImage>();
+        this._alertSound = Resources.Load<AudioClip>("Audio/BunnyAlert");
     }
 
  
@@ -66,6 +74,23 @@ public class BunnyController : NetworkBehaviour {
 
         if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1))
             this.shoot();
+
+        if (Input.GetKeyDown(KeyCode.T))
+            alert();
+    }
+
+    private void alert() {
+        GetComponent<AudioSource>().PlayOneShot(this._alertSound);
+        StartCoroutine(alertOverlay());
+    }
+
+    private IEnumerator alertOverlay() {
+        for (float t = 1; t >= 0; t -= Time.deltaTime) {
+            this._alertOverlay.enabled = true; //incase multiple alerts overlap
+            this._alertOverlay.color = new Color(1, 1, 1, t);
+            yield return 0;
+        }
+        this._alertOverlay.enabled = false;
     }
 
     private void shoot() {

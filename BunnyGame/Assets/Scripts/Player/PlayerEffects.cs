@@ -18,11 +18,17 @@ public class PlayerEffects : NetworkBehaviour {
     private PlayerHealth        _health;
     private PlayerAudio         _playerAudio;
     private Image               _blindEffect;
+    private BreathMeter         _breathMeter;
+    private GameObject          _trail;
     
     private int   _fallDamage = 40;
     private bool  _fallDamageImmune = false;
     private float _damageImpactVelocity = -20;
     private float _currentImpactVelocity = 0;
+
+    private int _waterDamage = 5;
+    private float _timeInWater = 0;
+    public float _maxTimeInWater = 10;
 
     // Use this for initialization
     void Start () {
@@ -33,6 +39,8 @@ public class PlayerEffects : NetworkBehaviour {
         this._health        = this.GetComponent<PlayerHealth>();
         this._playerAudio   = GetComponent<PlayerAudio>();
         this._blindEffect   = GameObject.Find("BlindOverlay").GetComponent<Image>();
+        this._breathMeter   = GameObject.Find("BreathMeter").GetComponent<BreathMeter>();
+        this._trail = Resources.Load<GameObject>("Prefabs/MagicTrail");
     }
 	
 	// Update is called once per frame
@@ -40,6 +48,8 @@ public class PlayerEffects : NetworkBehaviour {
         handleGroundHit();
         if (!this.isLocalPlayer) return;
         if (!this.insideWall) wallDamage();
+
+        handleBreath();
     }
 
     //=========Attrbutes=====================================================================================================================
@@ -61,12 +71,27 @@ public class PlayerEffects : NetworkBehaviour {
     public float getSpeed()     { return this._speed; }     //Used when moving (multiplier)
     public float getJump()      { return this._jump; }      //Used when jumping (multiplier)
 
-    private float calcDamage(GameObject attacker, float damage) { // Use this to get attribute adjusted damage
+    public float calcDamage(GameObject attacker, float damage) { // Use this to get attribute adjusted damage
         float damageMult = attacker.GetComponent<PlayerEffects>().getDamage();
         //Debug.Log("Damage: " + damage + "DamageMult: " + damageMult + "Toughness: " + this._toughness);
         //Debug.Log("Final damage: " + damage * damageMult / this._toughness);
         return damage * damageMult / this._toughness;
     }
+
+    //=========Island42======================================================================================================================
+    [Command]
+    public void CmdAddTrail(float duration) {
+        RpcAddTrail(duration);
+    }
+
+    [ClientRpc]
+    private void RpcAddTrail(float duration) {
+        GameObject trail = Instantiate(this._trail);
+        trail.transform.parent = transform;
+        trail.transform.localPosition = Vector3.zero;
+        Destroy(trail, duration);
+    }
+
     //=========Poop Grenade==================================================================================================================
     public void OnPoopGrenade(GameObject attacker, int damage, int id, Vector3 impact) {
         this._health.TakeDamage(calcDamage(attacker, damage), id);
@@ -107,51 +132,23 @@ public class PlayerEffects : NetworkBehaviour {
     }
 
     //=========Other==========================================================================================================================
+    // Triggers when something collides with our player character.
+    // We are the victim, while the enemy is the attacker.
     private void OnTriggerEnter(Collider other) {
         if (!this.isLocalPlayer)
             return;
 
-        if ((other.gameObject.tag == "foxbite") && (other.gameObject.transform.parent.gameObject.tag == "Enemy")) {
-            FoxController foxScript = other.GetComponentInParent<FoxController>();
-            PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
-
-            if ((this._health != null) && (foxScript != null) && !this._health.IsDead()) {
-                this.CmdBloodParticle(foxScript.biteImpact());
-                this._health.TakeDamage(calcDamage(other.transform.parent.gameObject, foxScript.GetDamage()), otherInfo.ConnectionID);
-            }
-        } else if (other.gameObject.tag == "projectile") {
-            BunnyPoop poopScript = other.gameObject.GetComponent<BunnyPoop>();
-            PlayerInformation otherInfo = poopScript.owner.GetComponent<PlayerInformation>();
-            if ((this._health != null) && (poopScript != null) && !this._health.IsDead() && poopScript.owner.gameObject != this.gameObject) {
-                this.CmdBloodParticle(other.gameObject.transform.position);
-                this._health.TakeDamage(calcDamage(poopScript.owner, poopScript.GetDamage()), otherInfo.ConnectionID);
-            }
-
-            Destroy(other.gameObject);
-        } else if (other.gameObject.tag == "pecker" && other.transform.parent.tag == "Enemy") {
-            pecker p = other.gameObject.GetComponent<pecker>();
-            PlayerInformation otherInfo = p.owner.GetComponent<PlayerInformation>();
-            if ((this._health != null) && !this._health.IsDead()) {
-                this.CmdBloodParticle(other.gameObject.transform.position);
-                this._health.TakeDamage(calcDamage(p.owner, p.GetDamage()), otherInfo.ConnectionID);
-            }
-        } else if ((other.gameObject.tag == "mooseAttack") && (other.gameObject.transform.parent.gameObject.tag == "Enemy"))
-        {
-            MooseController MooseScript = other.GetComponentInParent<MooseController>();
-            PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
-
-            if ((this._health != null) && (MooseScript != null) && !this._health.IsDead())
-            {
-                this.CmdBloodParticle(MooseScript.ramImpact());
-                this._health.TakeDamage(calcDamage(other.transform.parent.gameObject, MooseScript.GetDamage()), otherInfo.ConnectionID);
-            }
-        } else if (other.gameObject.name == "Water") {
+        if (other.gameObject.name == "Water") {
             this._fallDamageImmune = true; // Immune from falldamage when in water
         }
     }
 
     private void wallDamage() {
-        this.GetComponent<PlayerHealth>().TakeDamage(10 * Time.deltaTime, -1);
+        this.GetComponent<PlayerHealth>().TakeDamage(10 * Time.deltaTime, (int)KillerID.KILLER_ID_WALL);
+    }
+
+    public void setFallDamageImmune(bool value) {
+        this._fallDamageImmune = value;
     }
 
     public void onWaterStay(float waterForce) {
@@ -163,11 +160,23 @@ public class PlayerEffects : NetworkBehaviour {
         if (!_fallDamageImmune && _cc.isGrounded && _currentImpactVelocity < _damageImpactVelocity) {
             _playerAudio.playGroundHit(_currentImpactVelocity);
             if (isLocalPlayer) {
-                this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage * (_currentImpactVelocity / _damageImpactVelocity), -1);
+                //this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage * (_currentImpactVelocity / _damageImpactVelocity), -1);
+                this.GetComponent<PlayerHealth>().TakeDamage(_fallDamage * (_currentImpactVelocity / _damageImpactVelocity), (int)KillerID.KILLER_ID_FALL);
                 _currentImpactVelocity = 0;
             }
         }
         else if(isLocalPlayer) _currentImpactVelocity = _cc.velocity.y;
+    }
+
+    private void handleBreath() {
+        if (_pc.inWater && _timeInWater < _maxTimeInWater)
+            _timeInWater += Time.deltaTime;
+        else if (!_pc.inWater && _timeInWater > 0)
+            _timeInWater -= Time.deltaTime;
+
+        this._breathMeter.breath = 1 - _timeInWater / _maxTimeInWater;
+        if (_timeInWater > _maxTimeInWater)
+            this.GetComponent<PlayerHealth>().TakeDamage(Time.deltaTime * _waterDamage, (int)KillerID.KILLER_ID_WATER);
     }
 
     private void OnTriggerExit(Collider other) {
@@ -179,7 +188,7 @@ public class PlayerEffects : NetworkBehaviour {
     }
 
     [Command]
-    private void CmdBloodParticle(Vector3 hitPosition) {
+    public void CmdBloodParticle(Vector3 hitPosition) {
         GameObject blood = Instantiate(this._blood);
 
         blood.transform.position = hitPosition;
@@ -188,5 +197,9 @@ public class PlayerEffects : NetworkBehaviour {
         Destroy(blood, 5.0f);
     }
 
-
+    //======================STOMP===============================================================================
+    public void stompKnockBack(Vector3 impactPos)
+    {
+        StartCoroutine(knockBack(impactPos));
+    }
 }

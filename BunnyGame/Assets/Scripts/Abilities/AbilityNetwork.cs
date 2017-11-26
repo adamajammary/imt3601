@@ -19,12 +19,19 @@ public class AbilityNetwork : NetworkBehaviour {
     private GameObject _explosion;
     private GameObject _dustParticles;
     private GameObject _dustTornado;
+    private GameObject _fireFart;
+    private GameObject _stompPos;
+    private GameObject _stompEff;
+
 
     void Start() {
         this._poopGrenade = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopGrenade");
         this._explosion = Resources.Load<GameObject>("Prefabs/PoopGrenade/PoopExplosion");
         this._dustParticles = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustStorm");
         this._dustTornado = Resources.Load<GameObject>("Prefabs/BirdSpecial/DustTornado");
+        this._stompEff = Resources.Load<GameObject>("Prefabs/stompEffect");
+        this._fireFart = this.transform.GetChild(4).gameObject;
+        this._stompPos = this.transform.GetChild(5).gameObject;
     }
   
 
@@ -51,28 +58,24 @@ public class AbilityNetwork : NetworkBehaviour {
         RpcSetOrginalFox();
     }
 
-    [ClientRpc]
-    private void RpcSetTransparentFox(float transparancy)
+    [Command]
+    public void CmdCancelStealth()
     {
-        Material[] materials;
-        Color alfa;
+        RpcSetOrginalFox();
+    }
+
+    [ClientRpc]
+    private void RpcSetTransparentFox(float transparancy){
+        if (isLocalPlayer && transparancy < 0.1f)
+            transparancy = 0.1f;
+        
+        Color alpha;
       
-        foreach (Transform child in this.transform.GetChild(modelChildNum))
-        {
-			if(child.gameObject.GetComponent<Renderer>() != null)
-				materials = child.gameObject.GetComponent<Renderer>().materials;
-			else if (child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
-				materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
-			else
-				continue;
-
-			int count = 0;
-            foreach (Material mat in materials)
-            {
-				alfa = mat.color;
-                alfa.a = transparancy;
-                materials[count++].SetColor("_Color", alfa);
-
+        foreach(SkinnedMeshRenderer smr in transform.GetComponentsInChildren<SkinnedMeshRenderer>()) {
+            foreach(Material mat in smr.materials) {
+                alpha = mat.color;
+                alpha.a = transparancy;
+                mat.SetColor("_Color", alpha);
                 mat.renderQueue = 3100;
             }
         }
@@ -81,24 +84,16 @@ public class AbilityNetwork : NetworkBehaviour {
     [ClientRpc]
     public void RpcSetOrginalFox()
     {
-        Material[] materials;
-        Color alfa;
-        float orginal = 1.0f;
-        
-        foreach (Transform child in this.transform.GetChild(modelChildNum)) {
-			if (child.gameObject.GetComponent<Renderer>() != null)
-				materials = child.gameObject.GetComponent<Renderer>().materials;
-			else if (child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
-				materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
-			else
-				continue;
-			int count = 0;
-            foreach (Material mat in materials) {
-				alfa = mat.color;
-                alfa.a = orginal;
-                mat.renderQueue = 2000;
-                materials[count++].SetColor("_Color", alfa);
-			}
+        Color alpha;
+        float original = 1.0f;
+
+        foreach (SkinnedMeshRenderer smr in transform.GetComponentsInChildren<SkinnedMeshRenderer>()) {
+            foreach (Material mat in smr.materials) {
+                alpha = mat.color;
+                alpha.a = original;
+                mat.SetColor("_Color", alpha);
+                mat.renderQueue = 200;
+            }
         }
     }
     /////////////////////////////////////////////////////////////////
@@ -110,11 +105,13 @@ public class AbilityNetwork : NetworkBehaviour {
     public void CmdPoopGrenade(Vector3 direction, Vector3 startVel, int id) {
         GameObject poop = Instantiate(this._poopGrenade);
         GrenadePoopProjectile poopScript = poop.GetComponent<GrenadePoopProjectile>();
+        PlayerAttack attackScript = poop.GetComponent<PlayerAttack>();
         Vector3 position = (transform.position + direction * 5.0f);
 
         poopScript.ConnectionID = id;   // Assign the player connection ID to the projectile.
         poopScript.shoot(direction, position, startVel);
         poopScript.owner = this.gameObject;
+        attackScript.owner = this.gameObject;
 
         NetworkServer.Spawn(poop);
     }
@@ -140,24 +137,104 @@ public class AbilityNetwork : NetworkBehaviour {
 
     [ClientRpc]
     private void RpcBlind(Vector3 pos, int id) {
-        StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
+        if(GetComponent<BirdController>())      // TODO something else here for other classes? (could just spin their model around to emulate the flapping or something)
+            StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
+
         var player = GameObject.FindGameObjectWithTag("Player");
         if (player.GetComponent<PlayerInformation>().ConnectionID != id) {
-            if (Vector3.Distance(player.transform.position, pos) < 20) {
+            if (Vector3.Distance(player.transform.position, pos) < 20 && !player.GetComponent<PlayerHealth>().IsDead()) {
                 StartCoroutine(player.GetComponent<PlayerEffects>().blind());
             }
-        }        
+        }
     }
 
 
     ///////////// Functions for DustTornado ability /////////////////
     [Command]
     public void CmdDustTornado(Vector3 pos, Vector3 dir, GameObject owner) {
-        StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
+        if(GetComponent<BirdController>())      // TODO something else here for other classes? (could just spin their model around to emulate the flapping or something)
+            StartCoroutine(GetComponent<BirdController>().flapLikeCrazy());
         GameObject dustTornado = Instantiate(this._dustTornado);
         dustTornado.transform.position = pos;
         dustTornado.GetComponent<DustTornado>().shoot(pos, dir, owner);
         NetworkServer.SpawnWithClientAuthority(dustTornado, owner.GetComponent<PlayerInformation>().connectionToClient);
     }
     /////////////////////////////////////////////////////////////////
+
+    /////////////////////// Functiuons for SuperSpeed ///////////////
+    public void SuperSpeed(bool active) {
+        Transform damageArea = this.transform.GetChild(3);
+        PlayerAttack attackScript = damageArea.GetComponent<PlayerAttack>();
+        attackScript.owner = this.gameObject;
+        
+
+        if (gameObject != null)
+            damageArea.GetComponent<CapsuleCollider>().enabled = active;
+
+        if (this.isServer)
+            this.RpcSuperSpeed(active);
+        else if (this.isClient)
+            this.CmdSuperSpeed(active);
+    }
+
+    [ClientRpc]
+    private void RpcSuperSpeed(bool active) {
+        this._fireFart.SetActive(active);
+    }
+
+    [Command]
+    public void CmdSuperSpeed(bool active) {
+        this.RpcSuperSpeed(active);
+    }
+    //////////////////////////////////////////////////////////////////
+
+    /////////////////////// Stomp ability ///////////////////////////
+
+    public void Stomp(GameObject owner, float AOE, Vector3 impact)
+    {
+        if (this.isServer)
+            this.RpcStomp(owner,AOE,impact);
+        else if (this.isClient)
+            this.CmdStomp(owner,AOE,impact);
+    }
+
+    [Command]
+    private void CmdStomp(GameObject owner, float AOE, Vector3 impact)
+    {
+        this.RpcStomp(owner, AOE, impact);
+    }
+
+    [ClientRpc]
+    private void RpcStomp(GameObject owner, float AOE, Vector3 impact)
+    {
+        this.StompNow(owner, AOE, impact);
+    }
+
+    private void StompNow(GameObject owner, float AOE, Vector3 impact)
+    {
+        int playerlayer = 1 << 8;
+        int npcLayer = 1 << 14;
+        int layermask = playerlayer | npcLayer;
+        Collider[] hit = Physics.OverlapSphere(impact, AOE, layermask);
+        StartCoroutine(stompParticle());
+        for (int i = 0; i < hit.Length; i++)
+        {
+            if (hit[i].tag == "Player" && hit[i].isTrigger && hit[i].gameObject != owner)
+            {
+                hit[i].gameObject.GetComponent<PlayerEffects>().stompKnockBack(impact);
+                Debug.Log(hit[i].name);
+            }
+        }
+    }
+
+    private IEnumerator stompParticle()
+    {
+        GameObject dust = Instantiate(this._stompEff);
+        dust.transform.position = this._stompPos.transform.position;
+        dust.GetComponent<ParticleSystem>().Play();
+        NetworkServer.Spawn(dust);
+        Destroy(dust, 5.0f);
+
+        yield return new WaitForSeconds(5.0f);
+    }
 }

@@ -58,7 +58,7 @@ public class NPCBrain {
             eyes[1] = Quaternion.AngleAxis(fov, Vector3.up) * dir;
             eyes[2] = Quaternion.AngleAxis(-fov, Vector3.up) * dir;
             foreach (var eye in eyes) {
-                if (NPCWorldView.rayCast(true, npc.getPos(), npc.getPos() + eye * viewDist) != float.MaxValue)
+                if (WorldData.worldGrid.rayCast(npc.getLevel(), npc.getPos(), npc.getPos() + eye * viewDist) != float.MaxValue)
                     return true;
             }
             return false;
@@ -83,12 +83,14 @@ public class NPCBrain {
 
         protected bool inDanger() {
             var npc = this._brain._npc;
-            var players = NPCWorldView.getPlayers();
+            var players = NPCWorldView.players;
             foreach (var player in players.Values)
                 if (Vector3.Distance(npc.getPos(), player.getPos()) < 20)
                     return true;
-           
-            float dist = Vector3.Distance(npc.getPos(), NPCWorldView.FireWall.pos);
+
+            Vector3 pos = npc.getPos();
+            pos.y = NPCWorldView.FireWall.pos.y;
+            float dist = Vector3.Distance(pos, NPCWorldView.FireWall.pos);
             if ((NPCWorldView.FireWall.radius - dist) < 20)
                 return true;
 
@@ -134,11 +136,11 @@ public class NPCBrain {
 
     //==============Avoid obstacle state==================================================
     private class AvoidObstacle : State {
-        protected Stack<NPCWorldView.worldCellData> _path;
+        protected Stack<WorldGrid.Cell> _path;
         protected Vector3 _goal;
         public AvoidObstacle(NPCBrain x) : base(x) {
             this._goal = Vector3.down;
-            this._path = new Stack<NPCWorldView.worldCellData>();
+            this._path = new Stack<WorldGrid.Cell>();
             AStar(this._brain._npc.getCell(), findTargetCell(x._npc.getDir()));
         }
 
@@ -169,12 +171,12 @@ public class NPCBrain {
             var npc = this._brain._npc;
             if (npc.getGoal() == Vector3.down) return;
             if (npc.getGoal() != this._goal) { //This happends when a client is out of sync with master, and they calculate different paths
-                AStar(npc.getCell(), NPCWorldView.getCell(true, npc.getGoal()));
+                AStar(npc.getCell(), WorldData.worldGrid.getCellNoWater(npc.getGoal()));
             }
         }
 
-        protected NPCWorldView.worldCellData findTargetCell(Vector3 prefDir) {
-            NPCWorldView.worldCellData target = null;
+        protected WorldGrid.Cell findTargetCell(Vector3 prefDir) {
+            WorldGrid.Cell target = null;
             Vector3 testDir;
             float degInc = 180 / 8;
             float start = 5;
@@ -194,35 +196,35 @@ public class NPCBrain {
             return target; //This shouldn't happen
         }
 
-        private NPCWorldView.worldCellData probeDir(Vector3 dir, float start) {
+        private WorldGrid.Cell probeDir(Vector3 dir, float start) {
             Vector3 pos = this._brain._npc.getPos();
             float probeLen = start + 10;
             float mult;
-            float cellSize = NPCWorldView.cellSize;
+            float cellSize = WorldData.worldGrid.cellSize;
             for (mult = start; mult < probeLen; mult++) {
                 Vector3 rayEnd = pos + dir * cellSize * mult;
-                var cell = NPCWorldView.getCell(true, rayEnd);
-                var waterCell = NPCWorldView.getCell(false, rayEnd);
-                if (!cell.blocked && waterCell.blocked)
+                var cell = WorldData.worldGrid.getCellNoWater(rayEnd);
+                if (!cell.blocked)
                     return cell;
             }
             return null;            
         }
 
-        protected void AStar(NPCWorldView.worldCellData startCell, NPCWorldView.worldCellData goal) {
+        protected void AStar(WorldGrid.Cell startCell, WorldGrid.Cell goal) {
             if (goal == null || startCell == null) return;
+
             //if (this._goal == goal.pos) return;
-            Dictionary<Vector3, NPCWorldView.worldCellData> closed =
-                new Dictionary<Vector3, NPCWorldView.worldCellData>();                                             //For quickly looking up closed nodes
-            SortedList<float, NPCWorldView.worldCellData> open =
-                new SortedList<float, NPCWorldView.worldCellData>(new NPCWorldView.DuplicateKeyComparer<float>()); //For quickly finding best node to visit                                
+            Dictionary<Vector3, WorldGrid.Cell> closed =
+                new Dictionary<Vector3, WorldGrid.Cell>();                                             //For quickly looking up closed nodes
+            SortedList<float, WorldGrid.Cell> open =
+                new SortedList<float, WorldGrid.Cell>(new WorldGrid.DuplicateKeyComparer<float>()); //For quickly finding best node to visit                                
 
             this._path.Clear(); //Clear any old paths
             this._goal = goal.pos;
 
             var current = startCell;
 
-            NPCWorldView.resetAStarData();
+            WorldData.worldGrid.resetAStarData();
             current.g = 0;
             open.Add(current.f, current); //Push the start node
             while (open.Count > 0) {
@@ -232,7 +234,7 @@ public class NPCBrain {
                 } while (closed.ContainsKey(current.pos) && open.Count > 0);
 
                 if (current.pos == goal.pos) {    //Victor  
-                    NPCWorldView.worldCellData tmp = goal;
+                    WorldGrid.Cell tmp = goal;
                     while (tmp.parent != null) {
                         this._path.Push(tmp);
                         tmp = tmp.parent;
@@ -246,8 +248,7 @@ public class NPCBrain {
                 //Close current tile
                 closed.Add(current.pos, current);
                 foreach (var cell in current.neighbours) {
-                    var waterCell = NPCWorldView.getCell(false, cell.x, cell.y);
-                    if (!closed.ContainsKey(cell.pos) && !cell.blocked && waterCell.blocked) {
+                    if (!closed.ContainsKey(cell.pos) && !cell.blocked) {
                         float g = current.g + Vector3.Distance(cell.pos, current.pos);
                         if (g < cell.g) { //New and better G value?
                             cell.h = Vector3.Distance(cell.pos, goal.pos);
@@ -296,7 +297,7 @@ public class NPCBrain {
 
         private Vector3 playersFleeDir() {
             var npc = this._brain._npc;
-            var players = NPCWorldView.getPlayers();
+            var players = NPCWorldView.players;
             Vector3 fleeDir = Vector3.zero;
             foreach (var player in players.Values) {
                 if (canSeePlayer(player)) {

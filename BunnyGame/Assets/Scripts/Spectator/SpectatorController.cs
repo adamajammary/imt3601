@@ -14,7 +14,6 @@ public enum SpectatorMode
 public class SpectatorController : MonoBehaviour {
     private SpectatorMode _spectatorMode;
     private SpectatorUI _ui;
-    
 
     private ThirdPersonCamera _thirdPersonCamera;
     private int _currentPlayerIdx = 0;
@@ -24,6 +23,7 @@ public class SpectatorController : MonoBehaviour {
     private float currentSpeed = 0;
 
     private GameObject _freeCameraTarget;
+    private GameObject _player;
 
     private float _yaw = 0;
     private float _pitch = 0;
@@ -41,7 +41,6 @@ public class SpectatorController : MonoBehaviour {
             name = "Spectator Camera [Free Mode]"
         };
         _freeCameraTarget.AddComponent<CharacterController>();
-
 
         this.enabled = false;
     }
@@ -71,7 +70,6 @@ public class SpectatorController : MonoBehaviour {
         setSpectatorMode(SpectatorMode.FREE);
 
         _thirdPersonCamera.canFPS = false;
-        gameObject.tag = "Spectator";
 
         // Disable ui elements that aren't necessary to keep after going into spectate mode
         foreach (string str in "SpectateButton BloodSplatterOverlay AbilityPanel AttributeUI".Split(' '))

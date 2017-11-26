@@ -9,6 +9,7 @@ public class BirdController : NetworkBehaviour {
     private bool _pecking;
     private Animator _animator;
     private PlayerController _pc;
+    private PlayerAbilityManager _am;
 
     public override void PreStartClient() {
         base.PreStartClient();
@@ -30,21 +31,23 @@ public class BirdController : NetworkBehaviour {
         if (!this.isLocalPlayer)
             return;
 
+        this._pc = GetComponent<PlayerController>();
+
         // Set custom attributes for class:
         PlayerEffects pe = GetComponent<PlayerEffects>();
         pe.CmdSetAttributes(0.7f, 0.8f, 1.2f, 1.0f);
 
         // Add abilities to class:
-        this._pc = GetComponent<PlayerController>();
+        this._am = GetComponent<PlayerAbilityManager>();
         var ds = gameObject.AddComponent<DustStorm>();
         var dt = gameObject.AddComponent<DustTornadoAbility>();
 
         ds.init();
         dt.init();
 
-        this._pc.abilities.Add(ds);
-        this._pc.abilities.Add(dt);
-        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(this._pc);
+        this._am.abilities.Add(ds);
+        this._am.abilities.Add(dt);
+        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(this._am);
 
         this._pecking = false;
     }
@@ -58,8 +61,9 @@ public class BirdController : NetworkBehaviour {
 
         if (Input.GetKey(KeyCode.Space))
             glide();
-        else if (Input.GetMouseButtonDown(0) && !this._pecking) 
-            CmdPeck();
+        else if (Input.GetMouseButtonDown(0) && !this._pecking)
+            StartCoroutine(this.peck());
+            //CmdPeck();
     }
 
     public int GetDamage() {
@@ -78,12 +82,14 @@ public class BirdController : NetworkBehaviour {
 
     private void glide() {
         if (!this._pc.getGrounded()) {
-            if (this._pc.velocityY < glideSpeed)
-                this._pc.velocityY = glideSpeed;                
+            if (this._pc.velocityY < glideSpeed) {
+                this._pc.velocityY = glideSpeed;
+            }
             this._animator.SetBool("glide", true);
         }
     }
 
+    // NB! Not needed with reverse attack logic (PlayerAttack.cs)
     [Command]
     private void CmdPeck() {
         RpcPeck();
@@ -91,13 +97,13 @@ public class BirdController : NetworkBehaviour {
 
     [ClientRpc]
     private void RpcPeck() {
-        StartCoroutine(peck());
+        this._animator.SetTrigger("peck");
     }
 
     private IEnumerator peck() { //Animation is 1 sec long
         this._pecking = true;
         pecker.enabled = true;
-        this._animator.SetTrigger("peck");
+        CmdPeck();
         yield return new WaitForSeconds(0.8f); //Peak of the peck
         pecker.enabled = false;
         yield return new WaitForSeconds(0.2f); //Turning back

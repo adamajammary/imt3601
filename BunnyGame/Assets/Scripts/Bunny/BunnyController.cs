@@ -9,6 +9,7 @@ public class BunnyController : NetworkBehaviour {
     private CharacterController _controller;
     private GameObject bunnyPoop;
     private PlayerInformation playerInfo;
+    private Transform _poopCameraPos;            // For aiming with camera offset
 
    public override void PreStartClient()
     {
@@ -21,14 +22,15 @@ public class BunnyController : NetworkBehaviour {
 
 
  void Start() { 
-
-        if (SceneManager.GetActiveScene().name != "Island")
+        if (SceneManager.GetActiveScene().name == "Lobby")
             return;
-          NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
+
+        NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
 
         for (int i = 0; i < netAnimator.animator.parameterCount; i++)
             netAnimator.SetParameterAutoSend(i, true);
 
+        this._poopCameraPos = transform.GetChild(2);
         bunnyPoop = Resources.Load<GameObject>("Prefabs/poop");
         playerInfo = GetComponent<PlayerInformation>();
         if (!this.isLocalPlayer)
@@ -43,16 +45,16 @@ public class BunnyController : NetworkBehaviour {
         pe.CmdSetAttributes(1.0f, 1.0f, 1.0f, 1.5f);
 
         // Add abilities to class:
-        PlayerController playerController = GetComponent<PlayerController>();
+        PlayerAbilityManager abilityManager = GetComponent<PlayerAbilityManager>();
         SuperJump sj = gameObject.AddComponent<SuperJump>();
         sj.init(10);
         GrenadePoop gp = gameObject.AddComponent<GrenadePoop>();
         gp.init();
-        playerController.abilities.Add(sj);
-        playerController.abilities.Add(gp);
+        abilityManager.abilities.Add(sj);
+        abilityManager.abilities.Add(gp);
 
 
-        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(playerController);
+        GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(abilityManager);
     }
 
  
@@ -77,11 +79,16 @@ public class BunnyController : NetworkBehaviour {
             RaycastHit hit;
 
             if (Physics.Raycast(ray, out hit, 100)) {
-                Vector3 direction = hit.point - this.transform.position;
+                Vector3 direction = hit.point - this._poopCameraPos.position;
+                // Fix shooting when you shoot your own projectile
+                if (hit.transform.tag == "projectile")
+                    direction = ray.GetPoint(50.0f) - this._poopCameraPos.position;
+                
+                //Debug.Log(hit.transform);
                 Vector3 dirNorm = direction.normalized;
                 this.CmdShootPoop(dirNorm, this._controller.velocity, playerInfo.ConnectionID);
             } else {
-                Vector3 direction = ray.GetPoint(50.0f) - this.transform.position;
+                Vector3 direction = ray.GetPoint(50.0f) - this._poopCameraPos.position;
                 Vector3 dirNorm = direction.normalized;
                 this.CmdShootPoop(dirNorm, this._controller.velocity, playerInfo.ConnectionID);
             }
@@ -92,11 +99,15 @@ public class BunnyController : NetworkBehaviour {
 
     [Command]
     public void CmdShootPoop(Vector3 direction, Vector3 startVel, int id) {
-        GameObject poop       = Instantiate(bunnyPoop);
-        BunnyPoop  poopScript = poop.GetComponent<BunnyPoop>();
-        Vector3    position   = (transform.position + direction * 4.0f);
 
-        poopScript.owner = this.gameObject;
+        GameObject   poop         = Instantiate(bunnyPoop);
+        BunnyPoop    poopScript   = poop.GetComponent<BunnyPoop>();
+        PlayerAttack attackScript = poop.GetComponent<PlayerAttack>();
+        Vector3 position = (this._poopCameraPos.position + direction * 4.0f);
+
+        //poopScript.owner   = this.gameObject;
+        attackScript.owner = this.gameObject;
+
         poopScript.shoot(direction, position, startVel);
 
         NetworkServer.Spawn(poop);
@@ -110,7 +121,7 @@ public class BunnyController : NetworkBehaviour {
         if (animator != null)
         {
             animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
-            animator.SetBool("isJumping", !GetComponent<CharacterController>().isGrounded);
+            animator.SetBool("isJumping", !GetComponent<CharacterController>().isGrounded && !GetComponent<PlayerController>().inWater);
             animator.SetFloat("height", GetComponent<PlayerController>().velocityY);
         }
 

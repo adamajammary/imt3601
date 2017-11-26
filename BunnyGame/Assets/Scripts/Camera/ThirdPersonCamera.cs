@@ -84,9 +84,7 @@ public class ThirdPersonCamera : MonoBehaviour {
     void camCollision() {
         RaycastHit hit;
         Ray ray = new Ray(this._target.transform.position, this.transform.position - this._target.transform.position);
-        int layermask = (1 << 8);
-        layermask |= (1 << 11);
-        layermask = ~layermask;
+        int layermask = (1 << 19);
 
         if (Physics.Raycast(ray, out hit, this._distanceFromTarget, layermask)) {
             this._curDist = hit.distance;
@@ -100,5 +98,11 @@ public class ThirdPersonCamera : MonoBehaviour {
 
     public Transform getTarget() {
         return _target;
+    }
+
+    public string getTargetTag() {
+        if (_target == null)
+            return "null";
+        return _target.tag;
     }
 }

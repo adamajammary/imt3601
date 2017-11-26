@@ -3,25 +3,35 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 
+public enum KillerID {
+    KILLER_ID_FALL = -1000,
+    KILLER_ID_WALL,
+    KILLER_ID_WATER
+}
+
 public enum NetworkMessageType {
     MSG_PLAYER_SELECT = 1000,
     MSG_PLAYER_NAME,
     MSG_NAME_AVAILABLE,
     MSG_PLAYER_READY,
     MSG_KILLER_ID,
+    MSG_ATTACK,
     MSG_PLAYER_STATS,
     MSG_GAME_OVER,
     MSG_LOBBY_UPDATE,
     MSG_LOBBY_PLAYERS,
     MSG_MATCH_DROP,
     MSG_MATCH_DISCONNECT,
-    MSG_RANKINGS
+    MSG_RANKINGS,
+    NR_OF_NETMESSAGE_TYPES,
+    MSG_MAP_SELECT,
+    MSG_MAP_VOTE
 }
 
 public class Player {
     public int    id         = 0;
     public string name       = "";
-    public int    model      = 0;
+    public int    animal     = 0;
     public bool   isDead     = false;
     public int    placement  = 1;
     public int    rank       = 1;
@@ -41,7 +51,7 @@ public class LobbyPlayer {
 public class GameOverMessage : MessageBase {
     public string   killer    = "";
     public string   name      = "";
-    public int      model     = 0;
+    public int      animal    = 0;
     public int      placement = 0;
     public int      kills     = 0;
     public bool     win       = false;
@@ -63,13 +73,22 @@ public class RankingsMessage : MessageBase {
     public Player[] rankings;
 }
 
+public class AttackMessage : MessageBase {
+    public float      damageAmount   = 0.0f;
+    public int        attackerID     = 0;
+    public int        victimID       = 0;
+    public Vector3    impactPosition = new Vector3();
+}
+
 //
 // https://docs.unity3d.com/ScriptReference/Networking.NetworkLobbyManager.html
 //
 public class NetworkPlayerSelect : NetworkLobbyManager {
 
+    private string[]                _islands      = { "Island", "Island42" };
     private string[]                _models       = { "PlayerCharacterBunny", "PlayerCharacterFox", "PlayerCharacterBird", "PlayerCharacterMoose" };
     private Dictionary<int, Player> _players = new Dictionary<int, Player>();
+    private Dictionary<NetworkConnection, string> _mapVotes = new Dictionary<NetworkConnection, string>();
 
     private int getNrOfPlayersAlive() {
         int playersAlive = 0;
@@ -123,6 +142,8 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
         if (this._players.ContainsKey(conn.connectionId))
             this._players[conn.connectionId].isDead = false;
+
+        this.resetMapSelect(conn);
     }
 
     // This is called on the server when a client disconnects.
@@ -133,6 +154,8 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             this._players[conn.connectionId].placement = Mathf.Max(1, this.getNrOfPlayersAlive());
             this._players[conn.connectionId].isDead    = true;
         }
+
+        this.resetMapSelect(conn);
 
         // Send updated lobby player info to all players.
         if (this.offlineScene == "Lobby")
@@ -157,10 +180,13 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYER_NAME,   this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYER_READY,  this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_KILLER_ID,     this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_ATTACK,        this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_LOBBY_UPDATE,  this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_MATCH_DROP,    this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_MAP_SELECT,    this.recieveNetworkMessage);
 
         this._players.Clear();
+        this._mapVotes.Clear();
     }
 
     // This is called on the server when a new client connects to the server.
@@ -176,6 +202,8 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             this._players.Add(conn.connectionId, player);
         else
             this._players[conn.connectionId] = player;
+
+        this.resetMapSelect(conn);
     }
 
     // This is called on the server when a client disconnects.
@@ -187,6 +215,8 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             this._players[conn.connectionId].placement = Mathf.Max(1, this.getNrOfPlayersAlive());
             this._players[conn.connectionId].isDead    = true;
         }
+
+        this.resetMapSelect(conn);
 
         if (conn.lastError != NetworkError.Ok) {
             if ((conn.lastError != NetworkError.Timeout) && LogFilter.logError)
@@ -228,7 +258,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             return null;
 
         Vector3                position       = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
-        int                    selectedModel  = this._players[conn.connectionId].model;
+        int                    selectedModel  = this._players[conn.connectionId].animal;
         GameObject             playerPrefab   = Resources.Load<GameObject>("Prefabs/Players/" + this._models[selectedModel]);
         GameObject             playerInstance = Instantiate(playerPrefab, position, playerPrefab.transform.rotation);
         PlayerInformation      playerInfo     = playerInstance.GetComponent<PlayerInformation>();
@@ -254,11 +284,17 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             case (short)NetworkMessageType.MSG_KILLER_ID:
                 this.recievePlayerDiedMessage(message);
                 break;
+            case (short)NetworkMessageType.MSG_ATTACK:
+                this.recieveAttackMessage(message);
+                break;
             case (short)NetworkMessageType.MSG_LOBBY_UPDATE:
                 this.recieveLobbyUpdateMessage();
                 break;
             case (short)NetworkMessageType.MSG_MATCH_DROP:
                 this.recieveMatchDropMessage();
+                break;
+            case (short)NetworkMessageType.MSG_MAP_SELECT:
+                this.recieveMapSelectMessage(message);
                 break;
             default:
                 Debug.Log("ERROR! Unknown message type: " + message.msgType);
@@ -326,9 +362,14 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         }
     }
 
+    // Parse the attack message, and tell the victim to apply damage to itself.
+    private void recieveAttackMessage(NetworkMessage message) {
+        this.sendAttackMessage(message.ReadMessage<AttackMessage>());
+    }
+
     // Parse the player select message, and select the player model.
     private void recievePlayerSelectMessage(NetworkMessage message) {
-        this._players[message.conn.connectionId].model = message.ReadMessage<IntegerMessage>().value;
+        this._players[message.conn.connectionId].animal = message.ReadMessage<IntegerMessage>().value;
 
         foreach (var conn in NetworkServer.connections) {
             if (conn != null)
@@ -344,6 +385,76 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             if (conn != null)
                 this.sendLobbyPlayersMessage(conn.connectionId);
         }
+    }
+
+    private void resetMapSelect(NetworkConnection conn) {
+        if (this._mapVotes.ContainsKey(conn))
+            this._mapVotes.Remove(conn);
+
+        this.sendMapVotes();
+    }
+
+    private void recieveMapSelectMessage(NetworkMessage message) {
+        string map = message.ReadMessage<StringMessage>().value;
+
+        if (this._mapVotes.ContainsKey(message.conn))
+            this._mapVotes[message.conn] = map;
+        else
+            this._mapVotes.Add(message.conn, map);
+
+        this.sendMapVotes();
+    }
+
+    private void sendMapVotes() {
+        var votes = this.getVotes();
+        string message = "";
+
+        foreach (var vote in votes)
+            message += "|" + vote.Key + ":" + vote.Value;            
+
+        NetworkServer.SendToAll((short)NetworkMessageType.MSG_MAP_VOTE, new StringMessage(message));
+    }
+
+    Dictionary<string, int> getVotes() {
+        Dictionary<string, int> votes = new Dictionary<string, int>();
+
+        foreach (var vote in this._mapVotes.Values) {
+            if (votes.ContainsKey(vote))
+                votes[vote] += 1;
+            else
+                votes.Add(vote, 1);
+        }
+
+        return votes;
+    }
+
+    //Returns the map with the most votes, if theres multiple winners one winner is chosen at random
+    public string getMap() {
+        List<string> winnerMaps = new List<string>();
+        var votes = getVotes();
+
+        // Votes (select the top voted island)
+        if (votes.Count > 0) {
+            int maxVotes = 0;
+
+            foreach(int voteCount in votes.Values) {
+                if (maxVotes < voteCount)
+                    maxVotes = voteCount;
+            }
+
+            foreach (var vote in votes) {
+                if (vote.Value == maxVotes)
+                    winnerMaps.Add(vote.Key);
+            }
+        // No votes (select from all available islands)
+        } else {
+            foreach (string island in this._islands)
+                winnerMaps.Add(island);
+        }
+
+        this._mapVotes = new Dictionary<NetworkConnection, string>(); //Clear vote data
+
+        return winnerMaps[Random.Range(0, winnerMaps.Count)];
     }
 
     // Tell the client to disconnect from the match.
@@ -364,13 +475,25 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_NAME_AVAILABLE, new IntegerMessage(available ? 1 : 0));
     }
 
+    // Tell the victim to apply damage to itself, and who the attacker was.
+    private void sendAttackMessage(AttackMessage message) {
+        if (this._players.ContainsKey(message.victimID))
+            NetworkServer.SendToClient(message.victimID, (short)NetworkMessageType.MSG_ATTACK, message);
+    }
+
     // Tell the player the end game stats.
     private void sendGameOverMessage(int id, int killerID = -1, bool win = true) {
         GameOverMessage message = new GameOverMessage();
 
-        message.killer    = (killerID >= 0 ? this._players[killerID].name : "");
+        switch ((KillerID)killerID) {
+            case KillerID.KILLER_ID_FALL: message.killer = "KILLER_ID_FALL"; break;
+            case KillerID.KILLER_ID_WALL: message.killer = "KILLER_ID_WALL"; break;
+            case KillerID.KILLER_ID_WATER: message.killer = "KILLER_ID_WATER"; break;
+            default:                      message.killer = (killerID >= 0 ? this._players[killerID].name : ""); break;
+        }
+
         message.name      = this._players[id].name;
-        message.model     = this._players[id].model;
+        message.animal    = this._players[id].animal;
         message.placement = this._players[id].placement;
         message.kills     = this._players[id].kills;
         message.win       = this._players[id].win;
@@ -401,7 +524,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         for (int i = 0; i < players.Count; i++) {
             message.players[i]        = new LobbyPlayer();
             message.players[i].name   = players[i].name;
-            message.players[i].animal = players[i].model;
+            message.players[i].animal = players[i].animal;
             message.players[i].ready  = players[i].readyLobby;
         }
 
@@ -445,16 +568,24 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             message.rankings[i]        = new Player();
             message.rankings[i].id     = rankings[i].id;
             message.rankings[i].name   = rankings[i].name;
-            message.rankings[i].model  = rankings[i].model;
+            message.rankings[i].animal = rankings[i].animal;
             message.rankings[i].isDead = rankings[i].isDead;
             message.rankings[i].rank   = (i + 1);
             message.rankings[i].kills  = rankings[i].kills;
             message.rankings[i].score  = rankings[i].score;
             message.rankings[i].win    = rankings[i].win;
 
-            // Only send the scores once form the server.
+            // Only send the scores once from the server.
             if (id == NetworkServer.serverHostId)
                 Leaderboard.SaveScore(rankings[i].name, (double)rankings[i].score);
+        }
+
+        if (id == NetworkServer.serverHostId) {
+            Leaderboard.SaveStats(this._models[rankings[0].animal]);
+
+            // DEBUG: Print stats to console
+            for (int i = 0; i < this._models.Length; i++)
+                Leaderboard.GetStats(this._models[i]);
         }
 
         NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_RANKINGS, message);

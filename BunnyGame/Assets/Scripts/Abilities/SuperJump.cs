@@ -14,7 +14,7 @@ public class SuperJump : SpecialAbility {
     public void init(float jumpHeight) {
         base.init("Textures/AbilityIcons/jumphigh");
         _jumpHeight = jumpHeight;
-        base.abilityName = "Super Jump";
+        base.abilityName = "SuperJump";
     }
 
     override public IEnumerator useAbility() {

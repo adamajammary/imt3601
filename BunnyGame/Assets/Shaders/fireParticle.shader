@@ -15,7 +15,7 @@
 			#pragma fragment frag
 			
 			#include "UnityCG.cginc"
-			#include "noise.hlsl"
+			#include "utils.hlsl"
 
 			struct appdata {
 				float4 vertex : POSITION;
@@ -40,9 +40,9 @@
 			}
 			
 			fixed4 frag (v2f i) : SV_Target {
-				float smokeHeight = 10;
+				float smokeHeight = 17;
 				float seed = _Time * 75.3f;
-				float3 samplePos = i.worldPos + 20;
+				float3 samplePos = i.worldPos;
 				float n = noise(samplePos / 0.4f + seed);
 				n = noise(samplePos*n*0.5);
 				n = noise(samplePos*n*0.5);
@@ -54,7 +54,7 @@
 
 				fixed4 col = { 1, 1, 1, 1 };
 				float cutoff = ceil((0.5 - (length(i.uv - 0.5) + n * 0.2)) * 2 - 0.1);
-				col.rgb = lerp(lerp(orange, red, n), lerp(gray, black, n), saturate((i.worldPos.y + 16) / smokeHeight));
+				col.rgb = lerp(lerp(orange, red, n), lerp(gray, black, n), saturate((i.worldPos.y) / smokeHeight));
 				col *= cutoff;
 				return col;
 			}

@@ -50,14 +50,18 @@ public class FireWall : NetworkBehaviour {
     private Image           _outsideWallEffect; //A red transparent UI panel indicating that the player is outside the wall
     private Circle          _current;           //The current circle
     private Circle          _target;            //The target circle
+    private GameObject      _fire;              //Particle effect for fire
     private System.Random   _RNG;               //Number generator, will be seeded the same across all clients
     [SyncVar(hook="init")]
     private int             _rngSeed;
     private float           _wallShrinkTimer;   //Timer for when to shrink _wall   
     private bool            _wallIsShrinking;   //Keeps track of wheter or not the wall is shrinking
+    private float           _outerBounds;       //Outer bounds of map
     private bool            _ready = false;     //Wall ready
 
     void Start() {
+        _outerBounds = 250;
+        this._fire = Resources.Load<GameObject>("Prefabs/Fire");
         if (this.isServer) StartCoroutine(waitForClients());
     }
 
@@ -108,10 +112,43 @@ public class FireWall : NetworkBehaviour {
             this.UpdateWallUI();
         }
         this._actualWallRenderer.draw(this.transform);
-    }   
+        spawnFire();
+    } 
+    
+    public float getRadius() {
+        return transform.localScale.x / 2;
+    }
+
+    private void spawnFire() {
+        if (!WorldData.ready) return;
+        if (UnityEngine.Random.Range(0.0f, 1.0f) > 0.1) return;
+
+        Vector3 pos;
+        WorldGrid.Cell cell;
+        do { //Find a random position for the NPC
+            int x = UnityEngine.Random.Range(0, WorldData.cellCount);
+            int z = UnityEngine.Random.Range(0, WorldData.cellCount);
+            cell = WorldData.worldGrid.getCell(x, 1, z);
+            pos = cell.pos;
+        } while (cell.blocked);
+
+        //Check if the point is inside the firewall
+
+        if (Vector3.Distance(pos, this._current.wall.transform.position) < getRadius()) return;
+        pos.y = 10;
+
+        RaycastHit hit;
+        int layermask = (1 << 19);
+        if (Physics.Raycast(pos, Vector3.down, out hit, 100, layermask)) {
+            var fire = Instantiate(this._fire);
+            fire.transform.position = hit.point;
+            fire.transform.GetChild(0).localScale *= UnityEngine.Random.Range(0.5f, 1.5f);
+            Destroy(fire, 10.0f);            
+        }
+    }
 
     private void UpdateWallUI() {
-        _wallTransitionUI.sizeDelta = new Vector2(150 * this._wallShrinkTimer / _wallShrinkTime, 10);
+        _wallTransitionUI.anchorMax = new Vector2(this._wallShrinkTimer / _wallShrinkTime, 1);
     }
 
     // Calculates a new target wall, sets current wall to last target
@@ -136,7 +173,7 @@ public class FireWall : NetworkBehaviour {
             transform.localScale = Vector3.Lerp(_current.wall.transform.localScale, _target.wall.transform.localScale, t);
 
             NPCWorldView.FireWall.pos = transform.position;
-            NPCWorldView.FireWall.radius = transform.localScale.x / 2;
+            NPCWorldView.FireWall.radius = getRadius();
 
             t += _wallShrinkRate * Time.deltaTime;
             yield return 0;
@@ -148,9 +185,8 @@ public class FireWall : NetworkBehaviour {
 
     void OnTriggerExit(Collider other) {
         if (!this._ready) return;
-
-        if (other.tag == "Player") {
-            _outsideWallEffect.enabled = true;
+    
+        if (other.tag == "Player" ) {
             other.GetComponent<PlayerEffects>().insideWall = false;
         }else if (other.tag == "Enemy") {
             other.GetComponent<PlayerEffects>().insideWall = false;
@@ -159,16 +195,31 @@ public class FireWall : NetworkBehaviour {
         } else if (other.tag == "DustTornado") {
             other.GetComponent<DustTornado>().kill();
         }
+
+        if (other.tag == "bunnycamera") {
+            if (other.transform.parent.tag == "Player")
+                _outsideWallEffect.enabled = true;
+        }
+        else if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
+            _outsideWallEffect.enabled = true;
+        }
     }
 
     void OnTriggerEnter(Collider other) {
         if (!this._ready) return;
 
         if (other.tag == "Player") {
-            _outsideWallEffect.enabled = false;
             other.GetComponent<PlayerEffects>().insideWall = true;
         } else if (other.tag == "Enemy") {
             other.GetComponent<PlayerEffects>().insideWall = true;
-        } 
+        }
+
+        if (other.tag == "bunnycamera") {
+            if (other.transform.parent.tag == "Player")
+                _outsideWallEffect.enabled = false;
+        }
+        else if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
+            _outsideWallEffect.enabled = false;
+        }
     }
 }

@@ -309,6 +309,48 @@ Skybox:
   m_GameObject: {fileID: 340403511}
   m_Enabled: 1
   m_CustomSkybox: {fileID: 0}
+--- !u!1001 &425575412
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4811119699068916, guid: 779da425cf62ec84cbf59c7ea380b849, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4811119699068916, guid: 779da425cf62ec84cbf59c7ea380b849, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4811119699068916, guid: 779da425cf62ec84cbf59c7ea380b849, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4811119699068916, guid: 779da425cf62ec84cbf59c7ea380b849, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4811119699068916, guid: 779da425cf62ec84cbf59c7ea380b849, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4811119699068916, guid: 779da425cf62ec84cbf59c7ea380b849, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4811119699068916, guid: 779da425cf62ec84cbf59c7ea380b849, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4811119699068916, guid: 779da425cf62ec84cbf59c7ea380b849, type: 2}
+      propertyPath: m_RootOrder
+      value: 9
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 100100000, guid: 779da425cf62ec84cbf59c7ea380b849, type: 2}
+  m_IsPrefabParent: 0
 --- !u!1001 &773740483
 Prefab:
   m_ObjectHideFlags: 0
@@ -818,6 +860,10 @@ Prefab:
     - target: {fileID: 4946917029246978, guid: 51a8cfa560471104ab610f8a2f26bd71, type: 2}
       propertyPath: m_RootOrder
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1706696129574582, guid: 51a8cfa560471104ab610f8a2f26bd71, type: 2}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 51a8cfa560471104ab610f8a2f26bd71, type: 2}

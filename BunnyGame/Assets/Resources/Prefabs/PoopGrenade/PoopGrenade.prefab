@@ -26,9 +26,10 @@ GameObject:
   - component: {fileID: 114558978336624516}
   - component: {fileID: 114648863722371388}
   - component: {fileID: 114269827596355638}
+  - component: {fileID: 114965933003493002}
   m_Layer: 10
   m_Name: PoopGrenade
-  m_TagString: Untagged
+  m_TagString: PoopGrenade
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -166,6 +167,18 @@ MonoBehaviour:
   m_SnapThreshold: 5
   m_InterpolateRotation: 1
   m_InterpolateMovement: 1
+--- !u!114 &114965933003493002
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1505676613656044}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72d370dd34b958348af22b24eecfdd7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  owner: {fileID: 0}
 --- !u!135 &135233233127740222
 SphereCollider:
   m_ObjectHideFlags: 1

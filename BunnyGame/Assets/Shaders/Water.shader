@@ -1,5 +1,5 @@
 ﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
-
+// This shader is a bit odd because i messed up the water model in blender, so the normals in the model don't make much sense.
 Shader "Custom/Water" {
 	Properties {
 		_Col ("Color", Color) = (1, 1, 1, 1)
@@ -22,7 +22,7 @@ Shader "Custom/Water" {
 			#include "UnityCG.cginc"
 			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
-			#include "noise.hlsl"
+			#include "utils.hlsl"
 			#pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
 
 			// vertex input: position, tangent
@@ -36,9 +36,8 @@ Shader "Custom/Water" {
 				float3 posEye : TEXCOORD0;
 				float3 lightDirEye : TEXCOORD1;
 				float3 worldRefl : TEXCOORD2;
-				float3 eyeNormal : TEXCOORD3;
 				SHADOW_COORDS(4) // put shadows data into TEXCOORD1
-				fixed4 diff : COLOR0;
+				fixed3 diff : COLOR0;
 				fixed3 ambient : COLOR1;
 			};
 
@@ -53,18 +52,16 @@ Shader "Custom/Water" {
 				float3 modifiedVertex = v.vertex + float3(0, 0, 1) * noise(samplePos)*_Wavyness;
 				//Usefull data
 				o.pos = UnityObjectToClipPos(modifiedVertex);
-				o.eyeNormal = normalize(UnityObjectToViewPos(v.normal));
 				o.posEye = UnityObjectToViewPos(modifiedVertex);
 				o.lightDirEye = normalize(_WorldSpaceLightPos0); //It's a directional light
 				float3 worldPos = mul(unity_ObjectToWorld, v.vertex);
 				float3 worldViewDir = normalize(UnityWorldSpaceViewDir(worldPos));
-				float3 wNormal = UnityObjectToWorldNormal(v.normal);
 				//Reflection
-				o.worldRefl = reflect(-worldViewDir, wNormal);
+				o.worldRefl = reflect(-worldViewDir, float3(0, 1, 0));
 				//Lighting
-				float nl = max(0, dot(wNormal, _WorldSpaceLightPos0.xyz));
+				half nl = max(0, dot(float3(0, 1, 0), _WorldSpaceLightPos0.xyz));
 				o.diff = nl * _LightColor0;
-				o.ambient = ShadeSH9(half4(wNormal, 1));
+				o.ambient = ShadeSH9(half4(float3(0, 1, 0), 1));
 				// Shadow
 				TRANSFER_SHADOW(o)				
 				return o;
@@ -77,12 +74,9 @@ Shader "Custom/Water" {
 				//Shadow
 				fixed shadow = SHADOW_ATTENUATION(i);
 				//----Light----
-				//	Specular
-				float3 eyeReflection = reflect(i.lightDirEye, i.eyeNormal);
-				float3 posToViewer = normalize(-i.posEye);
-				float dotSpecular = saturate(dot(eyeReflection, posToViewer));
-				float3 specular = pow((dotSpecular), 10) *_LightColor0;
-				fixed3 light = (i.diff*2 + specular) * shadow + i.ambient*2;
+				float3 specular = calcSpecular(i.lightDirEye, float3(0, 1, 0), i.posEye, 1);
+				fixed3 light = (i.diff + specular) * shadow + i.ambient;
+				//fixed3 light = specular;
 				//Combine into final color
 				fixed4 c = _Col;
 				c.rgb = skyColor;

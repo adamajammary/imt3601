@@ -21,6 +21,7 @@ public class PlayerController : NetworkBehaviour {
 	public float currentSpeed;
 	public float velocityY;
 
+
 	private bool _CC = false; //Turns off players ability to control character, used for CC effects
 
 	private float _turnSmoothVelocity;
@@ -248,5 +249,16 @@ public class PlayerController : NetworkBehaviour {
 	public void setNoInputMovement(bool noInput)
 	{
 		this._noInputMovement = noInput;
+	}
+
+
+	void OnCollisionEnter(Collision collision) {
+		
+		foreach (ContactPoint contact in collision.contacts) {
+			
+			if (transform.position.y < contact.point.y) {
+				this.velocityY = (this.velocityY > 0) ? 0 : this.velocityY;	
+			}
+		}
 	}
 }

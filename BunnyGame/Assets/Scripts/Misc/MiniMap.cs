@@ -7,7 +7,7 @@ public class MiniMap : MonoBehaviour {
 
     private GameObject _player;
     private MinimapMode _mode;
-    private int _cameraHeight = 300;
+    private int _cameraHeight = 500;
 
     public enum MinimapMode {
         FOLLOW_PLAYER,

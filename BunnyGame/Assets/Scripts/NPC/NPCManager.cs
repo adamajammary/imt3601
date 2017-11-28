@@ -158,12 +158,7 @@ public class NPCManager : NetworkBehaviour {
         int y = (Random.Range(0.0f, 1.0f) < 0.3f) ? Random.Range(1, WorldData.yOffsets.Length) : 1;
 
         var npcInstance = Instantiate(npc);
-        WorldGrid.Cell cell;
-        do { //Find a random position for the NPC
-            int x = Random.Range(0, WorldData.cellCount);
-            int z = Random.Range(0, WorldData.cellCount);
-            cell = WorldData.worldGrid.getCell(x, y, z);
-        } while (cell.blocked);
+        WorldGrid.Cell cell = WorldData.worldGrid.getRandomCell(false, 1);
         //Angle is used to generate a direction
         float angle = Random.Range(0, Mathf.PI * 2);
         Vector3 dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));

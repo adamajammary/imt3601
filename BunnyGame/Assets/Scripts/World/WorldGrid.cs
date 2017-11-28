@@ -85,6 +85,8 @@ public class WorldGrid {
     }
 
     private Cell[,,] _worldGrid;
+    private List<Cell>[] _openCells;
+    private List<Cell>[] _blockedCells;
     private static string _name;
     private static float[] _yOffsets;
     private static Vector2 _xzOffsets;
@@ -102,6 +104,18 @@ public class WorldGrid {
         _cellSize = worldSize / cellCount;
 
         initGrid();
+    }
+
+    public void lateInit() {
+        this._openCells = new List<Cell>[planeCount];
+        this._blockedCells = new List<Cell>[planeCount];
+
+        foreach (Cell cell in this._worldGrid) {
+            if (cell.blocked)
+                _blockedCells[cell.y].Add(cell);
+            else
+                _openCells[cell.y].Add(cell);
+        }
     }
 
     private void initGrid() {
@@ -155,6 +169,7 @@ public class WorldGrid {
     //================================
     public string name { get { return _name; } }
     public int cellCount { get { return _cellCount; } }
+    public int planeCount { get { return yOffsets.Length; } }
     public float worldSize { get {return _worldSize; } }
     public float cellSize { get { return _cellSize; } }
     public float[] yOffsets { get { return _yOffsets; } }
@@ -184,6 +199,13 @@ public class WorldGrid {
         return this._worldGrid[index[0], getClosestLevelNoWater(pos), index[1]];
     }
 
+    public Cell getRandomCell(bool blocked, int level) {
+        if (blocked)
+            return this._blockedCells[level][UnityEngine.Random.Range(0, this._blockedCells[level].Count)];
+        else
+            return this._openCells[level][UnityEngine.Random.Range(0, this._openCells[level].Count)];
+    }
+
     public int getClosestLevel(Vector3 pos) {
         int level = 0;
         for (int i = 1; i < yOffsets.Length; i++) {
@@ -191,7 +213,7 @@ public class WorldGrid {
                 level = i;
         }
         return level;
-    }    
+    }
 
     public int getClosestLevel(Vector3 pos, int start, int end) {
         int level = start;

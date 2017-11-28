@@ -13,7 +13,8 @@
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
-			
+			#pragma multi_compile_fog
+
 			#include "UnityCG.cginc"
 			#include "utils.hlsl"
 
@@ -26,6 +27,7 @@
 				float2 uv : TEXCOORD0;
 				float3 worldPos : TEXCOORD1;
 				float4 vertex : SV_POSITION;
+				UNITY_FOG_COORDS(5)
 			};
 			
 			sampler2D _MainTex;
@@ -36,6 +38,8 @@
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.worldPos = mul(unity_ObjectToWorld, v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+				// Fog
+				UNITY_TRANSFER_FOG(o, o.vertex);
 				return o;
 			}
 			
@@ -56,6 +60,9 @@
 				float cutoff = ceil((0.5 - (length(i.uv - 0.5) + n * 0.2)) * 2 - 0.1);
 				col.rgb = lerp(lerp(orange, red, n), lerp(gray, black, n), saturate((i.worldPos.y) / smokeHeight));
 				col *= cutoff;
+				// Fog
+				UNITY_APPLY_FOG(i.fogCoord, col);
+				UNITY_OPAQUE_ALPHA(col.a);
 				return col;
 			}
 			ENDCG

@@ -14,7 +14,9 @@
 			CGPROGRAM
 			#pragma exclude_renderers gles flash
 			#pragma vertex vert
-			#pragma fragment frag			
+			#pragma fragment frag
+			//#pragma multi_compile_fog
+
 			#include "UnityCG.cginc"
 			#include "utils.hlsl"
 
@@ -25,6 +27,7 @@
 			struct v2f {
 				float3 worldPos : TEXCOORD0;
 				float4 vertex : SV_POSITION;
+				//UNITY_FOG_COORDS(5)
 			};
 			
 			v2f vert (appdata v) {
@@ -32,6 +35,8 @@
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				//Want the worldpos of vertex for fragment shader
 				o.worldPos = mul(unity_ObjectToWorld, v.vertex);
+				// Fog
+				//UNITY_TRANSFER_FOG(o, o.vertex);
 				return o;
 			}
 			
@@ -61,6 +66,11 @@
 					+ gray * inRange(normH + n1, 0.7, 0.75)
 					+ white * inRange(normH + n1, 0.75, 0.8)
 					+ none * inRange(normH + n1, 0.8, 1.0);
+
+
+				// Fog
+				//UNITY_APPLY_FOG(i.fogCoord, col);
+				//UNITY_OPAQUE_ALPHA(col.a);
 				return col;
 			}
 			ENDCG

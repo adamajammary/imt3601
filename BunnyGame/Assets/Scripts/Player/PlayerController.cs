@@ -255,8 +255,7 @@ public class PlayerController : NetworkBehaviour {
 	void OnControllerColliderHit(ControllerColliderHit hit) {
 		if (transform.position.y < hit.point.y) {
 			this.velocityY = (this.velocityY > 0) ? 0 : this.velocityY;
-			print ("It works!");
 		}
 	}
-
+	
 }

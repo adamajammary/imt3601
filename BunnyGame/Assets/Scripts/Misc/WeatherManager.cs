@@ -21,7 +21,7 @@ public class WeatherManager : MonoBehaviour {
 
     }
 
-
+    /*
     void Update() {
         if (Input.GetKeyDown(KeyCode.F))
             init(WeatherType.FOG);
@@ -32,7 +32,7 @@ public class WeatherManager : MonoBehaviour {
             if (Input.GetKeyDown(KeyCode.L))
                 setFog(RenderSettings.fogDensity - 0.025f);
         }
-    }
+    }*/
 
     public void init(WeatherType w) {
         weatherType = w;

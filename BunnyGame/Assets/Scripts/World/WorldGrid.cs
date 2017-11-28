@@ -109,12 +109,16 @@ public class WorldGrid {
     public void lateInit() {
         this._openCells = new List<Cell>[planeCount];
         this._blockedCells = new List<Cell>[planeCount];
+        for (int i = 0; i < planeCount; i++) {
+            this._openCells[i] = new List<Cell>();
+            this._blockedCells[i] = new List<Cell>();
+        }
 
         foreach (Cell cell in this._worldGrid) {
             if (cell.blocked)
-                _blockedCells[cell.y].Add(cell);
+                this._blockedCells[cell.y].Add(cell);
             else
-                _openCells[cell.y].Add(cell);
+                this._openCells[cell.y].Add(cell);
         }
     }
 

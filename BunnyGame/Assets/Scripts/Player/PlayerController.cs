@@ -252,13 +252,11 @@ public class PlayerController : NetworkBehaviour {
 	}
 
 
-	void OnCollisionEnter(Collision collision) {
-		
-		foreach (ContactPoint contact in collision.contacts) {
-			
-			if (transform.position.y < contact.point.y) {
-				this.velocityY = (this.velocityY > 0) ? 0 : this.velocityY;	
-			}
+	void OnControllerColliderHit(ControllerColliderHit hit) {
+		if (transform.position.y < hit.point.y) {
+			this.velocityY = (this.velocityY > 0) ? 0 : this.velocityY;
+			print ("It works!");
 		}
 	}
+
 }

@@ -136,7 +136,7 @@ public class PlayerController : NetworkBehaviour {
         if (Physics.SphereCast(transform.position, .25f, Vector3.down, out hit, 3f)) {
             float slope = Vector3.Dot(new Vector3(moveDir.z, moveDir.y, -moveDir.x), (Vector3.Cross(Vector3.up, hit.normal)));
             slopeEffect = Mathf.Clamp(slope, -1, 0);
-            slopeEffect = 1- Mathf.Pow(slopeEffect, 6)/2;
+            slopeEffect = 1- Mathf.Pow(slopeEffect, 6);
         }
 
         this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime))  * slopeEffect;

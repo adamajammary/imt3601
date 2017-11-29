@@ -99,16 +99,20 @@ public class NPCManager : NetworkBehaviour {
             if (npc.Value != null) {
                 Vector3 goal = npc.Value.GetComponent<NPC>().getGoal();
                 npcs[npc.Key].update(npc.Value.transform.position, npc.Value.transform.forward, goal);
-            } else
+            } else {
+                npcs[npc.Key].alive = false;
                 this._deadNpcs.Add(npc.Key);
+            }
         }
         //Update Players
         var players = NPCWorldView.players;
         foreach (var player in this._players) {
             if (player.Value != null) {
                 players[player.Key].update(player.Value.transform.position, player.Value.transform.forward, Vector3.negativeInfinity);
-            } else
+            } else {
+                players[player.Key].alive = false;
                 this._deadPlayers.Add(player.Key);
+            }
         }
     }
 
@@ -123,8 +127,7 @@ public class NPCManager : NetworkBehaviour {
                 this._ready = false;
                 NPCWorldView.clear();
                 return;
-            } else
-                if (this._npcThreads.isUpdating) { this._npcThreads.wait = true; return; /*Wait for npc thread to catch up */}
+            }                
 
             var players = NPCWorldView.npcs;
             foreach (int dead in this._deadPlayers) {
@@ -138,23 +141,26 @@ public class NPCManager : NetworkBehaviour {
             }
             this._deadNpcs.Clear();
             this._deadPlayers.Clear();
-            this._npcThreads.wait = false;
         }
     }
 
     //Recieves instructions from the NPCThread, and passes them along to the NPC GameObjects in the scene
     void handleInstructions() {
         var instructionsArray = this._npcThreads.instructions;
-        for (int i = 0; i < instructionsArray.Length; i++) {            
-            while (!instructionsArray[i].isEmpty()) {
-                var instruction = instructionsArray[i].Dequeue();
-                if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null)
-                    this._npcs[instruction.id].GetComponent<NPC>().update(instruction.moveDir, instruction.goal);
-                else
-                    Debug.Log("ASDASD");
+        int count = 0;
+        for (int i = 0; i < instructionsArray.Length; i++) {
+            lock (instructionsArray[i]) {
+                while (!instructionsArray[i].isEmpty()) {
+                    count++;
+                    var instruction = instructionsArray[i].Dequeue();
+                    if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null)
+                        this._npcs[instruction.id].GetComponent<NPC>().update(instruction.moveDir, instruction.goal);
+                    else
+                        Debug.Log("ASDASD");
+                }
             }
         }
-        //UnityEngine.Debug.Log(count + " :: " + watch.Elapsed.ToString());
+        //UnityEngine.Debug.Log(count + " :: " + Time.deltaTime);
     }
 
     //Spawns a NPC with a random direction

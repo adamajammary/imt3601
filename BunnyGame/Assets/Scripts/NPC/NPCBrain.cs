@@ -28,7 +28,7 @@ public class NPCBrain {
 
     //==============Functions==================================================
     public bool npcAlive() {
-        return this.npc != null;
+        return this.npc.alive;
     }
 
     private void sendInstuction(Vector3 dir) {
@@ -40,7 +40,8 @@ public class NPCBrain {
     private void sendInstuction(Vector3 dir, Vector3 goal) {
         if (dir == Vector3.zero || dir == this.npc.getDir()) return;
         NPCThread.instruction i = new NPCThread.instruction(this.npc.getId(), dir.normalized * this._speed, goal);
-        this._instructions.Enqueue(i);
+        lock (this._instructions)
+            this._instructions.Enqueue(i);
     }
 
     //==============State super class==================================================

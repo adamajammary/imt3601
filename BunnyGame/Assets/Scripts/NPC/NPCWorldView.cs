@@ -55,7 +55,7 @@ public static class NPCWorldView {
                 return this._goal;
         }
 
-
+        public bool alive { get { return this._alive; } set { this._alive = value; } }
     }
     //===============================================================================
     //===============================================================================

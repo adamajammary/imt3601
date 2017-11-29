@@ -22,18 +22,19 @@ public class NPCThread {
     private BlockingQueue<instruction> _instructions;
     private List<NPCBrain> _npcBrains;
     private List<NPCBrain> _deadNpcs;
+    private WorldGrid _worldGrid;
 
     //==============Constructor==================================================
-    public NPCThread(BlockingQueue<instruction> i) {
+    public NPCThread(BlockingQueue<instruction> i, List<NPCWorldView.GameCharacter> npcs) {
         this._thread = new Thread(new ThreadStart(threadRunner)); //This starts running the update function
         this._instructions = i;
         this._npcBrains = new List<NPCBrain>();
         this._deadNpcs = new List<NPCBrain>();
         this._wait = false;
+        this._worldGrid = WorldData.worldGrid.getCopy();
 
-        var npcs = NPCWorldView.npcs;
-        foreach (var npc in npcs.Values)
-            this._npcBrains.Add(new NPCBrain(npc, this._instructions));
+        foreach (var npc in npcs)
+            this._npcBrains.Add(new NPCBrain(npc, this._instructions, this._worldGrid));
 
         this._thread.Start();
     }

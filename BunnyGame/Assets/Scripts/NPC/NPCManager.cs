@@ -11,8 +11,8 @@ public class NPCManager : NetworkBehaviour {
     private Dictionary<int, GameObject> _npcs;          //Used to update NPCWorldView
     private List<int> _deadPlayers;   //Keeps track of dead players, so that they can be removed from datastructures at a convenient time
     private List<int> _deadNpcs;      //Keeps track of dead npcs, so that they can be removed from datastructures at a convenient time
-    private NPCThread _npcThread;     //The thread running the logic for NPCs using NPCWorldView maintained by this class
-    private BlockingQueue<NPCThread.instruction> _instructions;  //Queue used to recieve instuctions from NPCThread
+    private NPCThreadManager _npcThreads;     //The thread running the logic for NPCs using NPCWorldView maintained by this class
+    private const int _npcThreadCount = 3;
     private bool _ready;         //Flag set to true when initialization is finished
 
     // Use this for initialization
@@ -35,7 +35,7 @@ public class NPCManager : NetworkBehaviour {
         List<GameObject> npcs = new List<GameObject>();
         
         foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
-        for (int i = 0; i < 100; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
+        for (int i = 0; i < _npcThreadCount * 33; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
 
         int playerCount = Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
         while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
@@ -76,10 +76,9 @@ public class NPCManager : NetworkBehaviour {
             this._npcs.Add(i, npcs[i]);
             NPCWorldView.npcs.Add(i, new NPCWorldView.GameCharacter(i));
         }
-        this._ready = true;
         NPCWorldView.ready = true;
-        this._instructions = new BlockingQueue<NPCThread.instruction>();
-        this._npcThread = new NPCThread(this._instructions);
+        this._npcThreads = new NPCThreadManager(_npcThreadCount);        
+        this._ready = true;
     }
 
     // Update is called once per frame
@@ -93,7 +92,7 @@ public class NPCManager : NetworkBehaviour {
 
     //Updates data about players and npcs for NPCWorldView so that the NPCThread can use data about them
     private void updateNPCWorldView() {
-        if (this._npcThread.wait) return;
+        if (this._npcThreads.wait) return;
         //Update NPCS
         var npcs = NPCWorldView.npcs;
         foreach (var npc in this._npcs) {
@@ -125,7 +124,7 @@ public class NPCManager : NetworkBehaviour {
                 NPCWorldView.clear();
                 return;
             } else
-                if (this._npcThread.isUpdating) { this._npcThread.wait = true; return; /*Wait for npc thread to catch up */}
+                if (this._npcThreads.isUpdating) { this._npcThreads.wait = true; return; /*Wait for npc thread to catch up */}
 
             var players = NPCWorldView.npcs;
             foreach (int dead in this._deadPlayers) {
@@ -139,16 +138,19 @@ public class NPCManager : NetworkBehaviour {
             }
             this._deadNpcs.Clear();
             this._deadPlayers.Clear();
-            this._npcThread.wait = false;
+            this._npcThreads.wait = false;
         }
     }
 
     //Recieves instructions from the NPCThread, and passes them along to the NPC GameObjects in the scene
     void handleInstructions() {
-        while (!this._instructions.isEmpty()) {
-            var instruction = this._instructions.Dequeue();
-            if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null)
-                this._npcs[instruction.id].GetComponent<NPC>().update(instruction.moveDir, instruction.goal);
+        var instructionss = this._npcThreads.instructions;
+        foreach (var instructions in instructionss) {
+            while (!instructions.isEmpty()) {
+                var instruction = instructions.Dequeue();
+                if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null)
+                    this._npcs[instruction.id].GetComponent<NPC>().update(instruction.moveDir, instruction.goal);
+            }
         }
     }
 

@@ -12,6 +12,7 @@ public class WorldDataManager : MonoBehaviour {
     public GameObject progressUI;
 
     private IslandData _islandData;
+
     // Use this for initialization
     void Start() {
         StartCoroutine(init());

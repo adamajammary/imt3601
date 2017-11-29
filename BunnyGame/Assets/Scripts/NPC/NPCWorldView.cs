@@ -38,23 +38,6 @@ public static class NPCWorldView {
                 return this._pos;
         }
 
-        public Vector3 getMapPos() {
-            lock (this) {
-                return WorldData.worldGrid.getCellNoWater(this._pos).pos;
-            }
-        }
-
-        public WorldGrid.Cell getCell() {
-            lock (this) {
-                return WorldData.worldGrid.getCellNoWater(this._pos);
-            }
-        }
-
-        public int getLevel() {
-            lock (this)
-                return WorldData.worldGrid.getClosestLevelNoWater(this._pos);
-        }
-
         public Vector3 getDir() {
             lock (this)
                 return this._dir;

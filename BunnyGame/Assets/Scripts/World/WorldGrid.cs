@@ -106,6 +106,11 @@ public class WorldGrid {
         initGrid();
     }
 
+    public WorldGrid() {
+        this._worldGrid = new Cell[cellCount, yOffsets.Length, cellCount];
+        initGrid();
+    }
+
     public void lateInit() {
         this._openCells = new List<Cell>[planeCount];
         this._blockedCells = new List<Cell>[planeCount];
@@ -123,7 +128,7 @@ public class WorldGrid {
     }
 
     private void initGrid() {
-        for (int y = 0; y < yOffsets.Length; y++) {
+        for (int y = 0; y < planeCount; y++) {
             for (int z = 0; z < cellCount; z++) {
                 for (int x = 0; x < cellCount; x++) {
                     initCell(x, y, z);
@@ -247,6 +252,19 @@ public class WorldGrid {
         input = (input >= 0) ? input : 0;
         input = (input < _cellCount) ? input : _cellCount - 1;
         return input;
+    }
+
+    public WorldGrid getCopy() {
+        WorldGrid copy = new WorldGrid();
+        for (int y = 0; y < planeCount; y++) {
+            for (int z = 0; z < cellCount; z++) {
+                for (int x = 0; x < cellCount; x++) {
+                    copy.getCell(x, y, z).blocked = getCell(x, y, z).blocked;
+                }
+            }
+        }
+        copy.lateInit();
+        return copy;
     }
 
     //=============================File I/O functions==============================================

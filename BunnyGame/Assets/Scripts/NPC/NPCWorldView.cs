@@ -26,30 +26,30 @@ public static class NPCWorldView {
             this._dir = dir;
         }
         public void update(Vector3 pos, Vector3 dir, Vector3 goal) {
-            lock (this) {
+            //lock (this) {
                 this._dir = dir;
                 this._pos = pos;
                 this._goal = goal;
-            }
+            //}
         }
 
         public Vector3 getPos() {
-            lock (this)
+            //lock (this)
                 return this._pos;
         }
 
         public Vector3 getDir() {
-            lock (this)
+            //lock (this)
                 return this._dir;
         }
 
         public int getId() {
-            lock (this)
+            //lock (this)
                 return this._id;
         }
 
         public Vector3 getGoal() {
-            lock (this)
+            //lock (this)
                 return this._goal;
         }
     }

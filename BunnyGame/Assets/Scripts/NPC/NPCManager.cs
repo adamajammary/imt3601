@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System.Diagnostics;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -13,7 +14,7 @@ public class NPCManager : NetworkBehaviour {
     private List<int> _deadNpcs;      //Keeps track of dead npcs, so that they can be removed from datastructures at a convenient time
     private NPCThreadManager _npcThreads;     //The thread running the logic for NPCs using NPCWorldView maintained by this class
     private const int _npcThreadCount = 3;
-    private const int _npcCount = _npcThreadCount * 33;
+    private const int _npcCount = _npcThreadCount * 1;
     private bool _ready;         //Flag set to true when initialization is finished
 
     // Use this for initialization
@@ -144,14 +145,20 @@ public class NPCManager : NetworkBehaviour {
 
     //Recieves instructions from the NPCThread, and passes them along to the NPC GameObjects in the scene
     void handleInstructions() {
+        Stopwatch watch = new Stopwatch();
+        watch.Start();
         var instructionsArray = this._npcThreads.instructions;
-        foreach (var instructions in instructionsArray) {
-            while (!instructions.isEmpty()) {
-                var instruction = instructions.Dequeue();
+        int count = 0;
+        for (int i = 0; i < instructionsArray.Length; i++) {            
+            while (!instructionsArray[i].isEmpty()) {
+                count++;
+                var instruction = instructionsArray[i].Dequeue();
                 if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null)
                     this._npcs[instruction.id].GetComponent<NPC>().update(instruction.moveDir, instruction.goal);
             }
         }
+        watch.Stop();
+        UnityEngine.Debug.Log(count + " :: " + watch.Elapsed.ToString());
     }
 
     //Spawns a NPC with a random direction

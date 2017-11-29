@@ -13,6 +13,7 @@ public class NPCManager : NetworkBehaviour {
     private List<int> _deadNpcs;      //Keeps track of dead npcs, so that they can be removed from datastructures at a convenient time
     private NPCThreadManager _npcThreads;     //The thread running the logic for NPCs using NPCWorldView maintained by this class
     private const int _npcThreadCount = 3;
+    private const int _npcCount = _npcThreadCount * 33;
     private bool _ready;         //Flag set to true when initialization is finished
 
     // Use this for initialization
@@ -35,7 +36,7 @@ public class NPCManager : NetworkBehaviour {
         List<GameObject> npcs = new List<GameObject>();
         
         foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
-        for (int i = 0; i < _npcThreadCount * 33; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
+        for (int i = 0; i < _npcCount; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
 
         int playerCount = Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
         while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
@@ -53,7 +54,7 @@ public class NPCManager : NetworkBehaviour {
     private IEnumerator init() {
         while (!WorldData.ready) yield return 0;
         //Wait for all NPCs to spawn
-        while (GameObject.FindGameObjectsWithTag("npc").Length != 100)
+        while (GameObject.FindGameObjectsWithTag("npc").Length != _npcCount)
             yield return 0;
         //Wait for all players to spawn, +1 for localplayer 
         while (this._playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1))
@@ -92,7 +93,6 @@ public class NPCManager : NetworkBehaviour {
 
     //Updates data about players and npcs for NPCWorldView so that the NPCThread can use data about them
     private void updateNPCWorldView() {
-        if (this._npcThreads.wait) return;
         //Update NPCS
         var npcs = NPCWorldView.npcs;
         foreach (var npc in this._npcs) {
@@ -144,8 +144,8 @@ public class NPCManager : NetworkBehaviour {
 
     //Recieves instructions from the NPCThread, and passes them along to the NPC GameObjects in the scene
     void handleInstructions() {
-        var instructionss = this._npcThreads.instructions;
-        foreach (var instructions in instructionss) {
+        var instructionsArray = this._npcThreads.instructions;
+        foreach (var instructions in instructionsArray) {
             while (!instructions.isEmpty()) {
                 var instruction = instructions.Dequeue();
                 if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null)

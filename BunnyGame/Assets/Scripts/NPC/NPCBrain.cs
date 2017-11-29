@@ -12,13 +12,13 @@ public class NPCBrain {
 
     //==============Constructor==================================================
     public NPCBrain(NPCWorldView.GameCharacter npc, BlockingQueue<NPCThread.instruction> i, WorldGrid worldGrid){
-        this.npc               = npc;
-        this._state             = new Stack<State>();
-        this._instructions      = i;
-        this._speed             = 1.0f;
+        this.npc            = npc;
+        this._state         = new Stack<State>();
+        this._instructions  = i;
+        this._speed         = 1.0f;
+        this._worldGrid     = worldGrid;
 
-        this._state.Push(new Roam(this));
-        this._worldGrid = worldGrid;
+        this._state.Push(new Roam(this));        
     }
 
     //==============Update==================================================
@@ -32,7 +32,6 @@ public class NPCBrain {
     }
 
     private void sendInstuction(Vector3 dir) {
-        Debug.Log("DASDSAD");
         if (dir == Vector3.zero || dir == this.npc.getDir()) return;
         NPCThread.instruction i = new NPCThread.instruction(this.npc.getId(), dir.normalized * this._speed, Vector3.down);
         this._instructions.Enqueue(i);
@@ -47,12 +46,14 @@ public class NPCBrain {
     //==============State super class==================================================
     private class State {
         protected NPCBrain _brain;
-        public State(NPCBrain x) { this._brain = x; }
+        protected NPCWorldView.GameCharacter _npc;
+        protected WorldGrid _worldGrid;
+        public State(NPCBrain x) { this._worldGrid = x._worldGrid; _npc = x.npc; this._brain = x; }
         public virtual void update() { }
 
         //Usefull functions for any state
         protected bool detectObstacle() {
-            var npc = this._brain.npc;
+            var npc = this._npc;
             float viewDist = 5;
             float fov = 45;
             Vector3 dir = npc.getDir();
@@ -61,14 +62,18 @@ public class NPCBrain {
             eyes[1] = Quaternion.AngleAxis(fov, Vector3.up) * dir;
             eyes[2] = Quaternion.AngleAxis(-fov, Vector3.up) * dir;
             foreach (var eye in eyes) {
-                if (this._brain._worldGrid.rayCast(this._brain._worldGrid.getClosestLevelNoWater(npc.getPos()), npc.getPos(), npc.getPos() + eye * viewDist) != float.MaxValue)
+                if (this._worldGrid.rayCast(
+                    this._worldGrid.getClosestLevelNoWater(npc.getPos()), 
+                    npc.getPos(), 
+                    npc.getPos() + eye * viewDist) 
+                    != float.MaxValue)
                     return true;
             }
             return false;
         }
 
         protected bool inDanger() {
-            var npc = this._brain.npc;
+            var npc = this._npc;
             var players = NPCWorldView.players;
             foreach (var player in players.Values)
                 if (Vector3.Distance(npc.getPos(), player.getPos()) < 20)
@@ -96,21 +101,20 @@ public class NPCBrain {
         override public void update() {
             roam();
             if (inDanger()) {
-               this._brain._state.Push(new FleeDanger(this._brain));
+                this._brain._state.Push(new FleeDanger(this._brain));
             } else if (detectObstacle()) {
-                Debug.Log("AVOID STUFF");
-               this._brain._state.Push(new AvoidObstacle(this._brain));
+                this._brain._state.Push(new AvoidObstacle(this._brain));
             }
         }
 
         private void roam() {
             Vector3 roamDir = Vector3.zero;
-            Vector3 mapPos = this._brain._worldGrid.getCellNoWater(this._brain.npc.getPos()).pos;
+            Vector3 mapPos = this._worldGrid.getCellNoWater(this._npc.getPos()).pos;
             if (lastCell == mapPos) return;
             if (hash(mapPos) < 0.5)
-                roamDir = Quaternion.AngleAxis(5, Vector3.up) * this._brain.npc.getDir();
+                roamDir = Quaternion.AngleAxis(5, Vector3.up) * this._npc.getDir();
             else
-                roamDir = Quaternion.AngleAxis(5, Vector3.up) * this._brain.npc.getDir();
+                roamDir = Quaternion.AngleAxis(5, Vector3.up) * this._npc.getDir();
             this._brain.sendInstuction(roamDir);
             lastCell = mapPos;
         }
@@ -128,7 +132,7 @@ public class NPCBrain {
         public AvoidObstacle(NPCBrain x) : base(x) {
             this._goal = Vector3.down;
             this._path = new Stack<WorldGrid.Cell>();
-            AStar(this._brain._worldGrid.getCellNoWater(this._brain.npc.getPos()), findTargetCell(x.npc.getDir()));
+            AStar(this._worldGrid.getCellNoWater(this._npc.getPos()), findTargetCell(x.npc.getDir()));
         }
 
         override public void update() {
@@ -144,21 +148,21 @@ public class NPCBrain {
         protected void walkPath() {
             if (this._path.Count == 0) return;
             recalcPath();
-            var npc = this._brain.npc;
+            var npc = this._npc;
             Vector3 pathDir;
 
             pathDir = this._path.Peek().pos - npc.getPos();
             pathDir.y = 0;
             pathDir.Normalize();
             this._brain.sendInstuction(pathDir, this._goal);
-            if (this._brain._worldGrid.getCellNoWater(this._brain.npc.getPos()) == this._path.Peek()) this._path.Pop();
+            if (this._worldGrid.getCellNoWater(this._npc.getPos()) == this._path.Peek()) this._path.Pop();
         }
 
         protected void recalcPath() { 
-            var npc = this._brain.npc;
+            var npc = this._npc;
             if (npc.getGoal() == Vector3.down) return;
             if (npc.getGoal() != this._goal) { //This happends when a client is out of sync with master, and they calculate different paths
-                AStar(this._brain._worldGrid.getCellNoWater(this._brain.npc.getPos()), this._brain._worldGrid.getCellNoWater(npc.getGoal()));
+                AStar(this._worldGrid.getCellNoWater(this._npc.getPos()), this._worldGrid.getCellNoWater(npc.getGoal()));
             }
         }
 
@@ -184,13 +188,13 @@ public class NPCBrain {
         }
 
         private WorldGrid.Cell probeDir(Vector3 dir, float start) {
-            Vector3 pos = this._brain.npc.getPos();
+            Vector3 pos = this._npc.getPos();
             float probeLen = start + 10;
             float mult;
-            float cellSize = this._brain._worldGrid.cellSize;
+            float cellSize = this._worldGrid.cellSize;
             for (mult = start; mult < probeLen; mult++) {
                 Vector3 rayEnd = pos + dir * cellSize * mult;
-                var cell = this._brain._worldGrid.getCellNoWater(rayEnd);
+                var cell = this._worldGrid.getCellNoWater(rayEnd);
                 if (!cell.blocked)
                     return cell;
             }
@@ -210,7 +214,7 @@ public class NPCBrain {
 
             var current = startCell;
 
-            this._brain._worldGrid.resetAStarData();
+            this._worldGrid.resetAStarData();
             current.g = 0;
             open.Add(current.f, current); //Push the start node
             while (open.Count > 0) {
@@ -256,10 +260,10 @@ public class NPCBrain {
         }
 
         override public void update() {
-            var npc = this._brain.npc;
+            var npc = this._npc;
             Vector3 dir = fleeDir();
             if (detectObstacle()) {                
-                AStar(this._brain._worldGrid.getCellNoWater(this._brain.npc.getPos()), findTargetCell(dir));
+                AStar(this._worldGrid.getCellNoWater(this._npc.getPos()), findTargetCell(dir));
             }
             if (this._path.Count > 1) {               
                 this._path.Pop();
@@ -282,7 +286,7 @@ public class NPCBrain {
         }
 
         private Vector3 playersFleeDir() {
-            var npc = this._brain.npc;
+            var npc = this._npc;
             var players = NPCWorldView.players;
             Vector3 fleeDir = Vector3.zero;
             foreach (var player in players.Values) {
@@ -295,7 +299,7 @@ public class NPCBrain {
         }
 
         private Vector3 FireWallFleeDir() {
-            var npc = this._brain.npc;
+            var npc = this._npc;
             float dist = Vector3.Distance(npc.getPos(), NPCWorldView.FireWall.pos);
             float viewDist = 20;
             if ((NPCWorldView.FireWall.radius - dist) < viewDist) {
@@ -307,7 +311,7 @@ public class NPCBrain {
         }       
 
         private bool canSeePlayer(NPCWorldView.GameCharacter player) {
-            var npc = this._brain.npc;
+            var npc = this._npc;
             if (Vector3.Distance(npc.getPos(), player.getPos()) < 20) 
                 return true;
             return false;

@@ -31,4 +31,9 @@ public class BlockingQueue<T> {
         lock (_queue)
             return empty;
     }
+
+    public int count() {
+        lock (_queue)
+            return _count;
+    }
 }

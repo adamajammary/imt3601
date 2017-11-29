@@ -12,12 +12,14 @@ public static class NPCWorldView {
         private Vector3 _dir;
         private Vector3 _goal;
         private int _id;
+        private bool _alive;
 
         public GameCharacter(int id) {
             this._id = id;
             this._pos = Vector3.zero;
             this._dir = Vector3.zero;
             this._goal = Vector3.negativeInfinity;
+            this._alive = true;
         }
 
         public GameCharacter(int id, Vector3 pos, Vector3 dir) {
@@ -26,32 +28,34 @@ public static class NPCWorldView {
             this._dir = dir;
         }
         public void update(Vector3 pos, Vector3 dir, Vector3 goal) {
-            //lock (this) {
+            lock (this) {
                 this._dir = dir;
                 this._pos = pos;
                 this._goal = goal;
-            //}
+            }
         }
 
         public Vector3 getPos() {
-            //lock (this)
+            lock (this)
                 return this._pos;
         }
 
         public Vector3 getDir() {
-            //lock (this)
+            lock (this)
                 return this._dir;
         }
 
         public int getId() {
-            //lock (this)
+            lock (this)
                 return this._id;
         }
 
         public Vector3 getGoal() {
-            //lock (this)
+            lock (this)
                 return this._goal;
         }
+
+
     }
     //===============================================================================
     //===============================================================================

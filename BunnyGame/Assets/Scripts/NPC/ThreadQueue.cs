@@ -14,7 +14,7 @@ public class BlockingQueue<T> {
     public T Dequeue() {
         lock (_queue) {
             _count--;
-            if (_count == 0) empty = true;
+            if (_count <= 0) empty = true;
             return _queue.Dequeue();           
         }
     }

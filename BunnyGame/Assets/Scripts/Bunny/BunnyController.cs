@@ -71,7 +71,7 @@ public class BunnyController : NetworkBehaviour {
 
  
     void Update() {
-        if (!this.isLocalPlayer)
+        if (!this.isLocalPlayer || this.GetComponent<PlayerHealth>().IsDead())
             return;
 
         updateAnimator();
@@ -82,7 +82,7 @@ public class BunnyController : NetworkBehaviour {
         //Bunny passive "sixth sense"
         if (this._enemies != null) {
             for (int i = 0; i < this._enemies.Length; i++) {
-                if (this._enemies[i] != null) {
+                if (this._enemies[i] != null && !this._enemies[i].GetComponent<PlayerHealth>().IsDead()) {
                     if (Vector3.Distance(this._enemies[i].transform.position, transform.position) < _alertDistance) {
                         if (!this._enemyInRange[i])
                             alert();

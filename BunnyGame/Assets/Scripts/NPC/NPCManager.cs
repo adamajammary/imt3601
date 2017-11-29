@@ -11,7 +11,7 @@ public class NPCManager : NetworkBehaviour {
     private Dictionary<int, GameObject> _npcs;          //Used to update NPCWorldView
     private List<int> _deadPlayers;   //Keeps track of dead players, so that they can be removed from datastructures at a convenient time
     private List<int> _deadNpcs;      //Keeps track of dead npcs, so that they can be removed from datastructures at a convenient time
-    private NPCThreadManager _npcThreads;     //The thread running the logic for NPCs using NPCWorldView maintained by this class
+    private NPCThreadManager _npcThreads;     //The threads running the logic for NPCs using NPCWorldView maintained by this class
     private const int _npcThreadCount = 3;
     private const int _npcCount = _npcThreadCount * 33;
     private bool _ready;         //Flag set to true when initialization is finished
@@ -86,8 +86,8 @@ public class NPCManager : NetworkBehaviour {
     void Update() {
         if (this._ready) {
             this.updateNPCWorldView();
-            this.handleInstructions();
             this.removeDeadStuff();
+            this.handleInstructions();
         }
     }
 
@@ -121,7 +121,7 @@ public class NPCManager : NetworkBehaviour {
     void removeDeadStuff() {
         if (this._deadNpcs.Count > 0 || this._deadNpcs.Count > 0) {
             if (this._npcs.Count <= 1) {
-                NPCWorldView.runNpcThread = false;
+                this._npcThreads.stopThreads();
                 this._deadNpcs.Clear();
                 this._deadPlayers.Clear();
                 this._ready = false;
@@ -146,21 +146,14 @@ public class NPCManager : NetworkBehaviour {
 
     //Recieves instructions from the NPCThread, and passes them along to the NPC GameObjects in the scene
     void handleInstructions() {
-        var instructionsArray = this._npcThreads.instructions;
-        int count = 0;
-        for (int i = 0; i < instructionsArray.Length; i++) {
-            lock (instructionsArray[i]) {
-                while (!instructionsArray[i].isEmpty()) {
-                    count++;
-                    var instruction = instructionsArray[i].Dequeue();
-                    if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null)
-                        this._npcs[instruction.id].GetComponent<NPC>().update(instruction.moveDir, instruction.goal);
-                    else
-                        Debug.Log("ASDASD");
-                }
+        var instructions = this._npcThreads.instructions;
+        lock (instructions) {
+            while (!instructions.isEmpty()) {
+                var instruction = instructions.Dequeue();
+                if (this._npcs.ContainsKey(instruction.id) && this._npcs[instruction.id] != null)
+                    this._npcs[instruction.id].GetComponent<NPC>().update(instruction.moveDir, instruction.goal);
             }
-        }
-        //UnityEngine.Debug.Log(count + " :: " + Time.deltaTime);
+        }        
     }
 
     //Spawns a NPC with a random direction
@@ -187,12 +180,12 @@ public class NPCManager : NetworkBehaviour {
 
     //It's important to stop the NPCThread when quitting
     void OnApplicationQuit() {
-        NPCWorldView.runNpcThread = true;
+        this._npcThreads.stopThreads();
         NPCWorldView.clear();
     }
 
     void OnDestroy() {
-        NPCWorldView.runNpcThread = false;
+        this._npcThreads.stopThreads();
         NPCWorldView.clear();
     }
 }

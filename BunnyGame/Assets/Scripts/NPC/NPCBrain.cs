@@ -34,7 +34,8 @@ public class NPCBrain {
     private void sendInstuction(Vector3 dir) {
         if (dir == Vector3.zero || dir == this.npc.getDir()) return;
         NPCThread.instruction i = new NPCThread.instruction(this.npc.getId(), dir.normalized * this._speed, Vector3.down);
-        this._instructions.Enqueue(i);
+        lock (this._instructions)
+            this._instructions.Enqueue(i);
     }
 
     private void sendInstuction(Vector3 dir, Vector3 goal) {

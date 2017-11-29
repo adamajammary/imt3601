@@ -62,7 +62,6 @@ public static class NPCWorldView {
     private static Dictionary<int, GameCharacter> _npcs;
     private static Dictionary<int, GameCharacter> _players;
     private static FireWall.Circle _fireWall;
-    private static bool _runNpcThread;
 
     private static bool _ready;
     //===============================================================================
@@ -70,7 +69,6 @@ public static class NPCWorldView {
         init();
     }
     public static void init() {
-        _runNpcThread = true;
         _ready = false;
 
         _npcs = new Dictionary<int, GameCharacter>();
@@ -78,7 +76,6 @@ public static class NPCWorldView {
     }
 
     public static void clear() {
-        _runNpcThread = false;
         _ready = false;
 
         _npcs = null;
@@ -89,6 +86,5 @@ public static class NPCWorldView {
     public static Dictionary<int, GameCharacter> npcs { get { return _npcs; } }
     public static bool ready { get { return _ready; } set { _ready = value; } }
     public static FireWall.Circle FireWall { get { return _fireWall; } set { _fireWall = value; } }
-    public static bool runNpcThread { get { return _runNpcThread; } set { _runNpcThread = value; } }
     //===============================================================================
 }

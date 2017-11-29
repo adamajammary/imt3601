@@ -123,15 +123,8 @@ public class FireWall : NetworkBehaviour {
         if (!WorldData.ready) return;
         if (UnityEngine.Random.Range(0.0f, 1.0f) > 0.1) return;
 
-        Vector3 pos;
-        WorldGrid.Cell cell;
-        do { //Find a random position for the NPC
-            int x = UnityEngine.Random.Range(0, WorldData.cellCount);
-            int z = UnityEngine.Random.Range(0, WorldData.cellCount);
-            cell = WorldData.worldGrid.getCell(x, 1, z);
-            pos = cell.pos;
-        } while (cell.blocked);
-
+        Vector3 pos = WorldData.worldGrid.getRandomCell(false, 1).pos;
+        
         //Check if the point is inside the firewall
 
         if (Vector3.Distance(pos, this._current.wall.transform.position) < getRadius()) return;

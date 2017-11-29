@@ -12,6 +12,7 @@ public class WorldDataManager : MonoBehaviour {
     public GameObject progressUI;
 
     private IslandData _islandData;
+
     // Use this for initialization
     void Start() {
         StartCoroutine(init());
@@ -26,8 +27,10 @@ public class WorldDataManager : MonoBehaviour {
         WorldData.init(_islandData);
         if (!WorldData.worldGrid.readFromFile())
             StartCoroutine(calcWorldData());
-        else
+        else {
+            WorldData.worldGrid.lateInit();
             WorldData.ready = true;
+        }
     }
 
     private IEnumerator calcWorldData() { //Really wish unity let us thread stuff, but courutines will have to do.
@@ -56,7 +59,7 @@ public class WorldDataManager : MonoBehaviour {
         progressUI.SetActive(false);
 
         Time.timeScale = 1; //resume game
-
+        WorldData.worldGrid.lateInit();
         WorldData.worldGrid.writeToFile();
         WorldData.ready = true;
     }

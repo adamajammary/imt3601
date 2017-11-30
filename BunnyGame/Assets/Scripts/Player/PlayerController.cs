@@ -134,7 +134,7 @@ public class PlayerController : NetworkBehaviour {
 
         float slopeEffect = 1f;
         RaycastHit hit;
-        if (Physics.SphereCast(transform.position, .25f, Vector3.down, out hit, 3f)) {
+        if (Physics.SphereCast(transform.position, .25f, Vector3.down, out hit, 3f) && controller.isGrounded) {
             float slope = Vector3.Dot(new Vector3(moveDir.z, moveDir.y, -moveDir.x), (Vector3.Cross(Vector3.up, hit.normal)));
             slopeEffect = Mathf.Clamp(slope, -1, 0);
             slopeEffect = 1- Mathf.Pow(slopeEffect, 6);

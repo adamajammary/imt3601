@@ -68,23 +68,19 @@ public class WeatherManager : NetworkBehaviour {
         while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
             yield return 0;
 
-        Debug.Log("serverInit");
         RpcInit((WeatherType)UnityEngine.Random.Range(0, 3));
     }
 
     [ClientRpc]
     public void RpcInit(WeatherType w) {
-        Debug.Log("RpcInit");
         init(w);
     }
 
 
     public void init(WeatherType w) {
-        Debug.Log("init");
         weatherType = w;
         switch (w) {
             case WeatherType.CLEAR:
-                initClear();
                 break;
             case WeatherType.FOG:
                 setFog();
@@ -95,15 +91,10 @@ public class WeatherManager : NetworkBehaviour {
         }
     }
 
-    private void initClear() {
-
-    }
-
-
     private void setFog(float density = 0.05f) {
         RenderSettings.fog = true;
         RenderSettings.fogDensity = density;
-        RenderSettings.fogColor = new Color(0.9f, 0.9f, 0.9f);
+        RenderSettings.fogColor = new Color(0.75f, 0.75f, 0.75f);
         RenderSettings.fogMode = FogMode.Exponential;
         GameObject.Find("Main Light").GetComponent<Light>().color = new Color(0.8f, 0.8f, 0.8f);
         RenderSettings.skybox = fogSkyBox;
@@ -113,6 +104,5 @@ public class WeatherManager : NetworkBehaviour {
         setFog(0.005f);
         _rainEmitter.SetActive(true);
         _rainSound.Play();
-
     }
 }

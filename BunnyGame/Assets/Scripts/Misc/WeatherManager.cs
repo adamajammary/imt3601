@@ -14,8 +14,9 @@ public class WeatherManager : MonoBehaviour {
     public Material rainSkyBox;
 
     private GameObject _rainEmitter;
+    private AudioSource _rainSound;
     private GameObject _camera;
-
+    private PlayerController _player;
 
 
     private WeatherType weatherType = WeatherType.CLEAR;
@@ -23,7 +24,13 @@ public class WeatherManager : MonoBehaviour {
     void Start() {
         _rainEmitter = Instantiate(Resources.Load<GameObject>("Prefabs/Rain"));
         _rainEmitter.SetActive(false);
+        _rainSound = GameObject.Find("Main Camera").AddComponent<AudioSource>();
+        _rainSound.clip = Resources.Load<AudioClip>("Audio/rain-03");
+        _rainSound.loop = true;
+        _rainSound.volume = 0;
+
         _camera = GameObject.Find("Main Camera");
+        _player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
     }
 
 
@@ -33,9 +40,9 @@ public class WeatherManager : MonoBehaviour {
 
         if(this.weatherType == WeatherType.FOG) {
             if (Input.GetKeyDown(KeyCode.O))
-                setFog(RenderSettings.fogDensity + 0.025f);
+                setFog(RenderSettings.fogDensity + 0.01f);
             if (Input.GetKeyDown(KeyCode.L))
-                setFog(RenderSettings.fogDensity - 0.025f);
+                setFog(RenderSettings.fogDensity - 0.01f);
         }
 
 
@@ -44,6 +51,9 @@ public class WeatherManager : MonoBehaviour {
 
         if(this.weatherType == WeatherType.RAIN) {
             _rainEmitter.transform.position = _camera.transform.position + new Vector3(0, 50, 0);
+            _rainSound.volume = (PlayerPrefs.GetFloat("Master Volume", 100) / 100f) * (PlayerPrefs.GetFloat("Effect Volume", 100) / 100f) * 0.25f;
+
+            _rainSound.pitch = _player.inWater ? 0.2f : 1f;
         }
 
     }
@@ -79,9 +89,9 @@ public class WeatherManager : MonoBehaviour {
     }
 
     private void setRain() {
-        setFog(0.01f);
+        setFog(0.005f);
         _rainEmitter.SetActive(true);
-        //_rainEmitter.transform.SetParent(GameObject.Find("Main Camera").transform);
+        _rainSound.Play();
 
     }
 }

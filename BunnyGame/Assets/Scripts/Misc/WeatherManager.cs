@@ -23,16 +23,6 @@ public class WeatherManager : NetworkBehaviour {
     private WeatherType weatherType = WeatherType.CLEAR;
 
     void Start() {
-        _rainEmitter = Instantiate(Resources.Load<GameObject>("Prefabs/Rain"));
-        _rainEmitter.SetActive(false);
-        _rainSound = GameObject.Find("Main Camera").AddComponent<AudioSource>();
-        _rainSound.clip = Resources.Load<AudioClip>("Audio/rain-03");
-        _rainSound.loop = true;
-        _rainSound.volume = 0;
-
-        _camera = GameObject.Find("Main Camera");
-        _player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
-
         if (this.isServer)
             StartCoroutine(serverInit());
     }
@@ -45,22 +35,6 @@ public class WeatherManager : NetworkBehaviour {
 
             _rainSound.pitch = _player.inWater ? 0.2f : 1f;
         }
-
-
-
-        // FOR TESTING ONLY BELOW:
-        if (Input.GetKeyDown(KeyCode.F))
-            init(WeatherType.FOG);
-        if (Input.GetKeyDown(KeyCode.R))
-            init(WeatherType.RAIN);
-
-        if (this.weatherType == WeatherType.FOG) {
-            if (Input.GetKeyDown(KeyCode.O))
-                setFog(RenderSettings.fogDensity + 0.01f);
-            if (Input.GetKeyDown(KeyCode.L))
-                setFog(RenderSettings.fogDensity - 0.01f);
-        }
-
     }
 
     public IEnumerator serverInit() {
@@ -101,6 +75,17 @@ public class WeatherManager : NetworkBehaviour {
     }
 
     private void setRain() {
+        _rainEmitter = Instantiate(Resources.Load<GameObject>("Prefabs/Rain"));
+        _rainEmitter.SetActive(false);
+        _rainSound = GameObject.Find("Main Camera").AddComponent<AudioSource>();
+        _rainSound.clip = Resources.Load<AudioClip>("Audio/rain-03");
+        _rainSound.loop = true;
+        _rainSound.volume = 0;
+
+        _camera = GameObject.Find("Main Camera");
+        _player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+
+
         setFog(0.005f);
         _rainEmitter.SetActive(true);
         _rainSound.Play();

@@ -34,6 +34,9 @@ public class PlayerHealth : NetworkBehaviour {
             NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_GAME_OVER,    this.recieveNetworkMessage);
             NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_RANKINGS,     this.recieveNetworkMessage);
 
+            // TODO:
+            NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_DATA_FILE_READY, this.recieveNetworkMessage);
+
             NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_PLAYER_READY, new IntegerMessage());
         }
 
@@ -142,6 +145,10 @@ public class PlayerHealth : NetworkBehaviour {
                 break;
             case (short)NetworkMessageType.MSG_RANKINGS:
                 this.updateRankings(message.ReadMessage<RankingsMessage>());
+                break;
+            // TODO:
+            case (short)NetworkMessageType.MSG_DATA_FILE_READY:
+                print("MSG_DATA_FILE_READY");
                 break;
             default:
                 Debug.Log("ERROR! Unknown message type: " + message.msgType);

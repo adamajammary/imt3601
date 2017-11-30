@@ -261,10 +261,14 @@ public class LobbyHUD : MonoBehaviour {
     private IEnumerator<WaitForSeconds> initLobbyRoom(float delayInSeconds) {
         float time = 0;
 
+        print("LOBBY_HUD::INIT_LOBBY_ROOM: delayInSeconds=" + delayInSeconds);
+
         while ((GameObject.FindGameObjectsWithTag("lobbyplayer").Length < 1) && (time < 10.0f)) {
             time += delayInSeconds;
             yield return new WaitForSeconds(delayInSeconds);
         }
+
+        print("\tLOBBY_HUD::INIT_LOBBY_ROOM: CLIENT_COUNT=" + NetworkClient.allClients.Count);
 
         NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_LOBBY_UPDATE, new IntegerMessage());
     }
@@ -307,11 +311,17 @@ public class LobbyHUD : MonoBehaviour {
     }
 
     public void onReady() {
+        print("LOBBY_HUD: CLICK_ON_READY");
+
         foreach(GameObject player in GameObject.FindGameObjectsWithTag("lobbyplayer")) {
             NetworkLobbyPlayer lobbyPlayer = player.GetComponent<NetworkLobbyPlayer>();
 
+            print("\tLOBBY_HUD::ON_READY: lobbyPlayer.isLocalPlayer=" + lobbyPlayer.isLocalPlayer);
+
             if (!lobbyPlayer.isLocalPlayer)
                 continue;
+
+            print("\tLOBBY_HUD::ON_READY: lobbyPlayer.readyToBegin=" + lobbyPlayer.readyToBegin);
 
             if (!lobbyPlayer.readyToBegin)
                 lobbyPlayer.SendReadyToBeginMessage();

@@ -2,7 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.Networking;
+using UnityEngine.Networking.NetworkSystem;
 
 public class WorldDataManager : MonoBehaviour {
 
@@ -23,11 +24,24 @@ public class WorldDataManager : MonoBehaviour {
             this._islandData = Object.FindObjectOfType<IslandData>();
             yield return 0;
         }
-        
+
         WorldData.init(_islandData);
-        if (!WorldData.worldGrid.readFromFile())
+
+        if (!WorldData.worldGrid.readFromFile()) {
+            print("WORLD_DATA_MANAGER: WRITING FILE");
+
+            // TODO: Send message to server and tell all clients to wait
+            //       - maybe show progress bar on all clients?
+            //       - or waiting message or something?
+
+            // Send message to server and tell all clients to wait
+            if (NetworkClient.allClients[0] != null)
+                NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_DATA_FILE_LOADING, new IntegerMessage());
+
             StartCoroutine(calcWorldData());
-        else {
+        } else {
+            print("WORLD_GRID: FILE READ OK");
+
             WorldData.worldGrid.lateInit();
             WorldData.ready = true;
         }
@@ -62,6 +76,10 @@ public class WorldDataManager : MonoBehaviour {
         WorldData.worldGrid.lateInit();
         WorldData.worldGrid.writeToFile();
         WorldData.ready = true;
+
+        // Send message to server and tell all clients to start
+        if (NetworkClient.allClients[0] != null)
+            NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_DATA_FILE_READY, new IntegerMessage());
     }
 
     //Quick way of blocking out water cells in land plane, also overextends to keep NPCs out of water

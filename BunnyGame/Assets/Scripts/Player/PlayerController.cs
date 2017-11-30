@@ -7,55 +7,56 @@ using UnityEngine.SceneManagement;
 public class PlayerController : NetworkBehaviour {
 
 
-    public float walkSpeed = 5;
-    public float runSpeed = 12;
-    public float gravity = -12;
-    public float jumpHeight = 3;
+	public float walkSpeed = 5;
+	public float runSpeed = 12;
+	public float gravity = -12;
+	public float jumpHeight = 3;
 
-    [Range(0, 1)]
-    public float airControlPercent;
+	[Range(0, 1)]
+	public float airControlPercent;
 
-    public float turnSmoothTime = 0.2f;
-    public float speedSmoothTime = 0.2f;
+	public float turnSmoothTime = 0.2f;
+	public float speedSmoothTime = 0.2f;
 
-    public float currentSpeed;
-    public float velocityY;
-
-    private bool _CC = false; //Turns off players ability to control character, used for CC effects
-
-    private float _turnSmoothVelocity;
-    private float _speedSmoothVelocity;
+	public float currentSpeed;
+	public float velocityY;
 
 
-    private Transform _cameraTransform;
-    public CharacterController controller;
-    private PlayerEffects playerEffects;
-    private PlayerAbilityManager _abilityManager;
-    private PlayerHealth _playerHealth;
-    
-    public bool running = false;
+	private bool _CC = false; //Turns off players ability to control character, used for CC effects
 
-    public bool inWater = false;
-
-    private bool _moveDirectionLocked = false;
-    private float _targetRotation = 0;
-    private bool _noInputMovement = false;
+	private float _turnSmoothVelocity;
+	private float _speedSmoothVelocity;
 
 
-    void Start() {
+	private Transform _cameraTransform;
+	public CharacterController controller;
+	private PlayerEffects playerEffects;
+	private PlayerAbilityManager _abilityManager;
+	private PlayerHealth _playerHealth;
+
+	public bool running = false;
+
+	public bool inWater = false;
+
+	private bool _moveDirectionLocked = false;
+	private float _targetRotation = 0;
+	private bool _noInputMovement = false;
+
+
+	void Start() {
 		CorrectRenderingMode(); // Calling this here to fix the rendering order of the model, because materials have rendering mode fade
 
 
-        if (!this.isLocalPlayer)
-            return;
-        
-        this._cameraTransform = Camera.main.transform;
-        this.controller       = this.GetComponent<CharacterController>();
-        this.playerEffects    = this.GetComponent<PlayerEffects>();
-        this._abilityManager  = this.GetComponent<PlayerAbilityManager>();
-        this._playerHealth    = this.GetComponent<PlayerHealth>();
+		if (!this.isLocalPlayer)
+			return;
 
-        this.airControlPercent = 1;
+		this._cameraTransform = Camera.main.transform;
+		this.controller       = this.GetComponent<CharacterController>();
+		this.playerEffects    = this.GetComponent<PlayerEffects>();
+		this._abilityManager  = this.GetComponent<PlayerAbilityManager>();
+		this._playerHealth    = this.GetComponent<PlayerHealth>();
+
+		this.airControlPercent = 1;
 	}
 
 
@@ -190,72 +191,80 @@ public class PlayerController : NetworkBehaviour {
 	public void CorrectRenderingMode() {
 		Material[] materials;
 
-        foreach (Transform child in this.transform.GetChild(1)) {
-            if (child.gameObject.GetComponent<Renderer>() != null)
-                materials = child.gameObject.GetComponent<Renderer>().materials;
-            else if (child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
-                materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
-            else
-                continue;
+		foreach (Transform child in this.transform.GetChild(1)) {
+			if (child.gameObject.GetComponent<Renderer>() != null)
+				materials = child.gameObject.GetComponent<Renderer>().materials;
+			else if (child.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+				materials = child.gameObject.GetComponent<SkinnedMeshRenderer>().materials;
+			else
+				continue;
 
-            foreach (Material mat in materials) {
-                mat.SetInt("_ZWrite", 1);
-                mat.renderQueue = 2000;
-            }
-        }
-    }
+			foreach (Material mat in materials) {
+				mat.SetInt("_ZWrite", 1);
+				mat.renderQueue = 2000;
+			}
+		}
+	}
 
-    private bool onWall(float offset) {
-        const float deltaLimit = 0.2f;
-        Vector3[] offsets = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
+	private bool onWall(float offset) {
+		const float deltaLimit = 0.2f;
+		Vector3[] offsets = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
 
-        float[] distances = new float[offsets.Length];
-        RaycastHit hit = new RaycastHit();
-        int layerMask = (1 << 19);
-        for (int i = 0; i < offsets.Length; i++) {
-            Ray ray = new Ray(transform.position + offsets[i] * offset + Vector3.up, Vector3.down);
-            Physics.Raycast(ray, out hit, 10.0f, layerMask);
-            distances[i] = hit.distance;
-        }
+		float[] distances = new float[offsets.Length];
+		RaycastHit hit = new RaycastHit();
+		int layerMask = (1 << 19);
+		for (int i = 0; i < offsets.Length; i++) {
+			Ray ray = new Ray(transform.position + offsets[i] * offset + Vector3.up, Vector3.down);
+			Physics.Raycast(ray, out hit, 10.0f, layerMask);
+			distances[i] = hit.distance;
+		}
 
-        foreach (var dist in distances) {
-            foreach (var dist2 in distances) {
-                if (Mathf.Abs(dist - dist2) > deltaLimit) {
-                    return true;
-                }
+		foreach (var dist in distances) {
+			foreach (var dist2 in distances) {
+				if (Mathf.Abs(dist - dist2) > deltaLimit) {
+					return true;
+				}
 
-            }
-        }
-        return false;
-    }
+			}
+		}
+		return false;
+	}
 
-    // Used in SpeedBomb ability
-    public void NoInputMovement()
-    {
-        if (!_moveDirectionLocked)
-            _targetRotation = _cameraTransform.eulerAngles.y;
+	// Used in SpeedBomb ability
+	public void NoInputMovement()
+	{
+		if (!_moveDirectionLocked)
+			_targetRotation = _cameraTransform.eulerAngles.y;
 
-        transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation,
-                                                    ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
+		transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation,
+			ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
 
-        float targetSpeed = ((running) ? runSpeed : walkSpeed);
-        this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
+		float targetSpeed = ((running) ? runSpeed : walkSpeed);
+		this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
 
-        this.velocityY += Time.deltaTime * gravity;
+		this.velocityY += Time.deltaTime * gravity;
 
-        Vector3 moveDir = transform.TransformDirection(new Vector3(transform.eulerAngles.x, 0, transform.eulerAngles.y));
-        moveDir.y = 0;
+		Vector3 moveDir = transform.TransformDirection(new Vector3(transform.eulerAngles.x, 0, transform.eulerAngles.y));
+		moveDir.y = 0;
 
-        Vector3 velocity = moveDir.normalized * currentSpeed * playerEffects.getSpeed() + Vector3.up * velocityY;
+		Vector3 velocity = moveDir.normalized * currentSpeed * playerEffects.getSpeed() + Vector3.up * velocityY;
 
-        this.controller.Move(velocity * Time.deltaTime);
+		this.controller.Move(velocity * Time.deltaTime);
 
-        if (controller.isGrounded)
-            velocityY = 0;
-    }
+		if (controller.isGrounded)
+			velocityY = 0;
+	}
 
-    public void setNoInputMovement(bool noInput)
-    {
-        this._noInputMovement = noInput;
-    }
+	public void setNoInputMovement(bool noInput)
+	{
+		this._noInputMovement = noInput;
+	}
+
+
+	void OnControllerColliderHit(ControllerColliderHit hit) {
+		if (transform.position.y < hit.point.y) {
+			this.velocityY = (this.velocityY > 0) ? 0 : this.velocityY;
+		}
+	}
+	
 }

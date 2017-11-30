@@ -13,12 +13,17 @@ public class WeatherManager : MonoBehaviour {
     public Material fogSkyBox;
     public Material rainSkyBox;
 
+    private GameObject _rainEmitter;
+    private GameObject _camera;
+
 
 
     private WeatherType weatherType = WeatherType.CLEAR;
 
     void Start() {
-
+        _rainEmitter = Instantiate(Resources.Load<GameObject>("Prefabs/Rain"));
+        _rainEmitter.SetActive(false);
+        _camera = GameObject.Find("Main Camera");
     }
 
 
@@ -32,6 +37,15 @@ public class WeatherManager : MonoBehaviour {
             if (Input.GetKeyDown(KeyCode.L))
                 setFog(RenderSettings.fogDensity - 0.025f);
         }
+
+
+        if (Input.GetKeyDown(KeyCode.R))
+            init(WeatherType.RAIN);
+
+        if(this.weatherType == WeatherType.RAIN) {
+            _rainEmitter.transform.position = _camera.transform.position + new Vector3(0, 50, 0);
+        }
+
     }
 
     public void init(WeatherType w) {
@@ -44,7 +58,7 @@ public class WeatherManager : MonoBehaviour {
                 setFog();
                 break;
             case WeatherType.RAIN:
-                initRain();
+                setRain();
                 break;
         }
     }
@@ -64,7 +78,10 @@ public class WeatherManager : MonoBehaviour {
         RenderSettings.skybox = fogSkyBox;
     }
 
-    private void initRain() {
+    private void setRain() {
+        setFog(0.01f);
+        _rainEmitter.SetActive(true);
+        //_rainEmitter.transform.SetParent(GameObject.Find("Main Camera").transform);
 
     }
 }

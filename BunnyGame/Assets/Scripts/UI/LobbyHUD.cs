@@ -226,14 +226,14 @@ public class LobbyHUD : MonoBehaviour {
 
     // Update the leaderboard panel text with the updated list we received from Leaderboard.
     public void UpdateLeaderboard(List<LeaderboardScore> scores) {
-        this._leaderboardText.text  = "Score\tDate\t\t\t\t\t\t\t\t\t\tPlayer\n";
+        this._leaderboardText.text  = "Score\tDate\t\t\t\t\t\t\t\t\t\t\tPlayer\n";
         this._leaderboardText.text += "-------------------------------------------------------------------------------------------";
 
         if (scores.Count < 1)
             this._leaderboardText.text += "\n\t\t\t\t\t\t\t\t\t\tNo scores found.";
 
         foreach (var score in scores)
-            this._leaderboardText.text += string.Format("\n{0}\t{1}\t{2}", score.score, score.date, score.name);
+            this._leaderboardText.text += string.Format("\n{0}\t{1}\t\t{2}", score.score, score.date, score.name);
     }
 
     /**

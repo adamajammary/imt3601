@@ -16,6 +16,7 @@
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
+			#pragma multi_compile_fog
 			
 			#include "UnityCG.cginc"
 			#include "Lighting.cginc"
@@ -32,6 +33,7 @@
 				SHADOW_COORDS(4) // put shadows data into TEXCOORD1
 				fixed3 diff : COLOR0;
 				fixed3 ambient : COLOR1;
+				UNITY_FOG_COORDS(5)
 			};
 
 			uniform float4 _Color;
@@ -52,7 +54,9 @@
 				o.diff = nl;
 				o.ambient = ShadeSH9(half4(worldNormal, 1));
 				//Shadow
-				TRANSFER_SHADOW(o)
+				TRANSFER_SHADOW(o);
+				// Fog
+				UNITY_TRANSFER_FOG(o, o.pos);
 				return o;
 			}
 			
@@ -81,6 +85,11 @@
 				fixed4 c = _Color;
 				c.rbg = _Color.rbg * outsideFireWall + burnColor * ceil(1 - outsideFireWall);
 				c.rbg *= light;
+
+				// Fog
+				UNITY_APPLY_FOG(i.fogCoord, c);
+				UNITY_OPAQUE_ALPHA(c.a);
+
 				return c;
 			}
 			ENDCG

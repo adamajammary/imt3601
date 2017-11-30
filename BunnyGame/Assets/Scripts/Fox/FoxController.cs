@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -7,7 +8,7 @@ public class FoxController : NetworkBehaviour {
     private GameObject biteArea;
     private int _biteDamage = 15;
     private bool _isAttackingAnim = false;
-    
+    private List<GameObject> smellObjects;
 
     public override void PreStartClient() {
         base.PreStartClient();
@@ -53,11 +54,18 @@ public class FoxController : NetworkBehaviour {
         if (!this.isLocalPlayer)
             return;
 
+        if (GetComponent<PlayerHealth>().IsDead() && smellObjects != null) {
+            foreach (var smell in smellObjects) Destroy(smell);
+            smellObjects = null;
+        }
+
+        if (GetComponent<PlayerHealth>().IsDead())
+            return;
+
         updateAnimator();
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
-            StartCoroutine(this.toggleBite());
-            //this.bite();
+            StartCoroutine(this.toggleBite());       
     }
 
     private IEnumerator applySmell(int playerCount) {
@@ -67,10 +75,12 @@ public class FoxController : NetworkBehaviour {
             yield return 0;
         } while (enemies.Length + 1 != playerCount);
         var smellTrail = Resources.Load<GameObject>("Prefabs/SmellTrail");
+        smellObjects = new List<GameObject>();
         foreach (var enemy in enemies) {
-            var obj = Instantiate(smellTrail);
+            var obj = Instantiate(smellTrail);            
             obj.transform.parent = enemy.transform;
             obj.transform.localPosition = Vector3.zero;
+            smellObjects.Add(obj);
         }
     }
 
@@ -83,27 +93,6 @@ public class FoxController : NetworkBehaviour {
     private void TargetApplySmell(NetworkConnection conn, int playerCount) {
         StartCoroutine(applySmell(playerCount));
     }
-
-    // NB! Not needed with reverse attack logic (PlayerAttack.cs)
-    /*private void bite() {
-        if (this.GetComponent<PlayerHealth>().IsDead())
-            return;
-
-        if (this.isServer)
-            this.RpcBite();
-        else if (this.isClient)
-            this.CmdBite();
-    }
-
-    [Command]
-    private void CmdBite() {
-        this.RpcBite();
-    }
-
-    [ClientRpc]
-    private void RpcBite() {
-        StartCoroutine(this.toggleBite());
-    }*/
 
     // Biting is enabled for 1 tick after called
     private IEnumerator toggleBite() {

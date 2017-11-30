@@ -72,37 +72,6 @@ public class NPC : NetworkBehaviour {
         return this._goal;
     }
 
-    // NB! Handled in PlayerAttack.cs
-    /*//public void kill(GameObject killer, int id) {
-    public void kill(GameObject killer) {
-        if (this.IsDead) return;
-        this.IsDead = true;
-        PlayerHealth healthScript = killer.GetComponent<PlayerHealth>();
-        PlayerEffects pe = killer.GetComponent<PlayerEffects>();
-        this.CmdBloodParticle(this.transform.position);
-        
-        switch (this.type) {
-            case "whale":
-                pe.CmdAddToughness(0.05f);
-                break;
-            case "cat":
-                pe.CmdAddDamage(0.05f);
-                break;
-            case "dog":
-                pe.CmdAddSpeed(0.05f);
-                break;
-            case "eagle":
-                pe.CmdAddJump(0.05f);
-                break;
-            case "chicken":
-                //healthScript.TakeDamage(-10, id);
-                healthScript.Heal(10.0f);
-                break;
-        }
-
-        CmdDestroy();
-    }*/
-
     public void burn() {
         CmdBurn(this.transform.position);
         Destroy(this.gameObject);
@@ -135,47 +104,6 @@ public class NPC : NetworkBehaviour {
         this._masterDir = this._moveDir;
         this._masterGoal = this._goal;
     }
-
-    // NB! Handled in PlayerAttack.cs
-    /*private void OnCollisionEnter(Collision other) {
-        if (other.gameObject.tag == "projectile") {
-            BunnyPoop poopScript = other.gameObject.GetComponent<BunnyPoop>();
-            //PlayerInformation otherInfo = poopScript.owner.GetComponent<PlayerInformation>();
-            //kill(poopScript.owner, otherInfo.ConnectionID);
-            kill(poopScript.owner);
-        }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if ((other.gameObject.tag == "foxbite"))
-        {
-            //PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
-            //kill(other.transform.parent.gameObject, otherInfo.ConnectionID);
-            kill(other.transform.parent.gameObject);
-        }
-        else if ((other.gameObject.tag == "mooseAttack"))
-        {
-            //PlayerInformation otherInfo = other.GetComponentInParent<PlayerInformation>();
-            //kill(other.transform.parent.gameObject, otherInfo.ConnectionID);
-            kill(other.transform.parent.gameObject);
-        }
-    }
-
-    [Command]
-    private void CmdDestroy() {
-        NetworkServer.Destroy(gameObject);
-    }
-
-    [Command]
-    public void CmdBloodParticle(Vector3 hitPosition) {
-        GameObject blood = Instantiate(this._blood);
-
-        blood.transform.position = hitPosition;
-
-        NetworkServer.Spawn(blood);
-        Destroy(blood, 5.0f);
-    }*/
 
     [Command]
     public void CmdBurn(Vector3 pos) {

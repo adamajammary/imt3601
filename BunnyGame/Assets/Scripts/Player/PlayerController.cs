@@ -60,124 +60,133 @@ public class PlayerController : NetworkBehaviour {
 	}
 
 
-	void Update() {
-		if (!this.isLocalPlayer) // NB! wallDamage should now work on clients
-			return;
+    void Update() {
+        if (!this.isLocalPlayer) // NB! wallDamage should now work on clients
+            return;
 
-		Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-		Vector2 inputDir = input.normalized;
-		running = Input.GetKey(KeyCode.LeftShift);
-		_moveDirectionLocked = Input.GetKey(KeyCode.LeftAlt);
+        Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        Vector2 inputDir = input.normalized;
+        running = Input.GetKey(KeyCode.LeftShift);
+        _moveDirectionLocked = Input.GetKey(KeyCode.LeftAlt);
 
-		if (!this._CC) {
-			if (!this._noInputMovement)
-				Move(inputDir);
-			else
-				NoInputMovement();
+        if (!this._CC) {
+            if (!this._noInputMovement)
+                    Move(inputDir);
+            else
+                NoInputMovement();
 
-			if (Input.GetKeyDown(KeyCode.Space) && !this.inWater)
-				this.jump();
-		}
+            if (Input.GetKeyDown(KeyCode.Space) && !this.inWater)
+                this.jump();
+        }
 
-		HandleAiming();
-	}
+        HandleAiming();
+    }
 
-	public bool getGrounded() {
-		return controller.isGrounded;
-	}
+    public bool getGrounded() {
+        return controller.isGrounded;
+    }
 
-	public void setCC(bool value) {
-		this._CC = value;
-		if (value) {
-			this.currentSpeed = 0;
-			this.velocityY = 0;
-		}
-	}
+    public void setCC(bool value) {
+        this._CC = value;
+        if (value) {
+            this.currentSpeed = 0;
+            this.velocityY = 0;
+        }
+    }
 
-	public bool getCC() {
-		return this._CC;
-	}
+    public bool getCC() {
+        return this._CC;
+    }
 
-	// Turn off and on MeshRenderer so FPS camera works
-	private void HandleAiming(){
-		if (Input.GetKeyDown(KeyCode.Mouse1)) {
-			foreach (Transform t in this.gameObject.transform.GetChild(1)) {
-				if(t.gameObject.GetComponent<MeshRenderer>() != null)
-					t.gameObject.GetComponent<MeshRenderer>().enabled = false;
-				else if(t.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
-					t.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false;
-			}
-		}
-		else if(Input.GetKeyUp(KeyCode.Mouse1)) {
-			foreach (Transform t in this.gameObject.transform.GetChild(1)) {
-				if (t.gameObject.GetComponent<MeshRenderer>() != null)
-					t.gameObject.GetComponent<MeshRenderer>().enabled = true;
-				else if (t.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
-					t.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = true;
-			}
-		}
-	}
+    // Turn off and on MeshRenderer so FPS camera works
+    private void HandleAiming(){
+        if (Input.GetKeyDown(KeyCode.Mouse1)) {
+            foreach (Transform t in this.gameObject.transform.GetChild(1)) {
+                if(t.gameObject.GetComponent<MeshRenderer>() != null)
+                    t.gameObject.GetComponent<MeshRenderer>().enabled = false;
+                else if(t.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+                    t.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false;
+            }
+        }
+        else if(Input.GetKeyUp(KeyCode.Mouse1)) {
+            foreach (Transform t in this.gameObject.transform.GetChild(1)) {
+                if (t.gameObject.GetComponent<MeshRenderer>() != null)
+                    t.gameObject.GetComponent<MeshRenderer>().enabled = true;
+                else if (t.gameObject.GetComponent<SkinnedMeshRenderer>() != null)
+                    t.gameObject.GetComponent<SkinnedMeshRenderer>().enabled = true;
+            }
+        }
+    }
 
-	public void Move(Vector2 inputDir) {
-		if(!_moveDirectionLocked)
-			_targetRotation = _cameraTransform.eulerAngles.y;
+    public void Move(Vector2 inputDir) {
+        if(!_moveDirectionLocked)
+            _targetRotation = _cameraTransform.eulerAngles.y;
 
-		transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation,
-			ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
+        transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation,
+                                                                   ref _turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
 
-		float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
-		if (inWater)
-			targetSpeed *= 0.5f;
+        float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
+        if (inWater)
+            targetSpeed *= 0.5f;
 
-		this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
+        Vector3 moveDir = transform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
+        moveDir.y = 0;
 
-		this.velocityY += Time.deltaTime * gravity * (this.inWater ? 0 : 1);
+        float slopeEffect = 1f;
+        RaycastHit hit;
+        if (Physics.SphereCast(transform.position, .25f, Vector3.down, out hit, 3f)) {
+            float slope = Vector3.Dot(new Vector3(moveDir.z, moveDir.y, -moveDir.x), (Vector3.Cross(Vector3.up, hit.normal)));
+            slopeEffect = Mathf.Clamp(slope, -1, 0);
+            slopeEffect = 1- Mathf.Pow(slopeEffect, 6);
+        }
 
-		Vector3 moveDir = transform.TransformDirection(new Vector3(inputDir.x, 0, inputDir.y));
-		moveDir.y = 0;
+        this.currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref _speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime))  * slopeEffect;
 
-
-		// Water y-dir movement
-		if(this.inWater) {
-			if (Input.GetKey(KeyCode.Space))
-				velocityY += 2f;
-			else if (Input.GetKey(KeyCode.C))
-				velocityY -= 2f;
-
-			velocityY -= Mathf.Sign(velocityY) * 0.2f;
-			velocityY = Mathf.Clamp(velocityY, -10, 10);
-		}
-
-		Vector3 velocity = moveDir.normalized * currentSpeed * playerEffects.getSpeed() + Vector3.up * velocityY;
-		this.controller.Move(velocity * Time.deltaTime);
+        this.velocityY += Time.deltaTime * gravity * (this.inWater ? 0 : 1);
 
 
-		if (controller.isGrounded)
-			velocityY = 0;
-	}
 
-	public void jump() {
-		if ((controller.isGrounded) && !onWall(0.1f)) { 
-			float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight * this.playerEffects.getJump()); 
-			this.velocityY = jumpVelocity;
-		}
-	}
+        // Water y-dir movement
+        if(this.inWater) {
+            if (Input.GetKey(KeyCode.Space))
+                velocityY += 2f;
+            else if (Input.GetKey(KeyCode.C))
+                velocityY -= 2f;
 
-	//Controll player in air after jump
-	float GetModifiedSmoothTime(float smoothTime) {
-		if (controller.isGrounded || this.inWater)
-			return smoothTime;
+            velocityY -= Mathf.Sign(velocityY) * 0.2f;
+            velocityY = Mathf.Clamp(velocityY, -10, 10);
+        }
 
-		if (smoothTime == 0)
-			return float.MaxValue;
+        Vector3 velocity = moveDir.normalized * currentSpeed * playerEffects.getSpeed() + Vector3.up * velocityY;
+        this.controller.Move(velocity * Time.deltaTime);
 
-		return smoothTime / airControlPercent;
-	}
 
-	private void OnDestroy() {
-		Cursor.lockState = CursorLockMode.None;
-		Cursor.visible = true;
-	}
+        if (controller.isGrounded)
+            velocityY = 0;
+    }
+
+    public void jump() {
+        if ((controller.isGrounded) && !onWall(0.1f)) { 
+            float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight * this.playerEffects.getJump()); 
+            this.velocityY = jumpVelocity;
+        }
+    }
+
+    //Controll player in air after jump
+    float GetModifiedSmoothTime(float smoothTime) {
+        if (controller.isGrounded || this.inWater)
+            return smoothTime;
+
+        if (smoothTime == 0)
+            return float.MaxValue;
+
+        return smoothTime / airControlPercent;
+    }
+
+    private void OnDestroy() {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
 
 	public void CorrectRenderingMode() {
 		Material[] materials;

@@ -19,18 +19,15 @@ public class PortalManager : NetworkBehaviour {
         WorldGrid.Cell cell;
         WorldGrid.Cell cellPlus;
         do {
-            int x = Random.Range(0, WorldData.cellCount);
-            int z = Random.Range(0, WorldData.cellCount);
-            cell = WorldData.worldGrid.getCell(x, y, z);
+            cell = WorldData.worldGrid.getRandomCell(false, y);
 
             if (y + 1 < WorldData.worldGrid.yOffsets.Length)
-                cellPlus = WorldData.worldGrid.getCell(x, y + 1, z);
+                cellPlus = WorldData.worldGrid.getCell(cell.x, y + 1, cell.z);
             else {
                 cellPlus = new WorldGrid.Cell();
                 cellPlus.blocked = true;
             }
-
-        } while (takenCells.Contains(cell) || cell.blocked || !cellPlus.blocked);
+        } while (takenCells.Contains(cell));
 
         int layermask = (1 << 19);
         Ray ray = new Ray(cell.pos + Vector3.up * 5, Vector3.down);

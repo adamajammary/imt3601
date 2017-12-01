@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class BunnyController : NetworkBehaviour {
 
@@ -10,6 +12,12 @@ public class BunnyController : NetworkBehaviour {
     private GameObject bunnyPoop;
     private PlayerInformation playerInfo;
     private Transform _poopCameraPos;            // For aiming with camera offset
+
+    private AudioClip _alertSound;
+    private RawImage _alertOverlay;
+    private GameObject[] _enemies;
+    private bool[] _enemyInRange;
+    private const float _alertDistance = 30.0f;
 
    public override void PreStartClient()
     {
@@ -55,17 +63,70 @@ public class BunnyController : NetworkBehaviour {
 
 
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(abilityManager);
+
+        this._alertOverlay = GameObject.Find("Alert").GetComponent<RawImage>();
+        this._alertSound = Resources.Load<AudioClip>("Audio/BunnyAlert");
+        CmdGetEnemies();
     }
 
  
     void Update() {
-        if (!this.isLocalPlayer)
+        if (!this.isLocalPlayer || this.GetComponent<PlayerHealth>().IsDead())
             return;
 
         updateAnimator();
 
         if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1))
             this.shoot();
+
+        //Bunny passive "sixth sense"
+        if (this._enemies != null) {
+            for (int i = 0; i < this._enemies.Length; i++) {
+                if (this._enemies[i] != null && !this._enemies[i].GetComponent<PlayerHealth>().IsDead()) {
+                    if (Vector3.Distance(this._enemies[i].transform.position, transform.position) < _alertDistance) {
+                        if (!this._enemyInRange[i])
+                            alert();
+                        this._enemyInRange[i] = true;
+                    } else {
+                        this._enemyInRange[i] = false;
+                    }
+                }
+            }
+        }
+    }
+
+    private void alert() {
+        GetComponent<AudioSource>().PlayOneShot(this._alertSound);
+        StartCoroutine(alertOverlay());
+    }
+
+    private IEnumerator alertOverlay() {
+        for (float t = 1; t >= 0; t -= Time.deltaTime) {
+            this._alertOverlay.enabled = true; //incase multiple alerts overlap
+            this._alertOverlay.color = new Color(1, 1, 1, t);
+            yield return 0;
+        }
+        this._alertOverlay.enabled = false;
+    }
+
+    private IEnumerator getEnemies(int playerCount) {
+        do {
+            yield return 0;
+            this._enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        } while (this._enemies.Length + 1 != playerCount);
+        this._enemyInRange = new bool[this._enemies.Length];
+        for (int i = 0; i < this._enemyInRange.Length; i++)
+            this._enemyInRange[i] = false;
+    }
+
+    [Command]
+    private void CmdGetEnemies() {
+        TargetGetEnemies(this.connectionToClient, Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers);
+    }
+
+    [TargetRpc]
+    private void TargetGetEnemies(NetworkConnection conn, int playerCount) {
+        StartCoroutine(getEnemies(playerCount));
     }
 
     private void shoot() {

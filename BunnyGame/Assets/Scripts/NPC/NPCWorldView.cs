@@ -12,12 +12,14 @@ public static class NPCWorldView {
         private Vector3 _dir;
         private Vector3 _goal;
         private int _id;
+        private bool _alive;
 
         public GameCharacter(int id) {
             this._id = id;
             this._pos = Vector3.zero;
             this._dir = Vector3.zero;
             this._goal = Vector3.negativeInfinity;
+            this._alive = true;
         }
 
         public GameCharacter(int id, Vector3 pos, Vector3 dir) {
@@ -38,23 +40,6 @@ public static class NPCWorldView {
                 return this._pos;
         }
 
-        public Vector3 getMapPos() {
-            lock (this) {
-                return WorldData.worldGrid.getCellNoWater(this._pos).pos;
-            }
-        }
-
-        public WorldGrid.Cell getCell() {
-            lock (this) {
-                return WorldData.worldGrid.getCellNoWater(this._pos);
-            }
-        }
-
-        public int getLevel() {
-            lock (this)
-                return WorldData.worldGrid.getClosestLevelNoWater(this._pos);
-        }
-
         public Vector3 getDir() {
             lock (this)
                 return this._dir;
@@ -69,13 +54,14 @@ public static class NPCWorldView {
             lock (this)
                 return this._goal;
         }
+
+        public bool alive { get { return this._alive; } set { this._alive = value; } }
     }
     //===============================================================================
     //===============================================================================
     private static Dictionary<int, GameCharacter> _npcs;
     private static Dictionary<int, GameCharacter> _players;
     private static FireWall.Circle _fireWall;
-    private static bool _runNpcThread;
 
     private static bool _ready;
     //===============================================================================
@@ -83,7 +69,6 @@ public static class NPCWorldView {
         init();
     }
     public static void init() {
-        _runNpcThread = true;
         _ready = false;
 
         _npcs = new Dictionary<int, GameCharacter>();
@@ -91,7 +76,6 @@ public static class NPCWorldView {
     }
 
     public static void clear() {
-        _runNpcThread = false;
         _ready = false;
 
         _npcs = null;
@@ -102,6 +86,5 @@ public static class NPCWorldView {
     public static Dictionary<int, GameCharacter> npcs { get { return _npcs; } }
     public static bool ready { get { return _ready; } set { _ready = value; } }
     public static FireWall.Circle FireWall { get { return _fireWall; } set { _fireWall = value; } }
-    public static bool runNpcThread { get { return _runNpcThread; } set { _runNpcThread = value; } }
     //===============================================================================
 }

@@ -123,15 +123,8 @@ public class FireWall : NetworkBehaviour {
         if (!WorldData.ready) return;
         if (UnityEngine.Random.Range(0.0f, 1.0f) > 0.1) return;
 
-        Vector3 pos;
-        WorldGrid.Cell cell;
-        do { //Find a random position for the NPC
-            int x = UnityEngine.Random.Range(0, WorldData.cellCount);
-            int z = UnityEngine.Random.Range(0, WorldData.cellCount);
-            cell = WorldData.worldGrid.getCell(x, 1, z);
-            pos = cell.pos;
-        } while (cell.blocked);
-
+        Vector3 pos = WorldData.worldGrid.getRandomCell(false, 1).pos;
+        
         //Check if the point is inside the firewall
 
         if (Vector3.Distance(pos, this._current.wall.transform.position) < getRadius()) return;
@@ -196,7 +189,11 @@ public class FireWall : NetworkBehaviour {
             other.GetComponent<DustTornado>().kill();
         }
 
-        if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
+        if (other.tag == "bunnycamera") {
+            if (other.transform.parent.tag == "Player")
+                _outsideWallEffect.enabled = true;
+        }
+        else if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
             _outsideWallEffect.enabled = true;
         }
     }
@@ -210,7 +207,11 @@ public class FireWall : NetworkBehaviour {
             other.GetComponent<PlayerEffects>().insideWall = true;
         }
 
-        if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
+        if (other.tag == "bunnycamera") {
+            if (other.transform.parent.tag == "Player")
+                _outsideWallEffect.enabled = false;
+        }
+        else if (other.tag == GameObject.Find("Main Camera").GetComponent<ThirdPersonCamera>().getTargetTag()) {
             _outsideWallEffect.enabled = false;
         }
     }

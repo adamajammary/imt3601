@@ -85,6 +85,8 @@ public class WorldGrid {
     }
 
     private Cell[,,] _worldGrid;
+    private List<Cell>[] _openCells;
+    private List<Cell>[] _blockedCells;
     private static string _name;
     private static float[] _yOffsets;
     private static Vector2 _xzOffsets;
@@ -104,8 +106,29 @@ public class WorldGrid {
         initGrid();
     }
 
+    public WorldGrid() {
+        this._worldGrid = new Cell[cellCount, yOffsets.Length, cellCount];
+        initGrid();
+    }
+
+    public void lateInit() {
+        this._openCells = new List<Cell>[planeCount];
+        this._blockedCells = new List<Cell>[planeCount];
+        for (int i = 0; i < planeCount; i++) {
+            this._openCells[i] = new List<Cell>();
+            this._blockedCells[i] = new List<Cell>();
+        }
+
+        foreach (Cell cell in this._worldGrid) {
+            if (cell.blocked)
+                this._blockedCells[cell.y].Add(cell);
+            else
+                this._openCells[cell.y].Add(cell);
+        }
+    }
+
     private void initGrid() {
-        for (int y = 0; y < yOffsets.Length; y++) {
+        for (int y = 0; y < planeCount; y++) {
             for (int z = 0; z < cellCount; z++) {
                 for (int x = 0; x < cellCount; x++) {
                     initCell(x, y, z);
@@ -155,6 +178,7 @@ public class WorldGrid {
     //================================
     public string name { get { return _name; } }
     public int cellCount { get { return _cellCount; } }
+    public int planeCount { get { return yOffsets.Length; } }
     public float worldSize { get {return _worldSize; } }
     public float cellSize { get { return _cellSize; } }
     public float[] yOffsets { get { return _yOffsets; } }
@@ -184,6 +208,13 @@ public class WorldGrid {
         return this._worldGrid[index[0], getClosestLevelNoWater(pos), index[1]];
     }
 
+    public Cell getRandomCell(bool blocked, int level) {
+        if (blocked)
+            return this._blockedCells[level][UnityEngine.Random.Range(0, this._blockedCells[level].Count)];
+        else
+            return this._openCells[level][UnityEngine.Random.Range(0, this._openCells[level].Count)];
+    }
+
     public int getClosestLevel(Vector3 pos) {
         int level = 0;
         for (int i = 1; i < yOffsets.Length; i++) {
@@ -191,7 +222,7 @@ public class WorldGrid {
                 level = i;
         }
         return level;
-    }    
+    }
 
     public int getClosestLevel(Vector3 pos, int start, int end) {
         int level = start;
@@ -221,6 +252,19 @@ public class WorldGrid {
         input = (input >= 0) ? input : 0;
         input = (input < _cellCount) ? input : _cellCount - 1;
         return input;
+    }
+
+    public WorldGrid getCopy() {
+        WorldGrid copy = new WorldGrid();
+        for (int y = 0; y < planeCount; y++) {
+            for (int z = 0; z < cellCount; z++) {
+                for (int x = 0; x < cellCount; x++) {
+                    copy.getCell(x, y, z).blocked = getCell(x, y, z).blocked;
+                }
+            }
+        }
+        copy.lateInit();
+        return copy;
     }
 
     //=============================File I/O functions==============================================

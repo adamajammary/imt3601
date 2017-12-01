@@ -254,7 +254,8 @@ public class LobbyHUD : MonoBehaviour {
     }
 
     public void onRefreshLobby() {
-        StartCoroutine(this.initLobbyRoom(0.1f));
+        //StartCoroutine(this.initLobbyRoom(0.1f));
+        StartCoroutine(this.initLobbyRoom(1.0f));
     }
 
     // NB! Lobby players are not available immediately, so we wait until they are completely initialized.
@@ -313,7 +314,16 @@ public class LobbyHUD : MonoBehaviour {
     public void onReady() {
         print("LOBBY_HUD: CLICK_ON_READY");
 
-        foreach(GameObject player in GameObject.FindGameObjectsWithTag("lobbyplayer")) {
+        GameObject[] lobbyPlayers = GameObject.FindGameObjectsWithTag("lobbyplayer");
+
+        if (lobbyPlayers.Length <= 0) {
+            print("LOBBY_HUD: NO LOBBY PLAYERS FOUND");
+
+            FindObjectOfType<NetworkPlayerSelect>().GetComponent<NetworkPlayerSelect>().TryToAddPlayer();
+
+        }
+
+        foreach (GameObject player in lobbyPlayers) {
             NetworkLobbyPlayer lobbyPlayer = player.GetComponent<NetworkLobbyPlayer>();
 
             print("\tLOBBY_HUD::ON_READY: lobbyPlayer.isLocalPlayer=" + lobbyPlayer.isLocalPlayer);

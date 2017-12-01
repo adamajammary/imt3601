@@ -13,6 +13,8 @@ public class WorldDataManager : MonoBehaviour {
     public GameObject progressUI;
 
     private IslandData _islandData;
+    private float _dataFileLoadProgress = 0;
+    private GameObject _player;
 
     // Use this for initialization
     void Start() {
@@ -20,6 +22,14 @@ public class WorldDataManager : MonoBehaviour {
     }
 
     private IEnumerator init() {
+        this._player = GameObject.FindGameObjectWithTag("Player");
+
+        if (NetworkClient.allClients[0] != null) {
+            NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_DATA_FILE_LOADING,  this.recieveNetworkMessage);
+            NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_DATA_FILE_PROGRESS, this.recieveNetworkMessage);
+            NetworkClient.allClients[0].RegisterHandler((short)NetworkMessageType.MSG_DATA_FILE_READY,    this.recieveNetworkMessage);
+        }
+
         while (this._islandData == null) {
             this._islandData = Object.FindObjectOfType<IslandData>();
             yield return 0;
@@ -28,20 +38,12 @@ public class WorldDataManager : MonoBehaviour {
         WorldData.init(_islandData);
 
         if (!WorldData.worldGrid.readFromFile()) {
-            print("WORLD_DATA_MANAGER: WRITING FILE");
-
-            // TODO: Send message to server and tell all clients to wait
-            //       - maybe show progress bar on all clients?
-            //       - or waiting message or something?
-
-            // Send message to server and tell all clients to wait
+            // Tell the server that we have to load (create) the data file.
             if (NetworkClient.allClients[0] != null)
                 NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_DATA_FILE_LOADING, new IntegerMessage());
 
             StartCoroutine(calcWorldData());
         } else {
-            print("WORLD_GRID: FILE READ OK");
-
             WorldData.worldGrid.lateInit();
             WorldData.ready = true;
         }
@@ -50,7 +52,6 @@ public class WorldDataManager : MonoBehaviour {
     private IEnumerator calcWorldData() { //Really wish unity let us thread stuff, but courutines will have to do.
         Time.timeScale = 0; //Freeze time
         progressUI.SetActive(true);
-        float prog = 0;
 
         float time = Time.realtimeSinceStartup;
         Debug.Log("WorldDataManager: Setting up WorldData by detecting obstacles!");
@@ -63,9 +64,24 @@ public class WorldDataManager : MonoBehaviour {
             }
         }
 
-        StartCoroutine(findObstacles((x) => prog = x));
-        while (prog < 1) {            
-            progressBar.sizeDelta = new Vector2(prog * 1000, 100);
+        //float prog = 0;
+        //StartCoroutine(findObstacles((x) => prog = x));
+        //while (prog < 1) {            
+        //    progressBar.sizeDelta = new Vector2(prog * 1000, 100);
+        //    yield return 0;
+        //}
+
+        StartCoroutine(findObstacles((x) => this._dataFileLoadProgress = x));
+
+        while (this._dataFileLoadProgress < 1.0f) {
+            // Update the server with our current load progress.
+            if (NetworkClient.allClients[0] != null) {
+                int progressInt = (int)(this._dataFileLoadProgress * 100.0f);
+                NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_DATA_FILE_PROGRESS, new IntegerMessage(progressInt));
+            }
+
+            this.progressBar.sizeDelta = new Vector2((this._dataFileLoadProgress * 1000.0f), 100.0f);
+
             yield return 0;
         }
         Debug.Log("WorldDataManager: Finished detecting obstacles for WorldData, time elapsed: " + (Time.realtimeSinceStartup - time));
@@ -77,7 +93,7 @@ public class WorldDataManager : MonoBehaviour {
         WorldData.worldGrid.writeToFile();
         WorldData.ready = true;
 
-        // Send message to server and tell all clients to start
+        // Tell the server that we have finished loading the data file and are ready to start.
         if (NetworkClient.allClients[0] != null)
             NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_DATA_FILE_READY, new IntegerMessage());
     }
@@ -233,4 +249,54 @@ public class WorldDataManager : MonoBehaviour {
             }
         }
     }
+
+    // Recieve and handle the network message.
+    private void recieveNetworkMessage(NetworkMessage message) {
+        switch (message.msgType) {
+            case (short)NetworkMessageType.MSG_DATA_FILE_LOADING:
+                if (!this.progressUI.activeInHierarchy)
+                    StartCoroutine(this.showLoadProgress());
+
+                break;
+            case (short)NetworkMessageType.MSG_DATA_FILE_PROGRESS:
+                this._dataFileLoadProgress = (float)((float)message.ReadMessage<IntegerMessage>().value * 0.01f);
+
+                if (!this.progressUI.activeInHierarchy)
+                    StartCoroutine(this.showLoadProgress());
+
+                break;
+            case (short)NetworkMessageType.MSG_DATA_FILE_READY:
+                if (this.progressUI.activeInHierarchy)
+                    this.hideLoadProgress();
+
+                break;
+            default:
+                Debug.Log("ERROR! Unknown message type: " + message.msgType);
+                break;
+        }
+    }
+
+    // This is shown on clients who did not start loading, the ones who are loading are handled in calcWorldData(). 
+    // The progress represents the client who started last (the lowest progress).
+    private IEnumerator showLoadProgress() {
+        if (this._player != null)
+            this._player.GetComponent<PlayerController>().setCC(true);
+
+        this.progressUI.SetActive(true);
+
+        while (this._dataFileLoadProgress < 1.0f) {
+            this.progressBar.sizeDelta = new Vector2((this._dataFileLoadProgress * 1000.0f), 100.0f);
+            yield return 0;
+        }
+
+        this.hideLoadProgress();
+    }
+
+    private void hideLoadProgress() {
+        this.progressUI.SetActive(false);
+
+        if (this._player != null)
+            this._player.GetComponent<PlayerController>().setCC(false);
+    }
+
 }

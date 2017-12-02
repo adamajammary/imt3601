@@ -9,6 +9,7 @@ public class FoxController : NetworkBehaviour {
     private int _biteDamage = 15;
     private bool _isAttackingAnim = false;
     private List<GameObject> smellObjects;
+    private PlayerController _playerController;
 
     public override void PreStartClient() {
         base.PreStartClient();
@@ -47,6 +48,8 @@ public class FoxController : NetworkBehaviour {
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(abilityManager);
 
         CmdApplySmell();
+
+        this._playerController = GetComponent<PlayerController>();
     }
 
     // Update is called once per frame
@@ -64,7 +67,8 @@ public class FoxController : NetworkBehaviour {
 
         updateAnimator();
 
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        //if (Input.GetKeyDown(KeyCode.Mouse0))
+        if (Input.GetKeyDown(KeyCode.Mouse0) && !this._playerController.getCC())
             StartCoroutine(this.toggleBite());       
     }
 

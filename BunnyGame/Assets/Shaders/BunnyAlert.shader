@@ -42,16 +42,16 @@
 				float seed = _Time * 145.3f;
 				float3 samplePos = { i.uv.x + 17.3, i.uv.y + 17.3, 0.3 };
 				samplePos.z += seed;
-				samplePos *= 3.3;
+				samplePos *= 30.3;
 				float n = noise(samplePos);
-				n = noise(samplePos*n*0.1);
+				n = noise(samplePos*n*12.5);
 
 				fixed3 black = { 0, 0, 0 };
-				fixed3 blue = { 0, 0, 1 };
+				fixed3 red = { 1, 0, 0 };
 
-				fixed4 col = tex2D(_MainTex, i.uv);
+				fixed4 col = { 1, 1, 1, pow(distance(i.uv.xy, float2(0.5, 0.5)) * 2, 4) };
 				col = _Color * col;
-				col.rgb *= lerp(blue, black, n);				
+				col.rgb *= lerp(red, black, n);				
 				return col;
 			}
 			ENDCG

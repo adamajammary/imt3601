@@ -12,24 +12,22 @@ public class BunnyController : NetworkBehaviour {
     private GameObject bunnyPoop;
     private PlayerInformation playerInfo;
     private Transform _poopCameraPos;            // For aiming with camera offset
-
     private AudioClip _alertSound;
     private Image _alertOverlay;
     private GameObject[] _enemies;
     private bool[] _enemyInRange;
     private const float _alertDistance = 30.0f;
+    private PlayerController _playerController;
 
-   public override void PreStartClient()
-    {
+    public override void PreStartClient() {
         base.PreStartClient();
         NetworkAnimator netAnimator = GetComponent<NetworkAnimator>();
 
         for (int i = 0; i < GetComponent<Animator>().parameterCount; i++)
-            netAnimator.SetParameterAutoSend(i, true);
+        netAnimator.SetParameterAutoSend(i, true);
     }
 
-
- void Start() { 
+    void Start() { 
         if (SceneManager.GetActiveScene().name == "Lobby")
             return;
 
@@ -67,16 +65,18 @@ public class BunnyController : NetworkBehaviour {
         this._alertOverlay = GameObject.Find("Alert").GetComponent<Image>();
         this._alertSound = Resources.Load<AudioClip>("Audio/BunnyAlert");
         CmdGetEnemies();
+
+        this._playerController = GetComponent<PlayerController>();
     }
 
- 
     void Update() {
         if (!this.isLocalPlayer || this.GetComponent<PlayerHealth>().IsDead())
             return;
 
         updateAnimator();
 
-        if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1))
+        //if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1))
+        if (Input.GetAxisRaw("Fire1") > 0 && Input.GetKey(KeyCode.Mouse1) && !this._playerController.getCC())
             this.shoot();
 
         //Bunny passive "sixth sense"

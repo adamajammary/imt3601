@@ -23,9 +23,11 @@ public enum NetworkMessageType {
     MSG_MATCH_DROP,
     MSG_MATCH_DISCONNECT,
     MSG_RANKINGS,
-    NR_OF_NETMESSAGE_TYPES,
     MSG_MAP_SELECT,
-    MSG_MAP_VOTE
+    MSG_MAP_VOTE,
+    MSG_DATA_FILE_LOADING,
+    MSG_DATA_FILE_PROGRESS,
+    MSG_DATA_FILE_READY
 }
 
 public class Player {
@@ -46,6 +48,11 @@ public class LobbyPlayer {
     public string name   = "";
     public int    animal = 0;
     public bool   ready  = false;
+}
+
+public class LoadingPlayer {
+    public bool  loading  = true;
+    public int   progress = 0;
 }
 
 public class GameOverMessage : MessageBase {
@@ -85,10 +92,11 @@ public class AttackMessage : MessageBase {
 //
 public class NetworkPlayerSelect : NetworkLobbyManager {
 
-    private string[]                _islands      = { "Island", "Island42" };
-    private string[]                _models       = { "PlayerCharacterBunny", "PlayerCharacterFox", "PlayerCharacterBird", "PlayerCharacterMoose" };
-    private Dictionary<int, Player> _players = new Dictionary<int, Player>();
-    private Dictionary<NetworkConnection, string> _mapVotes = new Dictionary<NetworkConnection, string>();
+    private string[]                              _islands   = { "Island", "Island42" };
+    private string[]                              _models    = { "PlayerCharacterBunny", "PlayerCharacterFox", "PlayerCharacterBird", "PlayerCharacterMoose" };
+    private Dictionary<int, Player>               _players   = new Dictionary<int, Player>();
+    private Dictionary<NetworkConnection, string> _mapVotes  = new Dictionary<NetworkConnection, string>();
+    private Dictionary<int, LoadingPlayer>        _isLoading = new Dictionary<int, LoadingPlayer>();
 
     private int getNrOfPlayersAlive() {
         int playersAlive = 0;
@@ -116,6 +124,17 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         }
 
         return null;
+    }
+
+    // Checks if all clients have completed loading their data files.
+    public bool IsDataLoadingComplete() {
+        // Assuming no client starts loading after another has completed loading.
+        foreach (var client in this._isLoading) {
+            if (client.Value.loading)
+                return false;
+        }
+
+        return true;
     }
 
     // Checks if the specified name is available for the specified player ID.
@@ -176,17 +195,21 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     public override void OnLobbyStartServer() {
         base.OnLobbyStartServer();
 
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYER_SELECT, this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYER_NAME,   this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYER_READY,  this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_KILLER_ID,     this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_ATTACK,        this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_LOBBY_UPDATE,  this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_MATCH_DROP,    this.recieveNetworkMessage);
-        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_MAP_SELECT,    this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYER_SELECT,      this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYER_NAME,        this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_PLAYER_READY,       this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_KILLER_ID,          this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_ATTACK,             this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_LOBBY_UPDATE,       this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_MATCH_DROP,         this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_MAP_SELECT,         this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_DATA_FILE_LOADING,  this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_DATA_FILE_PROGRESS, this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_DATA_FILE_READY,    this.recieveNetworkMessage);
 
         this._players.Clear();
         this._mapVotes.Clear();
+        this._isLoading.Clear();
     }
 
     // This is called on the server when a new client connects to the server.
@@ -194,6 +217,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         base.OnLobbyServerConnect(conn);
 
         Player player = new Player();
+
         player.id     = conn.connectionId;
         player.name   = ("Player [#" + (conn.connectionId + 1) + "]");
         player.isDead = false;
@@ -242,6 +266,33 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         }
     }
 
+    // This is called on the client when adding a player to the lobby fails.
+    public override void OnLobbyClientAddPlayerFailed() {
+        base.OnLobbyClientAddPlayerFailed();
+        this.TryToAddPlayer();
+
+        Debug.Log("NETWORK_LOBBY_MANAGER::OnLobbyClientAddPlayerFailed");
+    }
+
+    // This is called on the server when a player is removed.
+    public override void OnLobbyServerPlayerRemoved(NetworkConnection conn, short playerControllerId) {
+        base.OnLobbyServerPlayerRemoved(conn, playerControllerId);
+
+        Debug.Log("NETWORK_LOBBY_MANAGER::OnLobbyServerPlayerRemoved:\n\tconn=" + conn + "\n\tplayerControllerId=" + playerControllerId);
+    }
+
+    // This allows customization of the creation of the lobby-player object on the server.
+    public override GameObject OnLobbyServerCreateLobbyPlayer(NetworkConnection conn, short playerControllerId) {
+        GameObject lobbyPlayerInstance = base.OnLobbyServerCreateLobbyPlayer(conn, playerControllerId);
+
+        if (lobbyPlayerInstance == null)
+            lobbyPlayerInstance = Instantiate(Resources.Load<GameObject>("Prefabs/Players/LobbyPlayer"));
+
+        Debug.Log("NETWORK_LOBBY_MANAGER::OnLobbyServerCreateLobbyPlayer:\n\tconn=" + conn + "\n\tplayerControllerId=" + playerControllerId + "\n\tlobbyPlayerInstance=" + lobbyPlayerInstance);
+
+        return lobbyPlayerInstance;
+    }
+
     //
     // This allows customization of the creation of the GamePlayer object on the server.
     // NB! This event happens after creating the lobby player (OnLobbyServerCreateLobbyPlayer - still in the lobby scene)
@@ -252,16 +303,17 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     //
     public override GameObject OnLobbyServerCreateGamePlayer(NetworkConnection conn, short playerControllerId) {
         matchMaker.SetMatchAttributes(matchInfo.networkId, false, 0, OnSetMatchAttributes);
+
         NetworkStartPosition[] spawnPoints = FindObjectsOfType<NetworkStartPosition>();
 
         if (spawnPoints.Length <= 0)
             return null;
 
-        Vector3                position       = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
-        int                    selectedModel  = this._players[conn.connectionId].animal;
-        GameObject             playerPrefab   = Resources.Load<GameObject>("Prefabs/Players/" + this._models[selectedModel]);
-        GameObject             playerInstance = Instantiate(playerPrefab, position, playerPrefab.transform.rotation);
-        PlayerInformation      playerInfo     = playerInstance.GetComponent<PlayerInformation>();
+        Vector3           position       = spawnPoints[Random.Range(0, spawnPoints.Length)].transform.position;
+        int               selectedModel  = this._players[conn.connectionId].animal;
+        GameObject        playerPrefab   = Resources.Load<GameObject>("Prefabs/Players/" + this._models[selectedModel]);
+        GameObject        playerInstance = Instantiate(playerPrefab, position, playerPrefab.transform.rotation);
+        PlayerInformation playerInfo     = playerInstance.GetComponent<PlayerInformation>();
 
         playerInfo.ConnectionID = conn.connectionId;
         playerInfo.playerName   = this._players[conn.connectionId].name;
@@ -295,6 +347,15 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
                 break;
             case (short)NetworkMessageType.MSG_MAP_SELECT:
                 this.recieveMapSelectMessage(message);
+                break;
+            case (short)NetworkMessageType.MSG_DATA_FILE_LOADING:
+                this.recieveDataFileMessage(message.conn.connectionId, true);
+                break;
+            case (short)NetworkMessageType.MSG_DATA_FILE_PROGRESS:
+                this.recieveDataFileProgressMessage(message);
+                break;
+            case (short)NetworkMessageType.MSG_DATA_FILE_READY:
+                this.recieveDataFileMessage(message.conn.connectionId, false);
                 break;
             default:
                 Debug.Log("ERROR! Unknown message type: " + message.msgType);
@@ -387,13 +448,6 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         }
     }
 
-    private void resetMapSelect(NetworkConnection conn) {
-        if (this._mapVotes.ContainsKey(conn))
-            this._mapVotes.Remove(conn);
-
-        this.sendMapVotes();
-    }
-
     private void recieveMapSelectMessage(NetworkMessage message) {
         string map = message.ReadMessage<StringMessage>().value;
 
@@ -401,6 +455,51 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             this._mapVotes[message.conn] = map;
         else
             this._mapVotes.Add(message.conn, map);
+
+        this.sendMapVotes();
+    }
+
+    private void recieveDataFileMessage(int id, bool loading) {
+        if (this._isLoading.ContainsKey(id))
+            this._isLoading[id].loading = loading;
+        else
+            this._isLoading.Add(id, new LoadingPlayer());
+
+        // Tell all the clients to wait until loading is complete.
+        if (loading) {
+            foreach (var conn in NetworkServer.connections) {
+                if (conn != null)
+                    this.sendDataFileMessage(conn.connectionId, true);
+            }
+        }
+
+        // Tell all the clients to start after loading is complete.
+        if (this.IsDataLoadingComplete()) {
+            foreach (var conn in NetworkServer.connections) {
+                if (conn != null)
+                    this.sendDataFileMessage(conn.connectionId, false);
+            }
+        }
+    }
+
+    private void recieveDataFileProgressMessage(NetworkMessage message) {
+        int progress = message.ReadMessage<IntegerMessage>().value;
+
+        // Select the lowest progress value to make sure everyone waits for the slowest client.
+        foreach (var client in this._isLoading) {
+            if ((client.Value.progress < progress) && (client.Value.progress > 0))
+                progress = client.Value.progress;
+        }
+
+        foreach (var conn in NetworkServer.connections) {
+            if (conn != null)
+                this.sendDataFileProgressMessage(conn.connectionId, progress);
+        }
+    }
+
+    private void resetMapSelect(NetworkConnection conn) {
+        if (this._mapVotes.ContainsKey(conn))
+            this._mapVotes.Remove(conn);
 
         this.sendMapVotes();
     }
@@ -457,6 +556,19 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         return winnerMaps[Random.Range(0, winnerMaps.Count)];
     }
 
+    // Tell the client the state of data file loading.
+    private void sendDataFileMessage(int id, bool loading) {
+        if (loading)
+            NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_DATA_FILE_LOADING, new IntegerMessage());
+        else
+            NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_DATA_FILE_READY, new IntegerMessage());
+    }
+
+    // Tell the client the progress of data file loading.
+    private void sendDataFileProgressMessage(int id, int progress) {
+        NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_DATA_FILE_PROGRESS, new IntegerMessage(progress));
+    }
+
     // Tell the client to disconnect from the match.
     private void sendDisconnectMessage(int id) {
         NetworkServer.SendToClient(id, (short)NetworkMessageType.MSG_MATCH_DISCONNECT, new IntegerMessage());
@@ -486,10 +598,10 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         GameOverMessage message = new GameOverMessage();
 
         switch ((KillerID)killerID) {
-            case KillerID.KILLER_ID_FALL: message.killer = "KILLER_ID_FALL"; break;
-            case KillerID.KILLER_ID_WALL: message.killer = "KILLER_ID_WALL"; break;
+            case KillerID.KILLER_ID_FALL:  message.killer = "KILLER_ID_FALL"; break;
+            case KillerID.KILLER_ID_WALL:  message.killer = "KILLER_ID_WALL"; break;
             case KillerID.KILLER_ID_WATER: message.killer = "KILLER_ID_WATER"; break;
-            default:                      message.killer = (killerID >= 0 ? this._players[killerID].name : ""); break;
+            default:                       message.killer = (killerID >= 0 ? this._players[killerID].name : ""); break;
         }
 
         message.name      = this._players[id].name;
@@ -552,8 +664,9 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         List<Player> rankings = new List<Player>();
 
         foreach (var player in this._players) {
-            player.Value.score  = 0;
-            player.Value.score += ((7 - player.Value.placement) * 1000);
+            //player.Value.score  = 0;
+            //player.Value.score += ((7 - player.Value.placement) * 1000);
+            player.Value.score  = (((this._players.Count + 1) - player.Value.placement) * 1000);
             player.Value.score += (player.Value.kills * 600);
 
             rankings.Add(player.Value);

@@ -68,15 +68,23 @@ public class FireWall : NetworkBehaviour {
     //Waits for clients, then syncs playercount, and spawns npcs
     private IEnumerator waitForClients() {
         if (this.isServer) {
-            int playerCount = UnityEngine.Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
+            // Wait for all clients to tell the server their data file loading state.
+            yield return new WaitForSeconds(1.0f);
 
-            while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
+            //int playerCount = UnityEngine.Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
+            //while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
+            //    yield return 0;
+
+            NetworkPlayerSelect lobbyManager = UnityEngine.Object.FindObjectOfType<NetworkPlayerSelect>();
+
+            // When this is true, all clients are connected and in the game scene.
+            // Also all clients have completed loading their data files.
+            while ((lobbyManager.numPlayers != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) || !lobbyManager.IsDataLoadingComplete())
                 yield return 0;
 
             this._rngSeed = UnityEngine.Random.Range(0, 9999999);
         }
     }
-
 
     private void init(int seed) {
         this._wallTransitionUI = GameObject.Find("wallTransitionUI").GetComponent<RectTransform>();

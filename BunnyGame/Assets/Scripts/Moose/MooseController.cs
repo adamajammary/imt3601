@@ -8,7 +8,7 @@ public class MooseController : NetworkBehaviour{
     private GameObject ramArea;
     private int _ramDamage = 15;
     private bool _isAttackingAnim = false;
-
+    private PlayerController _playerController;
 
     public override void PreStartClient()
     {
@@ -46,6 +46,8 @@ public class MooseController : NetworkBehaviour{
         abilityManager.abilities.Add(stomp);
 
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(abilityManager);
+
+        this._playerController = GetComponent<PlayerController>();
     }
 
     // Update is called once per frame
@@ -56,7 +58,8 @@ public class MooseController : NetworkBehaviour{
 
         updateAnimator();
 
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        //if (Input.GetKeyDown(KeyCode.Mouse0))
+        if (Input.GetKeyDown(KeyCode.Mouse0) && !this._playerController.getCC())
             StartCoroutine(this.toggleRam());
     }
 

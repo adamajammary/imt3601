@@ -27,18 +27,22 @@ public class NPCThread {
     private List<NPCBrain> _npcBrains;
     private List<NPCBrain> _deadNpcs;
     private WorldGrid _worldGrid;
+    private int _number;
 
     //==============Constructor==================================================
-    public NPCThread(BlockingQueue<instruction> i, List<NPCWorldView.GameCharacter> npcs) {
+    public NPCThread(BlockingQueue<instruction> i, List<NPCWorldView.GameCharacter> npcs, int number) {
         this._thread = new Thread(new ThreadStart(threadRunner)); //This starts running the update function
         this._instructions = i;
         this._npcBrains = new List<NPCBrain>();
         this._deadNpcs = new List<NPCBrain>();
         this._wait = false;
         this._worldGrid = WorldData.worldGrid.getCopy();
+        this._number = number;
 
-        foreach (var npc in npcs)
-            this._npcBrains.Add(new NPCBrain(npc, this._instructions, this._worldGrid));
+        foreach (var npc in npcs) {
+            npc.worldGrid = this._worldGrid;
+            this._npcBrains.Add(new NPCBrain(npc, this._instructions, this._worldGrid, number));
+        }
 
         this._run = true;
         this._stopwatch = new Stopwatch();
@@ -60,6 +64,7 @@ public class NPCThread {
             if (!this._wait) {
                 this._isUpdating = true;
                 foreach (var npcBrain in this._npcBrains) {
+                    //UnityEngine.Debug.Log(_number + " " + npcBrain._state.Peek().GetType().ToString());
                     if (npcBrain.npcAlive())
                         npcBrain.update();
                     else
@@ -70,10 +75,12 @@ public class NPCThread {
                     this._npcBrains.Remove(npcBrain);
                 this._deadNpcs.Clear();
             }
+            UnityEngine.Debug.Log(this._number);
             int sleepTime = (int) (minUpdateTime - this._stopwatch.ElapsedMilliseconds);
             if (sleepTime > 0) Thread.Sleep(sleepTime);
             this._stopwatch.Stop();
             //UnityEngine.Debug.Log(this._stopwatch.ElapsedMilliseconds);
         }
+        UnityEngine.Debug.Log("STOPEPD");
     }
 }

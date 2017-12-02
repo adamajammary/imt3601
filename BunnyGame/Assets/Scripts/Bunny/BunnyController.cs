@@ -14,7 +14,7 @@ public class BunnyController : NetworkBehaviour {
     private Transform _poopCameraPos;            // For aiming with camera offset
 
     private AudioClip _alertSound;
-    private RawImage _alertOverlay;
+    private Image _alertOverlay;
     private GameObject[] _enemies;
     private bool[] _enemyInRange;
     private const float _alertDistance = 30.0f;
@@ -64,7 +64,7 @@ public class BunnyController : NetworkBehaviour {
 
         GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>().setupPanel(abilityManager);
 
-        this._alertOverlay = GameObject.Find("Alert").GetComponent<RawImage>();
+        this._alertOverlay = GameObject.Find("Alert").GetComponent<Image>();
         this._alertSound = Resources.Load<AudioClip>("Audio/BunnyAlert");
         CmdGetEnemies();
     }
@@ -103,7 +103,7 @@ public class BunnyController : NetworkBehaviour {
     private IEnumerator alertOverlay() {
         for (float t = 1; t >= 0; t -= Time.deltaTime) {
             this._alertOverlay.enabled = true; //incase multiple alerts overlap
-            this._alertOverlay.color = new Color(1, 1, 1, t);
+            this._alertOverlay.material.SetColor("_Color", new Color(1, 1, 1, t));
             yield return 0;
         }
         this._alertOverlay.enabled = false;

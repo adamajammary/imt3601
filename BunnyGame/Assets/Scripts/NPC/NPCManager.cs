@@ -86,23 +86,6 @@ public class NPCManager : NetworkBehaviour {
             players.Add(i, new NPCWorldView.GameCharacter(i));
         GameObject[] npcs = GameObject.FindGameObjectsWithTag("npc");
         for (int i = 0; i < npcs.Length; i++) {
-
-            if ((i / (_npcCount / _npcThreadCount)) == 0) {
-                var obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                obj.transform.parent = npcs[i].transform;
-                obj.transform.localPosition = new Vector3(0, 5, 0);                
-            }
-            if ((i / (_npcCount / _npcThreadCount)) == 1) {
-                var obj = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                obj.transform.parent = npcs[i].transform;
-                obj.transform.localPosition = new Vector3(0, 5, 0);
-            }
-            if ((i / (_npcCount / _npcThreadCount)) == 2) {
-                var obj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                obj.transform.parent = npcs[i].transform;
-                obj.transform.localPosition = new Vector3(0, 5, 0);
-            }
-
             this._npcs.Add(i, npcs[i]);
             NPCWorldView.npcs.Add(i, new NPCWorldView.GameCharacter(i));
         }

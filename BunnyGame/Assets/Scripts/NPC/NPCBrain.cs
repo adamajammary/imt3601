@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class NPCBrain { 
     //==============Member variables==================================================
-    public Stack<State>                            _state;
+    private Stack<State>                            _state;
     public NPCWorldView.GameCharacter               npc;
     private BlockingQueue<NPCThread.instruction>    _instructions;
     private float                                   _speed;
@@ -12,20 +12,23 @@ public class NPCBrain {
     private int                                     _threadNumber;
 
     //==============Constructor==================================================
-    public NPCBrain(NPCWorldView.GameCharacter npc, BlockingQueue<NPCThread.instruction> i, WorldGrid worldGrid, int number){
+    public NPCBrain(NPCWorldView.GameCharacter npc, BlockingQueue<NPCThread.instruction> i, WorldGrid worldGrid){
         this.npc            = npc;
         this._state         = new Stack<State>();
         this._instructions  = i;
         this._speed         = 1.0f;
         this._worldGrid     = worldGrid;
-        this._threadNumber = number;
 
         this._state.Push(new Roam(this));        
     }
 
     //==============Update==================================================
     public void update() {
-        this._state.Peek().update();
+        try { 
+            this._state.Peek().update();
+        } catch (System.Exception e) {
+            Debug.LogException(e);
+        }
     }
 
     //==============Functions==================================================
@@ -48,7 +51,7 @@ public class NPCBrain {
     }
 
     //==============State super class==================================================
-    public class State {
+    private class State {
         protected NPCBrain _brain;
         protected NPCWorldView.GameCharacter _npc;
         protected WorldGrid _worldGrid;
@@ -57,7 +60,6 @@ public class NPCBrain {
 
         //Usefull functions for any state
         protected bool detectObstacle() {
-            //Debug.Log(this._brain._threadNumber + " detect obstacle");
             var npc = this._npc;
             float viewDist = 5;
             float fov = 45;
@@ -74,7 +76,6 @@ public class NPCBrain {
         }
 
         protected bool inDanger() {
-            //Debug.Log(this._brain._threadNumber + " in danger");
             var npc = this._npc;
             var players = NPCWorldView.players;
             foreach (var player in players.Values)
@@ -94,7 +95,7 @@ public class NPCBrain {
     //==============State classes==================================================
 
     //==============Roam state==================================================
-    public class Roam : State {
+    private class Roam : State {
         Vector3 lastCell;
         public Roam(NPCBrain x) : base(x) {
             lastCell = new Vector3(-1000, -1000, -1000);
@@ -110,7 +111,6 @@ public class NPCBrain {
         }
 
         private void roam() {
-            //Debug.Log(this._brain._threadNumber + " roam");
             Vector3 roamDir = Vector3.zero;
             Vector3 mapPos = this._npc.getCellNoWater().pos;
             if (lastCell == mapPos) return;
@@ -129,7 +129,7 @@ public class NPCBrain {
     }
 
     //==============Avoid obstacle state==================================================
-    public class AvoidObstacle : State {
+    private class AvoidObstacle : State {
         protected Stack<WorldGrid.Cell> _path;
         protected Vector3 _goal;
         public AvoidObstacle(NPCBrain x) : base(x) {
@@ -145,11 +145,10 @@ public class NPCBrain {
                 this._brain._state.Push(new FleeDanger(this._brain));
             } else if (this._path.Count == 0) {
                 this._brain._state.Pop(); // Return to previous state
-            }            
+            }
         }
 
         protected void walkPath() {
-            //Debug.Log(this._brain._threadNumber + " walk path");
             if (this._path.Count == 0) return;
             recalcPath();
             var npc = this._npc;
@@ -171,7 +170,6 @@ public class NPCBrain {
         }
 
         protected WorldGrid.Cell findTargetCell(Vector3 prefDir) {
-            //Debug.Log(this._brain._threadNumber + " find target cell");
             WorldGrid.Cell target = null;
             Vector3 testDir;
             float degInc = 180 / 8;
@@ -193,7 +191,6 @@ public class NPCBrain {
         }
 
         private WorldGrid.Cell probeDir(Vector3 dir, float start) {
-            //Debug.Log(this._brain._threadNumber + " probe dir");
             Vector3 pos = this._npc.getPos();
             float probeLen = start + 10;
             float mult;
@@ -260,13 +257,12 @@ public class NPCBrain {
 
     //==============Flee Danger state==================================================
 
-    public class FleeDanger : AvoidObstacle {
+    private class FleeDanger : AvoidObstacle {
         public FleeDanger(NPCBrain x) : base(x) {
             x._speed = 4;
         }
 
         override public void update() {
-            //Debug.Log(this._brain._threadNumber + " flee danger update");
             var npc = this._npc;
             Vector3 dir = fleeDir();
             if (detectObstacle()) {                

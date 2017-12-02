@@ -18,7 +18,7 @@ public class NPCThreadManager {
                 NPCWorldView.npcs.TryGetValue(j, out npc);
                 npcs.Add(npc);
             }
-            this._threads[i] = new NPCThread(this._instructions, npcs, i);
+            this._threads[i] = new NPCThread(this._instructions, npcs);
         }
     }
 

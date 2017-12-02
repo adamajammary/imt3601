@@ -29,6 +29,7 @@ public static class NPCWorldView {
             this._pos = pos;
             this._dir = dir;
         }
+
         public void update(Vector3 pos, Vector3 dir, Vector3 goal) {
             lock (this) {
                 this._dir = dir;

@@ -551,9 +551,9 @@ MonoBehaviour:
   m_MaxPlayers: 6
   m_MaxPlayersPerConnection: 1
   m_MinPlayers: 1
-  m_LobbyPlayerPrefab: {fileID: 114654690879382970, guid: 61ed66254448e5142a6e5fe3f12cc2af,
+  m_LobbyPlayerPrefab: {fileID: 114654690879382970, guid: 334e21bf8fcc3c745aec14d2a069e54d,
     type: 2}
-  m_GamePlayerPrefab: {fileID: 1478189615463916, guid: f265853c0643f3c45899f50e9806aedb,
+  m_GamePlayerPrefab: {fileID: 1226077748623440, guid: 809e53d4ef88533478dbac980d337183,
     type: 2}
   m_LobbyScene: Lobby
   m_PlayScene: Island

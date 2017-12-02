@@ -61,7 +61,8 @@ public class BirdController : NetworkBehaviour {
 
         if (Input.GetKey(KeyCode.Space))
             glide();
-        else if (Input.GetMouseButtonDown(0) && !this._pecking)
+        //else if (Input.GetMouseButtonDown(0) && !this._pecking)
+        else if (Input.GetMouseButtonDown(0) && !this._pecking && !this._pc.getCC())
             StartCoroutine(this.peck());
             //CmdPeck();
     }

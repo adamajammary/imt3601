@@ -30,7 +30,14 @@ public class NPCManager : NetworkBehaviour {
 
     //Waits for clients, then syncs playercount, and spawns npcs
     private IEnumerator waitForClients() {
-        while (!WorldData.ready) yield return 0;
+        // Wait for all clients to tell the server their data file loading state.
+        yield return new WaitForSeconds(1.0f);
+
+        NetworkPlayerSelect lobbyManager = Object.FindObjectOfType<NetworkPlayerSelect>();
+        int                 playerCount  = lobbyManager.numPlayers;
+
+        while (!WorldData.ready || !lobbyManager.IsDataLoadingComplete())
+            yield return 0;
 
         string[] npcPrefabNames = { "CatNPC", "DogNPC", "EagleNPC", "WhaleNPC", "ChikenNPC" };
         List<GameObject> npcs = new List<GameObject>();
@@ -38,8 +45,13 @@ public class NPCManager : NetworkBehaviour {
         foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
         for (int i = 0; i < _npcCount; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
 
-        int playerCount = Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
-        while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
+        //int playerCount = Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
+        //while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
+        //    yield return 0;
+
+        // When this is true, all clients are connected and in the game scene.
+        // Also all clients have completed loading their data files.
+        while ((playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) || !lobbyManager.IsDataLoadingComplete())
             yield return 0;
 
         this._playerCount = playerCount; //sync playerCount to clients, now that all are here

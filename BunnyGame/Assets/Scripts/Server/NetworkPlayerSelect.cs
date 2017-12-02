@@ -126,6 +126,17 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         return null;
     }
 
+    // Checks if all clients have completed loading their data files.
+    public bool IsDataLoadingComplete() {
+        // Assuming no client starts loading after another has completed loading.
+        foreach (var client in this._isLoading) {
+            if (client.Value.loading)
+                return false;
+        }
+
+        return true;
+    }
+
     // Checks if the specified name is available for the specified player ID.
     private bool isNameAvailable(int id, string name) {
         if (name == "")
@@ -482,18 +493,8 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             }
         }
 
-        // Assuming no client starts loading after another has completed loading.
-        bool loadingComplete = true;
-        
-        foreach (var client in this._isLoading) {
-            if (client.Value.loading) {
-                loadingComplete = false;
-                break;
-            }
-        }
-
         // Tell all the clients to start after loading is complete.
-        if (loadingComplete) {
+        if (this.IsDataLoadingComplete()) {
             foreach (var conn in NetworkServer.connections) {
                 if (conn != null)
                     this.sendDataFileMessage(conn.connectionId, false);
@@ -682,13 +683,10 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         // Sort/rank players by score.
         List<Player> rankings = new List<Player>();
 
-        print("NETORK_CONNECTIONS: " + NetworkServer.connections.Count);
-        print("NUM_PLAYERS: " + this.numPlayers);
-        print("PLAYERS_COUNT: " + this._players.Count);
-
         foreach (var player in this._players) {
-            player.Value.score  = 0;
-            player.Value.score += ((7 - player.Value.placement) * 1000);
+            //player.Value.score  = 0;
+            //player.Value.score += ((7 - player.Value.placement) * 1000);
+            player.Value.score  = (((this._players.Count + 1) - player.Value.placement) * 1000);
             player.Value.score += (player.Value.kills * 600);
 
             rankings.Add(player.Value);

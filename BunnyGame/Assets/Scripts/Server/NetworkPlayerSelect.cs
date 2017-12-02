@@ -266,52 +266,32 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         }
     }
 
-
-
-
-
+    // This is called on the client when adding a player to the lobby fails.
     public override void OnLobbyClientAddPlayerFailed() {
         base.OnLobbyClientAddPlayerFailed();
-
         this.TryToAddPlayer();
 
-        print("OnLobbyClientAddPlayerFailed");
+        Debug.Log("NETWORK_LOBBY_MANAGER::OnLobbyClientAddPlayerFailed");
     }
 
+    // This is called on the server when a player is removed.
     public override void OnLobbyServerPlayerRemoved(NetworkConnection conn, short playerControllerId) {
         base.OnLobbyServerPlayerRemoved(conn, playerControllerId);
 
-        print("OnLobbyServerCreateLobbyPlayer: conn=" + conn);
-        print("OnLobbyServerCreateLobbyPlayer: playerControllerId=" + playerControllerId);
+        Debug.Log("NETWORK_LOBBY_MANAGER::OnLobbyServerPlayerRemoved:\n\tconn=" + conn + "\n\tplayerControllerId=" + playerControllerId);
     }
 
+    // This allows customization of the creation of the lobby-player object on the server.
     public override GameObject OnLobbyServerCreateLobbyPlayer(NetworkConnection conn, short playerControllerId) {
-        GameObject obj = base.OnLobbyServerCreateLobbyPlayer(conn, playerControllerId);
+        GameObject lobbyPlayerInstance = base.OnLobbyServerCreateLobbyPlayer(conn, playerControllerId);
 
-        print("OnLobbyServerCreateLobbyPlayer: conn=" + conn);
-        print("OnLobbyServerCreateLobbyPlayer: playerControllerId=" + playerControllerId);
-        print("OnLobbyServerCreateLobbyPlayer: obj1=" + obj);
+        if (lobbyPlayerInstance == null)
+            lobbyPlayerInstance = Instantiate(Resources.Load<GameObject>("Prefabs/Players/LobbyPlayer"));
 
-        if (obj == null)
-            obj = Instantiate(Resources.Load<GameObject>("Prefabs/Players/LobbyPlayer"));
+        Debug.Log("NETWORK_LOBBY_MANAGER::OnLobbyServerCreateLobbyPlayer:\n\tconn=" + conn + "\n\tplayerControllerId=" + playerControllerId + "\n\tlobbyPlayerInstance=" + lobbyPlayerInstance);
 
-        print("OnLobbyServerCreateLobbyPlayer: obj2=" + obj);
-
-        return obj;
+        return lobbyPlayerInstance;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     //
     // This allows customization of the creation of the GamePlayer object on the server.

@@ -661,8 +661,8 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     }
 
     public void deathmatchOver() {
-        foreach (var player in this._players)
-            sendGameOverMessage(player.Value.id);
+        foreach (var player in this._players.Keys)
+            sendRankingsMessage(player);
     }
 
     // Tell the player the end game stats.

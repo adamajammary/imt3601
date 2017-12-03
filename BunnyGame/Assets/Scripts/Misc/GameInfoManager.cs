@@ -4,43 +4,36 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class GameInfoManager : NetworkBehaviour {
-    [SyncVar]
-    string _map;
-    [SyncVar]
-    string _gamemode;
-    [SyncVar]
-    int _playerCount;
 
     // Use this for initialization
     void Start () {
-        Debug.Log("DSADS");
         if (this.isServer) {
-            Debug.Log("SHIT");
             NetworkPlayerSelect lobby = Object.FindObjectOfType<NetworkPlayerSelect>();
-            _map = lobby.getMap();
-            _gamemode = lobby.getGameMode();
-            _playerCount = lobby.numPlayers;
+            CmdInit(lobby.getGameMode(), lobby.getMap(), lobby.numPlayers);
         }
-        StartCoroutine(init());
     }
 
-    private IEnumerator init() {
-        yield return new WaitForSeconds(0.5f);
-        init(_gamemode, _map, _playerCount);
+    [Command]
+    private void CmdInit(string gamemode, string map, int playerCount) {
+        RpcInit(gamemode, map, playerCount);
+    }
+
+    [ClientRpc]
+    private void RpcInit(string gamemode, string map, int playerCount) {
+        init(gamemode, map, playerCount);
     }
 
     private void init(string gamemode, string map, int playerCount) {
         GameInfo.init(gamemode, map);
         StartCoroutine(setPlayersReady(playerCount));
+        Debug.Log("INIT");
     }
 
     private IEnumerator setPlayersReady(int playerCount) {
-        Debug.Log(playerCount);
         //Wait for all players to spawn, +1 for localplayer 
         while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1))
             yield return 0;
         GameInfo.setPlayersToReady();
-        Debug.Log("CUUCK");
     }
 
     void OnApplicationQuit() {

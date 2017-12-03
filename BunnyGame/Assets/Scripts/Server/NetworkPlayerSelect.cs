@@ -472,6 +472,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
     private void recieveGameModeSelectMessage(NetworkMessage message) {
         string gamemode = message.ReadMessage<StringMessage>().value;
+        Debug.Log(gamemode);
 
         if (this._gamemodeVotes.ContainsKey(message.conn))
             this._gamemodeVotes[message.conn] = gamemode;
@@ -586,12 +587,12 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     }
 
     private void sendGameModeVotes() {
-        var votes = this.getVotes(this._mapVotes);
+        var votes = this.getVotes(this._gamemodeVotes);
         string message = "";
 
         foreach (var vote in votes)
             message += "|" + vote.Key + ":" + vote.Value;
-
+        Debug.Log(message);
         NetworkServer.SendToAll((short)NetworkMessageType.MSG_GAMEMODE_VOTE, new StringMessage(message));
     }
 

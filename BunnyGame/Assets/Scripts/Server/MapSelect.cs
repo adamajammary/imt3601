@@ -13,6 +13,7 @@ public class MapSelect : Voter {
             }
             yield return 0;
         } while (!success);
+        UnityEngine.Debug.Log("MAP VOTING READY!");
     }
 
     // Send the network message to the server.
@@ -20,7 +21,6 @@ public class MapSelect : Voter {
         if (NetworkClient.allClients.Count < 1)
             return;
 
-        this.registerNetworkHandlers();
         NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_MAP_SELECT, new StringMessage(vote));
 
         sendGfxUpdate(vote);

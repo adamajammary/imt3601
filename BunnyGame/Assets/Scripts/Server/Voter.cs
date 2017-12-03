@@ -27,7 +27,7 @@ public abstract class Voter : NetworkBehaviour {
     protected void recieveVote(NetworkMessage message) {
         string msg = message.ReadMessage<StringMessage>().value;
         Dictionary<string, int> votes = new Dictionary<string, int>();
-
+        Debug.Log(msg);
         foreach (string vote in msg.Split('|')) {
             if (vote.Contains(":")) {
                 string map = vote.Split(':')[0];

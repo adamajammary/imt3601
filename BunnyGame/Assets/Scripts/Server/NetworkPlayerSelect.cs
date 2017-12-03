@@ -472,7 +472,6 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
     private void recieveGameModeSelectMessage(NetworkMessage message) {
         string gamemode = message.ReadMessage<StringMessage>().value;
-        Debug.Log(gamemode);
 
         if (this._gamemodeVotes.ContainsKey(message.conn))
             this._gamemodeVotes[message.conn] = gamemode;
@@ -570,12 +569,12 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             }
         // No votes (select from all available islands)
         } else {
+            Debug.Log("WHAT");
             foreach (string island in this._islands)
                 winnerMaps.Add(island);
         }
 
         this._mapVotes = new Dictionary<NetworkConnection, string>(); //Clear vote data
-
         return winnerMaps[Random.Range(0, winnerMaps.Count)];
     }
 
@@ -592,7 +591,6 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
 
         foreach (var vote in votes)
             message += "|" + vote.Key + ":" + vote.Value;
-        Debug.Log(message);
         NetworkServer.SendToAll((short)NetworkMessageType.MSG_GAMEMODE_VOTE, new StringMessage(message));
     }
 
@@ -616,11 +614,11 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             }
             // No votes (select from all available islands)
         } else {
-            foreach (string island in this._islands)
-                winnerGameModes.Add(island);
+            foreach (string gamemode in this._gamemodes)
+                winnerGameModes.Add(gamemode);
         }
 
-        this._mapVotes = new Dictionary<NetworkConnection, string>(); //Clear vote data
+        this._gamemodeVotes = new Dictionary<NetworkConnection, string>(); //Clear vote data
 
         return winnerGameModes[Random.Range(0, winnerGameModes.Count)];
     }

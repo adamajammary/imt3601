@@ -13,7 +13,6 @@ public class MapSelect : Voter {
             }
             yield return 0;
         } while (!success);
-        UnityEngine.Debug.Log("MAP VOTING READY!");
     }
 
     // Send the network message to the server.

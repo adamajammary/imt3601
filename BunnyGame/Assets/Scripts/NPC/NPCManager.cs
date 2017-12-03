@@ -4,9 +4,6 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class NPCManager : NetworkBehaviour {
-    [SyncVar]
-    private int _playerCount = -1;
-
     private Dictionary<int, GameObject> _players;       //Used to update NPCWorldView
     private Dictionary<int, GameObject> _npcs;          //Used to update NPCWorldView
     private List<int> _deadPlayers;   //Keeps track of dead players, so that they can be removed from datastructures at a convenient time
@@ -36,7 +33,7 @@ public class NPCManager : NetworkBehaviour {
         NetworkPlayerSelect lobbyManager = Object.FindObjectOfType<NetworkPlayerSelect>();
         int                 playerCount  = lobbyManager.numPlayers;
 
-        while (!WorldData.ready || !lobbyManager.IsDataLoadingComplete())
+        while (!WorldData.ready || !GameInfo.playersReady || !lobbyManager.IsDataLoadingComplete())
             yield return 0;
 
         string[] npcPrefabNames = { "CatNPC", "DogNPC", "EagleNPC", "WhaleNPC", "ChikenNPC" };
@@ -44,17 +41,6 @@ public class NPCManager : NetworkBehaviour {
         
         foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
         for (int i = 0; i < _npcCount; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
-
-        //int playerCount = Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
-        //while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
-        //    yield return 0;
-
-        // When this is true, all clients are connected and in the game scene.
-        // Also all clients have completed loading their data files.
-        while ((playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) || !lobbyManager.IsDataLoadingComplete())
-            yield return 0;
-
-        this._playerCount = playerCount; //sync playerCount to clients, now that all are here
     }
 
     //Spawn NPCs, then register players/npcs in datastructures in this class, and NPCWorldView
@@ -69,7 +55,7 @@ public class NPCManager : NetworkBehaviour {
         while (GameObject.FindGameObjectsWithTag("npc").Length != _npcCount)
             yield return 0;
         //Wait for all players to spawn, +1 for localplayer 
-        while (this._playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1))
+        while (!GameInfo.playersReady)
             yield return 0;
 
         NPCWorldView.init();

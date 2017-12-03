@@ -79,7 +79,7 @@ public class FireWall : NetworkBehaviour {
 
             // When this is true, all clients are connected and in the game scene.
             // Also all clients have completed loading their data files.
-            while ((lobbyManager.numPlayers != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) || !lobbyManager.IsDataLoadingComplete())
+            while (!GameInfo.playersReady || !lobbyManager.IsDataLoadingComplete())
                 yield return 0;
 
             this._rngSeed = UnityEngine.Random.Range(0, 9999999);

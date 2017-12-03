@@ -13,14 +13,12 @@ public class GameModeSelect : Voter {
             }
             yield return 0;
         } while (!success);
-        UnityEngine.Debug.Log("GAMEMODE VOTING READY!");
     }
 
     // Send the network message to the server.
     override public void sendVote(string vote) {
         if (NetworkClient.allClients.Count < 1)
             return;
-        UnityEngine.Debug.Log(vote);
         NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_GAMEMODE_SELECT, new StringMessage(vote));
 
         sendGfxUpdate(vote);

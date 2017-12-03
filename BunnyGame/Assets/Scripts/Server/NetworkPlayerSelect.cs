@@ -24,7 +24,9 @@ public enum NetworkMessageType {
     MSG_MATCH_DISCONNECT,
     MSG_RANKINGS,
     MSG_MAP_SELECT,
+    MSG_GAMEMODE_SELECT,
     MSG_MAP_VOTE,
+    MSG_GAMEMODE_VOTE,
     MSG_DATA_FILE_LOADING,
     MSG_DATA_FILE_PROGRESS,
     MSG_DATA_FILE_READY
@@ -92,11 +94,13 @@ public class AttackMessage : MessageBase {
 //
 public class NetworkPlayerSelect : NetworkLobbyManager {
 
-    private string[]                              _islands   = { "Island", "Island42" };
-    private string[]                              _models    = { "PlayerCharacterBunny", "PlayerCharacterFox", "PlayerCharacterBird", "PlayerCharacterMoose" };
-    private Dictionary<int, Player>               _players   = new Dictionary<int, Player>();
-    private Dictionary<NetworkConnection, string> _mapVotes  = new Dictionary<NetworkConnection, string>();
-    private Dictionary<int, LoadingPlayer>        _isLoading = new Dictionary<int, LoadingPlayer>();
+    private string[]                              _islands          = { "Island", "Island42" };
+    private string[]                              _gamemodes        = { "Battleroyale", "Deathmatch" };
+    private string[]                              _models           = { "PlayerCharacterBunny", "PlayerCharacterFox", "PlayerCharacterBird", "PlayerCharacterMoose" };
+    private Dictionary<int, Player>               _players          = new Dictionary<int, Player>();
+    private Dictionary<NetworkConnection, string> _mapVotes         = new Dictionary<NetworkConnection, string>();
+    private Dictionary<NetworkConnection, string> _gamemodeVotes    = new Dictionary<NetworkConnection, string>();
+    private Dictionary<int, LoadingPlayer>        _isLoading        = new Dictionary<int, LoadingPlayer>();
 
     private int getNrOfPlayersAlive() {
         int playersAlive = 0;
@@ -175,6 +179,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         }
 
         this.resetMapSelect(conn);
+        this.resetGameModeSelect(conn);
 
         // Send updated lobby player info to all players.
         if (this.offlineScene == "Lobby")
@@ -203,12 +208,14 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_LOBBY_UPDATE,       this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_MATCH_DROP,         this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_MAP_SELECT,         this.recieveNetworkMessage);
+        NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_GAMEMODE_SELECT,    this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_DATA_FILE_LOADING,  this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_DATA_FILE_PROGRESS, this.recieveNetworkMessage);
         NetworkServer.RegisterHandler((short)NetworkMessageType.MSG_DATA_FILE_READY,    this.recieveNetworkMessage);
 
         this._players.Clear();
         this._mapVotes.Clear();
+        this._gamemodeVotes.Clear();
         this._isLoading.Clear();
     }
 
@@ -228,6 +235,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             this._players[conn.connectionId] = player;
 
         this.resetMapSelect(conn);
+        this.resetGameModeSelect(conn);
     }
 
     // This is called on the server when a client disconnects.
@@ -348,6 +356,9 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             case (short)NetworkMessageType.MSG_MAP_SELECT:
                 this.recieveMapSelectMessage(message);
                 break;
+            case (short)NetworkMessageType.MSG_GAMEMODE_SELECT:
+                this.recieveGameModeSelectMessage(message);
+                break;
             case (short)NetworkMessageType.MSG_DATA_FILE_LOADING:
                 this.recieveDataFileMessage(message.conn.connectionId, true);
                 break;
@@ -459,6 +470,17 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         this.sendMapVotes();
     }
 
+    private void recieveGameModeSelectMessage(NetworkMessage message) {
+        string gamemode = message.ReadMessage<StringMessage>().value;
+
+        if (this._gamemodeVotes.ContainsKey(message.conn))
+            this._gamemodeVotes[message.conn] = gamemode;
+        else
+            this._gamemodeVotes.Add(message.conn, gamemode);
+
+        this.sendGameModeVotes();
+    }
+
     private void recieveDataFileMessage(int id, bool loading) {
         if (this._isLoading.ContainsKey(id))
             this._isLoading[id].loading = loading;
@@ -505,7 +527,7 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     }
 
     private void sendMapVotes() {
-        var votes = this.getVotes();
+        var votes = this.getVotes(this._mapVotes);
         string message = "";
 
         foreach (var vote in votes)
@@ -514,23 +536,23 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         NetworkServer.SendToAll((short)NetworkMessageType.MSG_MAP_VOTE, new StringMessage(message));
     }
 
-    Dictionary<string, int> getVotes() {
-        Dictionary<string, int> votes = new Dictionary<string, int>();
+    Dictionary<string, int> getVotes(Dictionary<NetworkConnection, string> votes) {
+        Dictionary<string, int> _votes = new Dictionary<string, int>();
 
-        foreach (var vote in this._mapVotes.Values) {
-            if (votes.ContainsKey(vote))
-                votes[vote] += 1;
+        foreach (var vote in votes.Values) {
+            if (_votes.ContainsKey(vote))
+                _votes[vote] += 1;
             else
-                votes.Add(vote, 1);
+                _votes.Add(vote, 1);
         }
 
-        return votes;
+        return _votes;
     }
 
     //Returns the map with the most votes, if theres multiple winners one winner is chosen at random
     public string getMap() {
         List<string> winnerMaps = new List<string>();
-        var votes = getVotes();
+        var votes = getVotes(this._mapVotes);
 
         // Votes (select the top voted island)
         if (votes.Count > 0) {
@@ -554,6 +576,52 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
         this._mapVotes = new Dictionary<NetworkConnection, string>(); //Clear vote data
 
         return winnerMaps[Random.Range(0, winnerMaps.Count)];
+    }
+
+    private void resetGameModeSelect(NetworkConnection conn) {
+        if (this._gamemodeVotes.ContainsKey(conn))
+            this._gamemodeVotes.Remove(conn);
+
+        this.sendGameModeVotes();
+    }
+
+    private void sendGameModeVotes() {
+        var votes = this.getVotes(this._mapVotes);
+        string message = "";
+
+        foreach (var vote in votes)
+            message += "|" + vote.Key + ":" + vote.Value;
+
+        NetworkServer.SendToAll((short)NetworkMessageType.MSG_GAMEMODE_VOTE, new StringMessage(message));
+    }
+
+    //Returns the gameMode with the most votes, if theres multiple winners one winner is chosen at random
+    public string getGameMode() {
+        List<string> winnerGameModes = new List<string>();
+        var votes = getVotes(this._gamemodeVotes);
+
+        // Votes (select the top voted island)
+        if (votes.Count > 0) {
+            int maxVotes = 0;
+
+            foreach (int voteCount in votes.Values) {
+                if (maxVotes < voteCount)
+                    maxVotes = voteCount;
+            }
+
+            foreach (var vote in votes) {
+                if (vote.Value == maxVotes)
+                    winnerGameModes.Add(vote.Key);
+            }
+            // No votes (select from all available islands)
+        } else {
+            foreach (string island in this._islands)
+                winnerGameModes.Add(island);
+        }
+
+        this._mapVotes = new Dictionary<NetworkConnection, string>(); //Clear vote data
+
+        return winnerGameModes[Random.Range(0, winnerGameModes.Count)];
     }
 
     // Tell the client the state of data file loading.

@@ -254,7 +254,8 @@ public class LobbyHUD : MonoBehaviour {
     }
 
     public void onRefreshLobby() {
-        StartCoroutine(this.initLobbyRoom(0.1f));
+        //StartCoroutine(this.initLobbyRoom(0.1f));
+        StartCoroutine(this.initLobbyRoom(1.0f));
     }
 
     // NB! Lobby players are not available immediately, so we wait until they are completely initialized.
@@ -307,7 +308,15 @@ public class LobbyHUD : MonoBehaviour {
     }
 
     public void onReady() {
-        foreach(GameObject player in GameObject.FindGameObjectsWithTag("lobbyplayer")) {
+        GameObject[] lobbyPlayers = GameObject.FindGameObjectsWithTag("lobbyplayer");
+
+        // May happen during network delays.
+        if (lobbyPlayers.Length <= 0) {
+            Debug.Log("LOBBY_HUD::onReady: No lobby players found!");
+            //FindObjectOfType<NetworkPlayerSelect>().GetComponent<NetworkPlayerSelect>().TryToAddPlayer();
+        }
+
+        foreach (GameObject player in lobbyPlayers) {
             NetworkLobbyPlayer lobbyPlayer = player.GetComponent<NetworkLobbyPlayer>();
 
             if (!lobbyPlayer.isLocalPlayer)

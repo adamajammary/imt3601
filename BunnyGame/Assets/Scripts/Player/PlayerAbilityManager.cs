@@ -5,19 +5,24 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class PlayerAbilityManager : NetworkBehaviour {
+
     public List<SpecialAbility> abilities = new List<SpecialAbility>();
+
     private AbilityPanel display;
+    private PlayerController _playerController;
 
     // Use this for initialization
     void Start () {
         display = GameObject.Find("AbilityPanel").GetComponent<AbilityPanel>();
-	}
-	
-	// Update is called once per frame
-	void Update () {
+        this._playerController = GetComponent<PlayerController>();
+    }
+
+    // Update is called once per frame
+    void Update () {
 
         for (int i = 0; i < abilities.Count && i < 9; i++) {
-            if (Input.GetKeyDown(KeyCode.Alpha1 + i)) {
+            //if (Input.GetKeyDown(KeyCode.Alpha1 + i)) {
+            if (Input.GetKeyDown(KeyCode.Alpha1 + i) && !this._playerController.getCC()) {
                 StartCoroutine(abilities[i].useAbility());
             }
         }

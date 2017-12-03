@@ -410,7 +410,8 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             if (killerID >= 0)
                 this._players[killerID].kills++;
 
-            this._players[message.conn.connectionId].isDead    = true;
+            if (GameInfo.gamemode == "Battleroyale")
+                this._players[message.conn.connectionId].isDead    = true;
             this._players[message.conn.connectionId].placement = Mathf.Max(1, playersAlive);
 
             this.sendGameOverMessage(message.conn.connectionId, killerID, false);
@@ -569,7 +570,6 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
             }
         // No votes (select from all available islands)
         } else {
-            Debug.Log("WHAT");
             foreach (string island in this._islands)
                 winnerMaps.Add(island);
         }
@@ -658,6 +658,11 @@ public class NetworkPlayerSelect : NetworkLobbyManager {
     private void sendAttackMessage(AttackMessage message) {
         if (this._players.ContainsKey(message.victimID))
             NetworkServer.SendToClient(message.victimID, (short)NetworkMessageType.MSG_ATTACK, message);
+    }
+
+    public void deathmatchOver() {
+        foreach (var player in this._players)
+            sendGameOverMessage(player.Value.id);
     }
 
     // Tell the player the end game stats.

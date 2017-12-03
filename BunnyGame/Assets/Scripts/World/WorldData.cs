@@ -42,6 +42,7 @@ public static class WorldData {
     public static int cellCount { get { return _cellCount; } }
     public static float worldSize { get { return _worldSize; } }
     public static float cellSize { get { return _cellSize; } }
+    public static int planeCount { get { return yOffsets.Length; } }
     public static float[] yOffsets { get { return _yOffsets; } }
     public static Vector2 xzOffset { get { return _xzOffset; } }
     public static bool ready { get { return _ready; } set { _ready = value; } }

@@ -87,6 +87,7 @@ public static class NPCWorldView {
 
         _npcs = new Dictionary<int, GameCharacter>();
         _players = new Dictionary<int, GameCharacter>();
+        _fireWall = new FireWall.Circle(250, Vector3.zero);
     }
 
     public static void clear() {
@@ -94,6 +95,7 @@ public static class NPCWorldView {
 
         _npcs = null;
         _players = null;
+        _fireWall = null;
     }
     //===============================================================================
     public static Dictionary<int, GameCharacter> players { get { return _players; } }

@@ -84,7 +84,10 @@ public class NPCManager : NetworkBehaviour {
     void Update() {
         if (this._ready) {
             this.updateNPCWorldView();
-            this.removeDeadStuff();
+            if (GameInfo.gamemode == "Battleroyale")
+                this.removeDeadStuff();
+            else if (GameInfo.gamemode == "Deathmatch")
+                this.respawn();
             this.handleInstructions();
         }
     }
@@ -94,21 +97,23 @@ public class NPCManager : NetworkBehaviour {
         //Update NPCS
         var npcs = NPCWorldView.npcs;
         foreach (var npc in this._npcs) {
-            if (npc.Value != null) {
+            if (npc.Value != null && npc.Value.activeSelf) {
                 Vector3 goal = npc.Value.GetComponent<NPC>().getGoal();
                 npcs[npc.Key].update(npc.Value.transform.position, npc.Value.transform.forward, goal);
             } else {
-                npcs[npc.Key].alive = false;
+                if (GameInfo.gamemode == "Battleroyale")
+                    npcs[npc.Key].alive = false;
                 this._deadNpcs.Add(npc.Key);
             }
         }
         //Update Players
         var players = NPCWorldView.players;
         foreach (var player in this._players) {
-            if (player.Value != null) {
+            if (player.Value != null && !player.Value.GetComponent<PlayerHealth>().IsDead()) {
                 players[player.Key].update(player.Value.transform.position, player.Value.transform.forward, Vector3.negativeInfinity);
             } else {
-                players[player.Key].alive = false;
+                if (GameInfo.gamemode == "Battleroyale")
+                    players[player.Key].alive = false;
                 this._deadPlayers.Add(player.Key);
             }
         }
@@ -139,6 +144,26 @@ public class NPCManager : NetworkBehaviour {
             }
             this._deadNpcs.Clear();
             this._deadPlayers.Clear();
+        }
+    }
+
+    private void respawn() {
+        if (this._deadPlayers.Count > 0)
+            this._deadPlayers.Clear();
+
+        if (this._deadNpcs.Count > 0) {
+            foreach (var npc in this._deadNpcs) {
+                this._npcs[npc].SetActive(true);
+                int y = (Random.Range(0.0f, 1.0f) < 0.3f) ? Random.Range(1, WorldData.planeCount) : 1;
+                float angle = Random.Range(0, Mathf.PI * 2);
+
+                Vector3 pos = WorldData.worldGrid.getRandomCell(false, y).pos;
+                pos.y += 50;
+                Vector3 dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+                this._npcs[npc].GetComponent<NPC>().spawn(pos, dir);
+
+            }
+            _deadNpcs.Clear();
         }
     }
 
@@ -173,7 +198,6 @@ public class NPCManager : NetworkBehaviour {
         npcInstance.GetComponent<NPC>().spawn(hit.point, dir);
 
         NetworkServer.Spawn(npcInstance);
-
     }
 
     //It's important to stop the NPCThread when quitting

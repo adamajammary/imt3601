@@ -71,10 +71,6 @@ public class FireWall : NetworkBehaviour {
             // Wait for all clients to tell the server their data file loading state.
             yield return new WaitForSeconds(1.0f);
 
-            //int playerCount = UnityEngine.Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
-            //while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
-            //    yield return 0;
-
             NetworkPlayerSelect lobbyManager = UnityEngine.Object.FindObjectOfType<NetworkPlayerSelect>();
 
             // When this is true, all clients are connected and in the game scene.
@@ -94,7 +90,6 @@ public class FireWall : NetworkBehaviour {
 
         this._current = new Circle(250, Vector3.zero);
         this._target = new Circle(250, Vector3.zero);
-        NPCWorldView.FireWall = new Circle(250, Vector3.zero);
 
         this._wallShrinkTimer = 0;
         this._wallIsShrinking = false;        

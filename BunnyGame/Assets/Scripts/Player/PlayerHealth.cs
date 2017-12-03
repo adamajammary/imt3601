@@ -190,16 +190,22 @@ public class PlayerHealth : NetworkBehaviour {
 
     [ClientRpc]
     private void RpcDie(int killerID) {
-        this.gameObject.transform.GetChild(1).gameObject.SetActive(false);
+        if (GameInfo.gamemode == "Battleroyale") {
+            this.gameObject.transform.GetChild(1).gameObject.SetActive(false);
 
-        GetComponent<PlayerController>().enabled = false;
-        GetComponent<Collider>().enabled = false;
-        GetComponent<PlayerEffects>().enabled = false;
+            GetComponent<PlayerController>().enabled = false;
+            GetComponent<Collider>().enabled = false;
+            GetComponent<PlayerEffects>().enabled = false;
 
-        for (int i = 0; i < transform.childCount; i++)
-            transform.GetChild(i).gameObject.SetActive(false);
+            for (int i = 0; i < transform.childCount; i++)
+                transform.GetChild(i).gameObject.SetActive(false);
 
-        this._isDead = true;
+            this._isDead = true;
+        }
+        else {
+            transform.position = WorldData.worldGrid.getRandomCell(false, 1).pos;
+            Heal(MAX_HEALTH);
+        }
     }
 
     [Command]
@@ -298,7 +304,7 @@ public class PlayerHealth : NetworkBehaviour {
 
     // Show the death screen.
     private void showDeathScreen(GameOverMessage message) {
-        if ((this._gameOverText == null) || (this._spectateImage == null) || (this._spectateText == null) || message.win || this._winner)
+        if ((this._gameOverText == null) || (this._spectateImage == null) || (this._spectateText == null) || message.win || this._winner || GameInfo.gamemode == "Deathmatch")
             return;
 
         if (message.killer == "KILLER_ID_FALL")
@@ -391,7 +397,7 @@ public class PlayerHealth : NetworkBehaviour {
 
     // Update the health/damage screen overlay.
     private void updateDamageScreen(float damageAmount) {
-        if (!this.isLocalPlayer || (this._damageImage == null) || (this._damageImage.color.a >= 1.0f) || this._isDead)
+        if (!this.isLocalPlayer || (this._damageImage == null) || (((this._damageImage.color.a >= 1.0f) || this._isDead) && GameInfo.gamemode == "Battleroyale"))
             return;
 
         this._currentHealth -= damageAmount;

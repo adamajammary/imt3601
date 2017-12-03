@@ -67,7 +67,7 @@ public class PlayerAttack : NetworkBehaviour {
                 default:        Debug.Log("ERROR! Unknown NPC type."); break;
             }
 
-            NetworkServer.Destroy(other.gameObject);
+            other.gameObject.GetComponent<NPC>().die();
         }
     }
 }

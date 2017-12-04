@@ -30,6 +30,7 @@ public static class GameInfo {
     }
 
     public static void init (string gamemode, string map) {
+        Debug.Log("GameInfo: GameMode: " + gamemode + ", Map: " + map);
         _gamemode = gamemode;
         _map = map;
         _ready = true;

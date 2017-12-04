@@ -9,8 +9,12 @@ class PlayerInformation : NetworkBehaviour {
     [SyncVar]
     public string playerName;
 
-    private void Start() {
-        if (this.isServer) CmdSpawnGI();
+    /**
+     * Takes a non instance GameObject and spawns it with
+     * the authority of itself. 
+     */ 
+    public void spawnWithAuthority(GameObject obj) {
+        CmdSpawn(obj);
     }
 
     //Reason for putting this code here:
@@ -18,14 +22,13 @@ class PlayerInformation : NetworkBehaviour {
     // In order to get authority on nonplayer objects, they have to be spawned by player objects with
     // the authority of a player.
     [Command]
-    private void CmdSpawnGI() {
-        StartCoroutine(spawnGI());
+    private void CmdSpawn(GameObject obj) {
+        StartCoroutine(spawn(obj));
     }
 
-    private IEnumerator spawnGI() {
+    private IEnumerator spawn(GameObject obj) {
         while (!this.connectionToClient.isReady) yield return 0;
-        GameObject gimanager = Resources.Load<GameObject>("Prefabs/GameInfoManager");
-        gimanager = Instantiate(gimanager);
-        NetworkServer.SpawnWithClientAuthority(gimanager, this.connectionToClient);
+        obj = Instantiate(obj);
+        NetworkServer.SpawnWithClientAuthority(obj, this.connectionToClient);
     }
 }

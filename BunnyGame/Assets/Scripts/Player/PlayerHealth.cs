@@ -202,9 +202,9 @@ public class PlayerHealth : NetworkBehaviour {
 
             this._isDead = true;
         }
-        else {
+        else if (GameInfo.gamemode == "Deathmatch") {
             transform.position = WorldData.worldGrid.getRandomCell(false, 1).pos;
-            Heal(MAX_HEALTH);
+            Heal(MAX_HEALTH - this._currentHealth);
         }
     }
 
@@ -362,10 +362,13 @@ public class PlayerHealth : NetworkBehaviour {
         if (!this.isLocalPlayer || (this._gameOverText == null) || this._ranked)
             return;
 
+        if (GameInfo.gamemode == "Deathmatch") {
+            this._gameOverText.color = new Color(this._gameOverText.color.r, this._gameOverText.color.g, this._gameOverText.color.b, 1.0f);
+            this._gameOverText.text = "";
+        }
         this._ranked             = true;
         this._gameOverText.text += "\nRank\tKills\t\tScore\tName\n";
         this._gameOverText.text += "---------------------------------------";
-
         foreach (Player player in message.rankings)
             this._gameOverText.text += string.Format("\n#{0}\t\t{1}\t\t\t{2}\t{3}", player.rank, player.kills, player.score, player.name);
 

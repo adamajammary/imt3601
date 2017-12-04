@@ -9,7 +9,7 @@ public class GameInfoManager : NetworkBehaviour {
     void Start () {
         if (this.isServer) {
             NetworkPlayerSelect lobby = Object.FindObjectOfType<NetworkPlayerSelect>();
-            CmdInit(lobby.getGameMode(), lobby.getMap(), lobby.numPlayers);
+            RpcInit(lobby.getGameMode(), lobby.getMap(), lobby.numPlayers);
         }
     }
 
@@ -26,7 +26,6 @@ public class GameInfoManager : NetworkBehaviour {
     private void init(string gamemode, string map, int playerCount) {
         GameInfo.init(gamemode, map);
         StartCoroutine(setPlayersReady(playerCount));
-        Debug.Log("INIT");
     }
 
     private IEnumerator setPlayersReady(int playerCount) {

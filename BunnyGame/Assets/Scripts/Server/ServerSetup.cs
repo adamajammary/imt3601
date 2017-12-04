@@ -11,6 +11,12 @@ public class ServerSetup : NetworkBehaviour {
     }
 
     private IEnumerator init() {
+        GameObject player = null;
+        do {
+            player = GameObject.FindGameObjectWithTag("Player");
+        } while (player == null);
+        player.GetComponent<PlayerInformation>().spawnWithAuthority(Resources.Load<GameObject>("Prefabs/GameInfoManager"));
+
         while (!GameInfo.ready) yield return 0;
 
         if (GameInfo.gamemode == "Battleroyale") {

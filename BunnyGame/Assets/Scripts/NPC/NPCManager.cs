@@ -41,6 +41,7 @@ public class NPCManager : NetworkBehaviour {
         
         foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
         for (int i = 0; i < _npcCount; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
+        Debug.Log("DONE");
     }
 
     //Spawn NPCs, then register players/npcs in datastructures in this class, and NPCWorldView
@@ -154,14 +155,7 @@ public class NPCManager : NetworkBehaviour {
         if (this._deadNpcs.Count > 0) {
             foreach (var npc in this._deadNpcs) {
                 this._npcs[npc].SetActive(true);
-                int y = (Random.Range(0.0f, 1.0f) < 0.3f) ? Random.Range(1, WorldData.planeCount) : 1;
-                float angle = Random.Range(0, Mathf.PI * 2);
-
-                Vector3 pos = WorldData.worldGrid.getRandomCell(false, y).pos;
-                pos.y += 50;
-                Vector3 dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
-                this._npcs[npc].GetComponent<NPC>().spawn(pos, dir);
-
+                CmdRespawnNPC(this._npcs[npc]);
             }
             _deadNpcs.Clear();
         }
@@ -179,6 +173,17 @@ public class NPCManager : NetworkBehaviour {
         }        
     }
 
+    [Command]
+    private void CmdRespawnNPC(GameObject npc) {
+        int y = (Random.Range(0.0f, 1.0f) < 0.3f) ? Random.Range(1, WorldData.yOffsets.Length) : 1;
+        WorldGrid.Cell cell = WorldData.worldGrid.getRandomCell(false, y);
+        //Angle is used to generate a direction
+        float angle = Random.Range(0, Mathf.PI * 2);
+        Vector3 dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+        //Spawn npc
+        npc.GetComponent<NPC>().spawn(cell.pos, dir);
+    }
+
     //Spawns a NPC with a random direction
     [Command]
     private void CmdSpawnNPC(GameObject npc) {
@@ -189,14 +194,8 @@ public class NPCManager : NetworkBehaviour {
         //Angle is used to generate a direction
         float angle = Random.Range(0, Mathf.PI * 2);
         Vector3 dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
-        //Spawn position
-        int layermask = (1 << 19);
-        Ray ray = new Ray(cell.pos + Vector3.up * 5, Vector3.down);
-        RaycastHit hit;
-        Physics.Raycast(ray, out hit, 10, layermask);
         //Spawn npc
-        npcInstance.GetComponent<NPC>().spawn(hit.point, dir);
-
+        npcInstance.GetComponent<NPC>().spawn(cell.pos, dir);
         NetworkServer.Spawn(npcInstance);
     }
 

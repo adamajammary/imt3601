@@ -81,6 +81,12 @@ public class NPC : NetworkBehaviour {
         this.transform.position = pos;
         this._moveDir = dir;
         this.IsDead = false;
+        this.syncClients();
+    }
+
+    [Command]
+    private void CmdSpawn(Vector3 pos, Vector3 dir) {
+        spawn(pos, dir);
     }
 
     private void updateMasterPos(Vector3 masterPos) {

@@ -19,8 +19,14 @@ public class GameModeSelect : Voter {
     override public void sendVote(string vote) {
         if (NetworkClient.allClients.Count < 1)
             return;
+
         NetworkClient.allClients[0].Send((short)NetworkMessageType.MSG_GAMEMODE_SELECT, new StringMessage(vote));
 
         sendGfxUpdate(vote);
+    }
+
+    private void Update() {
+        if (this._buttons != null)
+            UnityEngine.Debug.Log(this._buttons.Length);
     }
 }

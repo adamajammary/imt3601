@@ -9,14 +9,14 @@ public abstract class Voter : NetworkBehaviour {
 
     protected Button[] _buttons;
 
-    private void OnEnable() {
+    private void OnEnable() {        
         this._buttons = transform.GetComponentsInChildren<Button>();
 
         foreach (Button button in this._buttons) {
             button.GetComponent<Image>().color = Color.white;
             button.GetComponentInChildren<Text>().text = (button.name + ": 0");
         }
-
+        Debug.Log("ASDASD" + this._buttons.Length);
         StartCoroutine(registerNetworkHandlers());
     }
 
@@ -40,8 +40,9 @@ public abstract class Voter : NetworkBehaviour {
 
     protected void sendGfxUpdate(string vote) {
         // Update UI
-        foreach (Button button in this._buttons)
+        foreach (Button button in this._buttons) {
             button.GetComponent<Image>().color = (button.name == vote ? Color.yellow : Color.white);
+        }
     }
 
     protected void recieveGfxUpdate(Dictionary<string, int> votes) {

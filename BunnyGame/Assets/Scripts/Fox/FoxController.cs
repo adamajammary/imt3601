@@ -67,9 +67,23 @@ public class FoxController : NetworkBehaviour {
 
         updateAnimator();
 
-        //if (Input.GetKeyDown(KeyCode.Mouse0))
         if (Input.GetKeyDown(KeyCode.Mouse0) && !this._playerController.getCC())
             StartCoroutine(this.toggleBite());       
+    }
+
+    private void killSmell() {
+        if (GameInfo.gamemode == "Battleroyale") {
+            foreach (var smell in smellObjects) Destroy(smell);
+            smellObjects = null;
+        } else if (GameInfo.gamemode == "Deathmatch") {
+            StartCoroutine(toggleSmell());
+        }
+    }
+
+    private IEnumerator toggleSmell() {
+        foreach (var smell in smellObjects) smell.SetActive(false);
+        yield return new WaitForSeconds(1.0f);
+        foreach (var smell in smellObjects) smell.SetActive(true);
     }
 
     private IEnumerator applySmell(int playerCount) {

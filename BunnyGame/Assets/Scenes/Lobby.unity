@@ -166,6 +166,22 @@ Prefab:
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 38200d1e4880159418cb167513617c57, type: 2}
   m_IsPrefabParent: 0
+--- !u!1 &409646964 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 1965688580089184, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
+    type: 2}
+  m_PrefabInternal: {fileID: 1463386152}
+--- !u!114 &409646967
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 409646964}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 845f0da7dd4a33d448d7543fc5ff1aa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &446490510
 Prefab:
   m_ObjectHideFlags: 0
@@ -575,7 +591,7 @@ Prefab:
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
       propertyPath: m_LocalPosition.y
-      value: 388
+      value: 451
       objectReference: {fileID: 0}
     - target: {fileID: 224504343465629732, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
         type: 2}
@@ -662,7 +678,29 @@ Prefab:
       propertyPath: m_LocalPosition.x
       value: -609.5
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 114695897122011642, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
+        type: 2}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 409646967}
+    - target: {fileID: 114695897122011642, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
+        type: 2}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: sendVote
+      objectReference: {fileID: 0}
+    - target: {fileID: 114445007644845368, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
+        type: 2}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 409646967}
+    - target: {fileID: 114445007644845368, guid: 7855c7e2a48e7c04fa48ac93a1718de3,
+        type: 2}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: sendVote
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 114302215438251096, guid: 7855c7e2a48e7c04fa48ac93a1718de3, type: 2}
+    - {fileID: 114909273096206216, guid: 7855c7e2a48e7c04fa48ac93a1718de3, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: 7855c7e2a48e7c04fa48ac93a1718de3, type: 2}
   m_IsPrefabParent: 0
 --- !u!1 &1778915686

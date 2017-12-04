@@ -24,9 +24,4 @@ public class GameModeSelect : Voter {
 
         sendGfxUpdate(vote);
     }
-
-    private void Update() {
-        if (this._buttons != null)
-            UnityEngine.Debug.Log(this._buttons.Length);
-    }
 }

@@ -58,8 +58,7 @@ public class FoxController : NetworkBehaviour {
             return;
 
         if (GetComponent<PlayerHealth>().IsDead() && smellObjects != null) {
-            foreach (var smell in smellObjects) Destroy(smell);
-            smellObjects = null;
+            killSmell();
         }
 
         if (GetComponent<PlayerHealth>().IsDead())

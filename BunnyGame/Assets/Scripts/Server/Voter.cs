@@ -16,7 +16,6 @@ public abstract class Voter : NetworkBehaviour {
             button.GetComponent<Image>().color = Color.white;
             button.GetComponentInChildren<Text>().text = (button.name + ": 0");
         }
-        Debug.Log("ASDASD" + this._buttons.Length);
         StartCoroutine(registerNetworkHandlers());
     }
 

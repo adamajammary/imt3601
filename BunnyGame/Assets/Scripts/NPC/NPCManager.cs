@@ -155,9 +155,10 @@ public class NPCManager : NetworkBehaviour {
             foreach (var npc in this._deadNpcs) {
                 this._npcs[npc].SetActive(true);
                 if (this.isServer)
-                    CmdRespawnNPC(this._npcs[npc]);
-                else
+                    RpcRespawnNPC(this._npcs[npc]);
+                else {
                     this._players[0].GetComponent<PlayerInformation>().CmdRespawnNPC(this._npcs[npc]);
+                }
             }
             _deadNpcs.Clear();
         }
@@ -176,11 +177,11 @@ public class NPCManager : NetworkBehaviour {
     }
 
     public void respawnNPC(GameObject npc) {
-        CmdRespawnNPC(npc);
+        RpcRespawnNPC(npc);
     }
 
-    [Command]
-    private void CmdRespawnNPC(GameObject npc) {
+    [ClientRpc]
+    private void RpcRespawnNPC(GameObject npc) {
         int y = (Random.Range(0.0f, 1.0f) < 0.3f) ? Random.Range(1, WorldData.yOffsets.Length) : 1;
         WorldGrid.Cell cell = WorldData.worldGrid.getRandomCell(false, y);
         //Angle is used to generate a direction

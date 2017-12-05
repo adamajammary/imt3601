@@ -165,11 +165,13 @@ public class PlayerController : NetworkBehaviour {
             velocityY = 0;
     }
 
-    public void jump() {
+    public bool jump() {
         if ((controller.isGrounded) && !onWall(0.1f)) { 
             float jumpVelocity = Mathf.Sqrt(-2 * gravity * jumpHeight * this.playerEffects.getJump()); 
             this.velocityY = jumpVelocity;
+            return true;
         }
+        return false;
     }
 
     //Controll player in air after jump

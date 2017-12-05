@@ -37,8 +37,10 @@ public class NPCThread {
         this._wait = false;
         this._worldGrid = WorldData.worldGrid.getCopy();
 
-        foreach (var npc in npcs)
+        foreach (var npc in npcs) {
+            npc.worldGrid = this._worldGrid;
             this._npcBrains.Add(new NPCBrain(npc, this._instructions, this._worldGrid));
+        }
 
         this._run = true;
         this._stopwatch = new Stopwatch();

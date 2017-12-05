@@ -4,9 +4,6 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class NPCManager : NetworkBehaviour {
-    [SyncVar]
-    private int _playerCount = -1;
-
     private Dictionary<int, GameObject> _players;       //Used to update NPCWorldView
     private Dictionary<int, GameObject> _npcs;          //Used to update NPCWorldView
     private List<int> _deadPlayers;   //Keeps track of dead players, so that they can be removed from datastructures at a convenient time
@@ -36,7 +33,7 @@ public class NPCManager : NetworkBehaviour {
         NetworkPlayerSelect lobbyManager = Object.FindObjectOfType<NetworkPlayerSelect>();
         int                 playerCount  = lobbyManager.numPlayers;
 
-        while (!WorldData.ready || !lobbyManager.IsDataLoadingComplete())
+        while (!WorldData.ready || !GameInfo.playersReady || !lobbyManager.IsDataLoadingComplete())
             yield return 0;
 
         string[] npcPrefabNames = { "CatNPC", "DogNPC", "EagleNPC", "WhaleNPC", "ChikenNPC" };
@@ -44,17 +41,6 @@ public class NPCManager : NetworkBehaviour {
         
         foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
         for (int i = 0; i < _npcCount; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
-
-        //int playerCount = Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
-        //while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
-        //    yield return 0;
-
-        // When this is true, all clients are connected and in the game scene.
-        // Also all clients have completed loading their data files.
-        while ((playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) || !lobbyManager.IsDataLoadingComplete())
-            yield return 0;
-
-        this._playerCount = playerCount; //sync playerCount to clients, now that all are here
     }
 
     //Spawn NPCs, then register players/npcs in datastructures in this class, and NPCWorldView
@@ -69,7 +55,7 @@ public class NPCManager : NetworkBehaviour {
         while (GameObject.FindGameObjectsWithTag("npc").Length != _npcCount)
             yield return 0;
         //Wait for all players to spawn, +1 for localplayer 
-        while (this._playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1))
+        while (!GameInfo.playersReady)
             yield return 0;
 
         NPCWorldView.init();
@@ -98,7 +84,10 @@ public class NPCManager : NetworkBehaviour {
     void Update() {
         if (this._ready) {
             this.updateNPCWorldView();
-            this.removeDeadStuff();
+            if (GameInfo.gamemode == "Battleroyale")
+                this.removeDeadStuff();
+            else if (GameInfo.gamemode == "Deathmatch")
+                this.respawn();
             this.handleInstructions();
         }
     }
@@ -108,21 +97,23 @@ public class NPCManager : NetworkBehaviour {
         //Update NPCS
         var npcs = NPCWorldView.npcs;
         foreach (var npc in this._npcs) {
-            if (npc.Value != null) {
+            if (npc.Value != null && npc.Value.activeSelf) {
                 Vector3 goal = npc.Value.GetComponent<NPC>().getGoal();
                 npcs[npc.Key].update(npc.Value.transform.position, npc.Value.transform.forward, goal);
             } else {
-                npcs[npc.Key].alive = false;
+                if (GameInfo.gamemode == "Battleroyale")
+                    npcs[npc.Key].alive = false;
                 this._deadNpcs.Add(npc.Key);
             }
         }
         //Update Players
         var players = NPCWorldView.players;
         foreach (var player in this._players) {
-            if (player.Value != null) {
+            if (player.Value != null && !player.Value.GetComponent<PlayerHealth>().IsDead()) {
                 players[player.Key].update(player.Value.transform.position, player.Value.transform.forward, Vector3.negativeInfinity);
             } else {
-                players[player.Key].alive = false;
+                if (GameInfo.gamemode == "Battleroyale")
+                    players[player.Key].alive = false;
                 this._deadPlayers.Add(player.Key);
             }
         }
@@ -156,6 +147,23 @@ public class NPCManager : NetworkBehaviour {
         }
     }
 
+    private void respawn() {
+        if (this._deadPlayers.Count > 0)
+            this._deadPlayers.Clear();
+
+        if (this._deadNpcs.Count > 0) {
+            foreach (var npc in this._deadNpcs) {
+                this._npcs[npc].SetActive(true);
+                if (this.isServer)
+                    RpcRespawnNPC(this._npcs[npc]);
+                else {
+                    this._players[0].GetComponent<PlayerInformation>().CmdRespawnNPC(this._npcs[npc]);
+                }
+            }
+            _deadNpcs.Clear();
+        }
+    }
+
     //Recieves instructions from the NPCThread, and passes them along to the NPC GameObjects in the scene
     void handleInstructions() {
         var instructions = this._npcThreads.instructions;
@@ -168,6 +176,21 @@ public class NPCManager : NetworkBehaviour {
         }        
     }
 
+    public void respawnNPC(GameObject npc) {
+        RpcRespawnNPC(npc);
+    }
+
+    [ClientRpc]
+    private void RpcRespawnNPC(GameObject npc) {
+        int y = (Random.Range(0.0f, 1.0f) < 0.3f) ? Random.Range(1, WorldData.yOffsets.Length) : 1;
+        WorldGrid.Cell cell = WorldData.worldGrid.getRandomCell(false, y);
+        //Angle is used to generate a direction
+        float angle = Random.Range(0, Mathf.PI * 2);
+        Vector3 dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+        //Spawn npc
+        npc.GetComponent<NPC>().spawn(cell.pos, dir);
+    }
+
     //Spawns a NPC with a random direction
     [Command]
     private void CmdSpawnNPC(GameObject npc) {
@@ -178,16 +201,9 @@ public class NPCManager : NetworkBehaviour {
         //Angle is used to generate a direction
         float angle = Random.Range(0, Mathf.PI * 2);
         Vector3 dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
-        //Spawn position
-        int layermask = (1 << 19);
-        Ray ray = new Ray(cell.pos + Vector3.up * 5, Vector3.down);
-        RaycastHit hit;
-        Physics.Raycast(ray, out hit, 10, layermask);
         //Spawn npc
-        npcInstance.GetComponent<NPC>().spawn(hit.point, dir);
-
+        npcInstance.GetComponent<NPC>().spawn(cell.pos, dir);
         NetworkServer.Spawn(npcInstance);
-
     }
 
     //It's important to stop the NPCThread when quitting

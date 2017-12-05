@@ -21,15 +21,13 @@ public class SuperJump : SpecialAbility {
         PlayerController playerController = GetComponent<PlayerController>();
         if (base._cooldown > 0 || !playerController.controller.isGrounded)
             yield break;
-        
-        StartCoroutine(base.doCoolDown());
 
         float oldHeight = playerController.jumpHeight;
         playerController.jumpHeight = _jumpHeight;
         while (!playerController.controller.isGrounded) {
             yield return null;
         }
-        playerController.jump();
+        if (playerController.jump()) StartCoroutine(base.doCoolDown());
         playerController.jumpHeight = oldHeight;
     }
 }

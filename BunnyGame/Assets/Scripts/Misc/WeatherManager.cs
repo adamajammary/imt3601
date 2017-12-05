@@ -38,8 +38,7 @@ public class WeatherManager : NetworkBehaviour {
     }
 
     public IEnumerator serverInit() {
-        int playerCount = UnityEngine.Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
-        while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
+        while (!GameInfo.playersReady) //When this is true, all clients are connected and in the game scene
             yield return 0;
 
         yield return new WaitForSeconds(0.5f);

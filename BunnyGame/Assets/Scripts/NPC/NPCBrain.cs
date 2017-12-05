@@ -9,6 +9,7 @@ public class NPCBrain {
     private BlockingQueue<NPCThread.instruction>    _instructions;
     private float                                   _speed;
     private WorldGrid                               _worldGrid;
+    private int                                     _threadNumber;
 
     //==============Constructor==================================================
     public NPCBrain(NPCWorldView.GameCharacter npc, BlockingQueue<NPCThread.instruction> i, WorldGrid worldGrid){
@@ -23,7 +24,11 @@ public class NPCBrain {
 
     //==============Update==================================================
     public void update() {
-        this._state.Peek().update();
+        try { 
+            this._state.Peek().update();
+        } catch (System.Exception e) {
+            Debug.LogException(e);
+        }
     }
 
     //==============Functions==================================================
@@ -64,11 +69,7 @@ public class NPCBrain {
             eyes[1] = Quaternion.AngleAxis(fov, Vector3.up) * dir;
             eyes[2] = Quaternion.AngleAxis(-fov, Vector3.up) * dir;
             foreach (var eye in eyes) {
-                if (this._worldGrid.rayCast(
-                    this._worldGrid.getClosestLevelNoWater(npc.getPos()), 
-                    npc.getPos(), 
-                    npc.getPos() + eye * viewDist) 
-                    != float.MaxValue)
+                if (this._worldGrid.rayCast(npc.getLevelNoWater(), npc.getPos(), npc.getPos() + eye * viewDist) != float.MaxValue)
                     return true;
             }
             return false;
@@ -111,7 +112,7 @@ public class NPCBrain {
 
         private void roam() {
             Vector3 roamDir = Vector3.zero;
-            Vector3 mapPos = this._worldGrid.getCellNoWater(this._npc.getPos()).pos;
+            Vector3 mapPos = this._npc.getCellNoWater().pos;
             if (lastCell == mapPos) return;
             if (hash(mapPos) < 0.5)
                 roamDir = Quaternion.AngleAxis(5, Vector3.up) * this._npc.getDir();
@@ -134,7 +135,7 @@ public class NPCBrain {
         public AvoidObstacle(NPCBrain x) : base(x) {
             this._goal = Vector3.down;
             this._path = new Stack<WorldGrid.Cell>();
-            AStar(this._worldGrid.getCellNoWater(this._npc.getPos()), findTargetCell(x.npc.getDir()));
+            AStar(this._npc.getCellNoWater(), findTargetCell(x.npc.getDir()));
         }
 
         override public void update() {
@@ -144,7 +145,7 @@ public class NPCBrain {
                 this._brain._state.Push(new FleeDanger(this._brain));
             } else if (this._path.Count == 0) {
                 this._brain._state.Pop(); // Return to previous state
-            }            
+            }
         }
 
         protected void walkPath() {
@@ -157,14 +158,14 @@ public class NPCBrain {
             pathDir.y = 0;
             pathDir.Normalize();
             this._brain.sendInstuction(pathDir, this._goal);
-            if (this._worldGrid.getCellNoWater(this._npc.getPos()) == this._path.Peek()) this._path.Pop();
+            if (npc.getCellNoWater() == this._path.Peek()) this._path.Pop();
         }
 
         protected void recalcPath() { 
             var npc = this._npc;
             if (npc.getGoal() == Vector3.down) return;
             if (npc.getGoal() != this._goal) { //This happends when a client is out of sync with master, and they calculate different paths
-                AStar(this._worldGrid.getCellNoWater(this._npc.getPos()), this._worldGrid.getCellNoWater(npc.getGoal()));
+                AStar(npc.getCellNoWater(), this._worldGrid.getCellNoWater(npc.getGoal()));
             }
         }
 
@@ -265,7 +266,7 @@ public class NPCBrain {
             var npc = this._npc;
             Vector3 dir = fleeDir();
             if (detectObstacle()) {                
-                AStar(this._worldGrid.getCellNoWater(this._npc.getPos()), findTargetCell(dir));
+                AStar(npc.getCellNoWater(), findTargetCell(dir));
             }
             if (this._path.Count > 1) {               
                 this._path.Pop();
@@ -282,7 +283,7 @@ public class NPCBrain {
 
         private Vector3 fleeDir() {
             Vector3 fleeDir = Vector3.zero;
-            fleeDir += playersFleeDir();
+            fleeDir += playersFleeDir() * 0.5f;
             fleeDir += FireWallFleeDir();
             return fleeDir.normalized;
         }

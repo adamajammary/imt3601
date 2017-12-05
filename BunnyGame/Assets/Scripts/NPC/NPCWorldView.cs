@@ -11,6 +11,7 @@ public static class NPCWorldView {
         private Vector3 _pos;
         private Vector3 _dir;
         private Vector3 _goal;
+        private WorldGrid _grid;
         private int _id;
         private bool _alive;
 
@@ -20,6 +21,7 @@ public static class NPCWorldView {
             this._dir = Vector3.zero;
             this._goal = Vector3.negativeInfinity;
             this._alive = true;
+            this._grid = WorldData.worldGrid;
         }
 
         public GameCharacter(int id, Vector3 pos, Vector3 dir) {
@@ -27,6 +29,7 @@ public static class NPCWorldView {
             this._pos = pos;
             this._dir = dir;
         }
+
         public void update(Vector3 pos, Vector3 dir, Vector3 goal) {
             lock (this) {
                 this._dir = dir;
@@ -38,6 +41,16 @@ public static class NPCWorldView {
         public Vector3 getPos() {
             lock (this)
                 return this._pos;
+        }
+
+        public WorldGrid.Cell getCellNoWater() {
+            lock (this)
+                return this._grid.getCellNoWater(this._pos);
+        }
+
+        public int getLevelNoWater() {
+            lock (this)
+                return this._grid.getClosestLevelNoWater(this._pos);
         }
 
         public Vector3 getDir() {
@@ -56,6 +69,7 @@ public static class NPCWorldView {
         }
 
         public bool alive { get { return this._alive; } set { this._alive = value; } }
+        public WorldGrid worldGrid { get { return this._grid; } set { this._grid = value; } }
     }
     //===============================================================================
     //===============================================================================
@@ -73,6 +87,7 @@ public static class NPCWorldView {
 
         _npcs = new Dictionary<int, GameCharacter>();
         _players = new Dictionary<int, GameCharacter>();
+        _fireWall = new FireWall.Circle(250, Vector3.zero);
     }
 
     public static void clear() {
@@ -80,6 +95,7 @@ public static class NPCWorldView {
 
         _npcs = null;
         _players = null;
+        _fireWall = null;
     }
     //===============================================================================
     public static Dictionary<int, GameCharacter> players { get { return _players; } }

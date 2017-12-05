@@ -74,12 +74,15 @@ public class NPC : NetworkBehaviour {
 
     public void burn() {
         CmdBurn(this.transform.position);
-        Destroy(this.gameObject);
+        die();
     }
 
     public void spawn(Vector3 pos, Vector3 dir) {
+        IsDead = false;
+        pos.y += 20;
         this.transform.position = pos;
         this._moveDir = dir;
+        this.syncClients();
     }
 
     private void updateMasterPos(Vector3 masterPos) {
@@ -103,6 +106,14 @@ public class NPC : NetworkBehaviour {
         this._masterPos = transform.position;
         this._masterDir = this._moveDir;
         this._masterGoal = this._goal;
+    }
+
+    public void die() {
+        if (GameInfo.gamemode == "Battleroyale")
+            NetworkServer.Destroy(this.gameObject);
+        if (GameInfo.gamemode == "Deathmatch") {
+            this.gameObject.SetActive(false);
+        }
     }
 
     [Command]

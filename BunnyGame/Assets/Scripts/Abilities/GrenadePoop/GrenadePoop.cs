@@ -13,7 +13,7 @@ public class GrenadePoop : SpecialAbility {
         controller = GetComponent<CharacterController>();
         playerInfo = GetComponent<PlayerInformation>();
         base.init("Textures/AbilityIcons/bombIcon");
-        base.abilityName = "Poop Grenade";
+        base.abilityName = "GrenadePoop";
         base._cooldownTimeInSeconds = 15f;
     }
 

@@ -154,7 +154,10 @@ public class NPCManager : NetworkBehaviour {
         if (this._deadNpcs.Count > 0) {
             foreach (var npc in this._deadNpcs) {
                 this._npcs[npc].SetActive(true);
-                CmdRespawnNPC(this._npcs[npc]);
+                if (this.isServer)
+                    CmdRespawnNPC(this._npcs[npc]);
+                else
+                    this._players[0].GetComponent<PlayerInformation>().CmdRespawnNPC(this._npcs[npc]);
             }
             _deadNpcs.Clear();
         }
@@ -170,6 +173,10 @@ public class NPCManager : NetworkBehaviour {
                     this._npcs[instruction.id].GetComponent<NPC>().update(instruction.moveDir, instruction.goal);
             }
         }        
+    }
+
+    public void respawnNPC(GameObject npc) {
+        CmdRespawnNPC(npc);
     }
 
     [Command]

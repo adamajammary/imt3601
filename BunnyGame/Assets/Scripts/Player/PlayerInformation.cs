@@ -36,4 +36,9 @@ class PlayerInformation : NetworkBehaviour {
     public void CmdGetGameInfo() {
         GameObject.FindObjectOfType<GameInfoManager>().sendDataToClients();
     }
+
+    [Command]
+    public void CmdRespawnNPC(GameObject npc) {
+        GameObject.FindObjectOfType<NPCManager>().respawnNPC(npc);
+    }
 }

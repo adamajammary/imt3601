@@ -96,6 +96,7 @@ public class BunnyController : NetworkBehaviour {
     }
 
     private void alert() {
+        GetComponent<AudioSource>().volume = AudioManager.getMasterVolume() * AudioManager.getEffectVolume();
         GetComponent<AudioSource>().PlayOneShot(this._alertSound);
         StartCoroutine(alertOverlay());
     }

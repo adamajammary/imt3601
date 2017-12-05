@@ -31,7 +31,7 @@ public class WeatherManager : NetworkBehaviour {
     void Update() {
         if(this.weatherType == WeatherType.RAIN) {
             _rainEmitter.transform.position = _camera.transform.position + new Vector3(0, 50, 0);
-            _rainSound.volume = (PlayerPrefs.GetFloat("Master Volume", 100) / 100f) * (PlayerPrefs.GetFloat("Effect Volume", 100) / 100f) * 0.25f;
+            _rainSound.volume = AudioManager.getMasterVolume() * AudioManager.getEffectVolume() * 0.25f;
 
             _rainSound.pitch = _player.inWater ? 0.2f : 1f;
         }

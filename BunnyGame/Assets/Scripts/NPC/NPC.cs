@@ -78,6 +78,7 @@ public class NPC : NetworkBehaviour {
     }
 
     public void spawn(Vector3 pos, Vector3 dir) {
+        pos.y += 20;
         this.transform.position = pos;
         this._moveDir = dir;
         this.IsDead = false;

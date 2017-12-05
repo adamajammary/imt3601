@@ -31,4 +31,9 @@ class PlayerInformation : NetworkBehaviour {
         obj = Instantiate(obj);
         NetworkServer.SpawnWithClientAuthority(obj, this.connectionToClient);
     }
+
+    [Command]
+    public void CmdGetGameInfo() {
+        GameObject.FindObjectOfType<GameInfoManager>().sendDataToClients();
+    }
 }

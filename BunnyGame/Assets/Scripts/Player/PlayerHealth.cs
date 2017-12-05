@@ -321,7 +321,7 @@ public class PlayerHealth : NetworkBehaviour {
         this._gameOverText.color  = new Color(this._gameOverText.color.r,  this._gameOverText.color.g,  this._gameOverText.color.b,  1.0f);
         this._spectateImage.color = new Color(this._spectateImage.color.r, this._spectateImage.color.g, this._spectateImage.color.b, 1.0f);
         this._spectateText.color  = new Color(this._spectateText.color.r,  this._spectateText.color.g,  this._spectateText.color.b,  1.0f);
-
+        Debug.Log(GameInfo.gamemode + "  SPECTATE");
         this.spectate();
     }
 

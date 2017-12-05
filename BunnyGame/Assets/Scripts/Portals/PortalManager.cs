@@ -47,8 +47,7 @@ public class PortalManager : NetworkBehaviour {
     private IEnumerator init() {
         while (!WorldData.ready) yield return 0;
 
-        int playerCount = UnityEngine.Object.FindObjectOfType<NetworkPlayerSelect>().numPlayers;
-        while (playerCount != (GameObject.FindGameObjectsWithTag("Enemy").Length + 1)) //When this is true, all clients are connected and in the game scene
+        while (!GameInfo.playersReady) //When this is true, all clients are connected and in the game scene
             yield return 0;
 
         //Level 1 to 2 portals

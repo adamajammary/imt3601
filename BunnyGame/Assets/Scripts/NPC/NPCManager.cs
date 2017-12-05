@@ -41,7 +41,6 @@ public class NPCManager : NetworkBehaviour {
         
         foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
         for (int i = 0; i < _npcCount; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
-        Debug.Log("DONE");
     }
 
     //Spawn NPCs, then register players/npcs in datastructures in this class, and NPCWorldView

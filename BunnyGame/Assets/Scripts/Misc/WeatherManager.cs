@@ -48,7 +48,6 @@ public class WeatherManager : NetworkBehaviour {
 
     [ClientRpc]
     public void RpcInit(WeatherType w) {
-        Debug.Log("RPC recieved " + w);
         init(w);
     }
 

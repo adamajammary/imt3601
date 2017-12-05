@@ -19,7 +19,7 @@ public class WeatherManager : NetworkBehaviour {
     private GameObject _camera;
     private PlayerController _player;
 
-
+    [SyncVar]
     private WeatherType weatherType = WeatherType.CLEAR;
 
     void Start() {

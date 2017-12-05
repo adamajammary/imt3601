@@ -56,7 +56,7 @@
 				col *= cutoff;
 				// Fog
 				UNITY_APPLY_FOG(i.fogCoord, col);
-				UNITY_OPAQUE_ALPHA(col.a);
+				//UNITY_OPAQUE_ALPHA(col.a);
 				return col;
 			}
 			ENDCG

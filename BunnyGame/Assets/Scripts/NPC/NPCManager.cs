@@ -40,7 +40,7 @@ public class NPCManager : NetworkBehaviour {
         List<GameObject> npcs = new List<GameObject>();
         
         foreach (string name in npcPrefabNames) npcs.Add(Resources.Load<GameObject>("Prefabs/NPCs/" + name));
-        for (int i = 0; i < _npcCount; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)]);
+        for (int i = 0; i < _npcCount; i++) this.CmdSpawnNPC(npcs[Random.Range(0, npcs.Count)], i % 5);
     }
 
     //Spawn NPCs, then register players/npcs in datastructures in this class, and NPCWorldView
@@ -95,17 +95,20 @@ public class NPCManager : NetworkBehaviour {
     //Updates data about players and npcs for NPCWorldView so that the NPCThread can use data about them
     private void updateNPCWorldView() {
         //Update NPCS
+        //float syncRate = 0;
         var npcs = NPCWorldView.npcs;
         foreach (var npc in this._npcs) {
             if (npc.Value != null && npc.Value.activeSelf) {
                 Vector3 goal = npc.Value.GetComponent<NPC>().getGoal();
                 npcs[npc.Key].update(npc.Value.transform.position, npc.Value.transform.forward, goal);
+                //syncRate += npc.Value.GetComponent<NPC>().getSyncRate();
             } else {
                 if (GameInfo.gamemode == "Battleroyale")
                     npcs[npc.Key].alive = false;
                 this._deadNpcs.Add(npc.Key);
             }
         }
+        //Debug.Log(syncRate); //This should equal NPC count;
         //Update Players
         var players = NPCWorldView.players;
         foreach (var player in this._players) {
@@ -193,7 +196,7 @@ public class NPCManager : NetworkBehaviour {
 
     //Spawns a NPC with a random direction
     [Command]
-    private void CmdSpawnNPC(GameObject npc) {
+    private void CmdSpawnNPC(GameObject npc, int syncFrame) {
         int y = (Random.Range(0.0f, 1.0f) < 0.3f) ? Random.Range(1, WorldData.yOffsets.Length) : 1;
 
         var npcInstance = Instantiate(npc);
@@ -202,7 +205,7 @@ public class NPCManager : NetworkBehaviour {
         float angle = Random.Range(0, Mathf.PI * 2);
         Vector3 dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
         //Spawn npc
-        npcInstance.GetComponent<NPC>().spawn(cell.pos, dir);
+        npcInstance.GetComponent<NPC>().spawn(cell.pos, dir, syncFrame);
         NetworkServer.Spawn(npcInstance);
     }
 

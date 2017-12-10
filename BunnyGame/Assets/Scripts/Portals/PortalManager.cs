@@ -50,6 +50,8 @@ public class PortalManager : NetworkBehaviour {
         while (!GameInfo.playersReady) //When this is true, all clients are connected and in the game scene
             yield return 0;
 
+        yield return new WaitForSeconds(0.5f);
+
         //Level 1 to 2 portals
         for (int level = 0; level < portalCounts.Length; level++) {
             for (int i = 0; i < portalCounts[level]; i++) {

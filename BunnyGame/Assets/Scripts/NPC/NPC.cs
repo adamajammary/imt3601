@@ -15,8 +15,18 @@ public class NPC : NetworkBehaviour {
     private Vector3 _masterGoal;
 
     private const float         _gravity = -12;
-    private const float         _syncRate = 1; //How many times to sync per second
+    private const float         _syncPerNPC = 0.8f;
 
+    //The NPCs will sync at different rates, but the total syncs per second for all NPCs is 
+    // 1 sync per second per npc.
+    //Sync factor gives npcs a sync priority, so NPCs with a higher sync factor
+    // will get more of the total syncs per second then npcs with a low syncfactor.
+    //NPCs that are closer to players get a higher sync factor.
+    private static float        _totalSyncFactor = 0; 
+    private static int          _npcCount = 0;
+    private float               _oldSyncFactor = 0;
+    private float               _syncFactor = 0;
+    private float               _syncRate = 1; //How many times to sync per second   
     private float               _syncTimer;
     private Vector3             _moveDir;
     private Vector3             _goal; //Used by the brain, need it here for syncing
@@ -24,6 +34,8 @@ public class NPC : NetworkBehaviour {
     private GameObject          _blood;
     private GameObject          _fire;
     private float               _yVel;
+    private int                 _syncFrame = 0;     //Which frame should this npc do syncing? (Used to distribute the load)
+    private int                 _syncCounter = 0;   //Counting frames
 
     private Animator _ani;
 
@@ -38,8 +50,12 @@ public class NPC : NetworkBehaviour {
         this._ani   = GetComponentInChildren<Animator>();
 
         this.IsDead = false;
+        _npcCount++;
 
-        if (this.isServer) { this._syncTimer = 0; this.syncClients(); }
+        if (this.isServer) {
+            this._syncTimer = 0;
+            this.syncClients();
+        }
     }
 
     // Update is called once per frame
@@ -56,10 +72,14 @@ public class NPC : NetworkBehaviour {
 
         //sync clients
         if (this.isServer) {
-            this._syncTimer += Time.deltaTime;
-            if (this._syncTimer > _syncRate) {
-                this.syncClients();
-                this._syncTimer = 0;
+            this._syncCounter++;
+            if ((this._syncCounter + this._syncFrame) % 5 == 0) {
+                calcSyncRate();
+                this._syncTimer += Time.deltaTime;
+                if (this._syncTimer > _syncRate) {
+                    this.syncClients();
+                    this._syncTimer = 0;
+                }
             }
         }
     }
@@ -72,17 +92,40 @@ public class NPC : NetworkBehaviour {
         return this._goal;
     }
 
+    public float getSyncRate() {
+        return this._syncRate;
+    }
+
     public void burn() {
         CmdBurn(this.transform.position);
         die();
     }
 
-    public void spawn(Vector3 pos, Vector3 dir) {
+    public void spawn(Vector3 pos, Vector3 dir, int frame = 0) {
+        this._syncFrame = frame;
         IsDead = false;
         pos.y += 20;
         this.transform.position = pos;
         this._moveDir = dir;
         this.syncClients();
+    }
+
+    private void calcSyncRate() {
+        this._oldSyncFactor = this._syncFactor;
+        this._syncFactor = 400.0f / closestPlayer();
+        _totalSyncFactor += this._syncFactor - this._oldSyncFactor;
+        this._syncRate = _syncFactor * ((_npcCount  * _syncPerNPC) / _totalSyncFactor);
+    }
+
+    private float closestPlayer() {
+        float bestDist = 999999;
+        float dist = 999999;
+        var players = NPCWorldView.players;
+        foreach (var player in players.Values) {
+            dist = Vector3.Distance(transform.position, player.getPos());
+            if (dist < bestDist) bestDist = dist; 
+        }
+        return bestDist;
     }
 
     private void updateMasterPos(Vector3 masterPos) {
@@ -122,5 +165,9 @@ public class NPC : NetworkBehaviour {
         fire.transform.position = pos;
         NetworkServer.Spawn(fire);
         Destroy(fire, 10.0f);
+    }
+
+    private void OnDestroy() {
+        _npcCount--;
     }
 }

@@ -72,7 +72,7 @@ public class NPC : NetworkBehaviour {
         //sync clients
         if (this.isServer) {
             this._syncCounter++;
-            if (this._syncCounter % this._syncFrame == 0) {
+            if ((this._syncCounter + this._syncFrame) % 5 == 0) {
                 calcSyncRate();
                 this._syncTimer += Time.deltaTime;
                 if (this._syncTimer > _syncRate) {

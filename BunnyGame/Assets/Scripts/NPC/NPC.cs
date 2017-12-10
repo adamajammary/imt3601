@@ -14,7 +14,8 @@ public class NPC : NetworkBehaviour {
     [SyncVar(hook = "updateGoal")]
     private Vector3 _masterGoal;
 
-    private const float         _gravity = -12;   
+    private const float         _gravity = -12;
+    private const float         _syncPerNPC = 0.8f;
 
     //The NPCs will sync at different rates, but the total syncs per second for all NPCs is 
     // 1 sync per second per npc.
@@ -113,7 +114,7 @@ public class NPC : NetworkBehaviour {
         this._oldSyncFactor = this._syncFactor;
         this._syncFactor = 400.0f / closestPlayer();
         _totalSyncFactor += this._syncFactor - this._oldSyncFactor;
-        this._syncRate = _syncFactor * (_npcCount / _totalSyncFactor);
+        this._syncRate = _syncFactor * ((_npcCount  * _syncPerNPC) / _totalSyncFactor);
     }
 
     private float closestPlayer() {

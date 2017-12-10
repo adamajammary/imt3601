@@ -24,7 +24,7 @@ public class NPC : NetworkBehaviour {
     private static float        _totalSyncFactor = 0; 
     private static int          _npcCount = 0;
     private float               _oldSyncFactor = 0;
-    private float               _syncFactor = 1;
+    private float               _syncFactor = 0;
     private float               _syncRate = 1; //How many times to sync per second   
     private float               _syncTimer;
     private Vector3             _moveDir;
@@ -91,6 +91,10 @@ public class NPC : NetworkBehaviour {
         return this._goal;
     }
 
+    public float getSyncRate() {
+        return this._syncRate;
+    }
+
     public void burn() {
         CmdBurn(this.transform.position);
         die();
@@ -107,9 +111,8 @@ public class NPC : NetworkBehaviour {
 
     private void calcSyncRate() {
         this._oldSyncFactor = this._syncFactor;
-        this._syncFactor = 0;
         this._syncFactor = 400.0f / closestPlayer();
-        _totalSyncFactor = this._syncFactor - this._oldSyncFactor;
+        _totalSyncFactor += this._syncFactor - this._oldSyncFactor;
         this._syncRate = _syncFactor * (_npcCount / _totalSyncFactor);
     }
 

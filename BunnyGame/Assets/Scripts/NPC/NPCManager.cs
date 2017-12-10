@@ -95,17 +95,20 @@ public class NPCManager : NetworkBehaviour {
     //Updates data about players and npcs for NPCWorldView so that the NPCThread can use data about them
     private void updateNPCWorldView() {
         //Update NPCS
+        //float syncRate = 0;
         var npcs = NPCWorldView.npcs;
         foreach (var npc in this._npcs) {
             if (npc.Value != null && npc.Value.activeSelf) {
                 Vector3 goal = npc.Value.GetComponent<NPC>().getGoal();
                 npcs[npc.Key].update(npc.Value.transform.position, npc.Value.transform.forward, goal);
+                //syncRate += npc.Value.GetComponent<NPC>().getSyncRate();
             } else {
                 if (GameInfo.gamemode == "Battleroyale")
                     npcs[npc.Key].alive = false;
                 this._deadNpcs.Add(npc.Key);
             }
         }
+        //Debug.Log(syncRate); //This should equal NPC count;
         //Update Players
         var players = NPCWorldView.players;
         foreach (var player in this._players) {

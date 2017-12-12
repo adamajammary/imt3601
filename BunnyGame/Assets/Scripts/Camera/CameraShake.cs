@@ -27,19 +27,18 @@ public class CameraShake : MonoBehaviour {
 
 
 	void LateUpdate () {
-		if (isShaking) {
-			if (duration > 0) {
-				camera.localPosition = startPosition + Random.insideUnitSphere * power;
-				duration -= Time.deltaTime * slowDownAmount;
-			}
-			else
-			{
-				isShaking = false;
-				duration = initialDuration;
-				camera.localPosition = startPosition;
-			}
-		}
-	}
+        if (isShaking) {
+            if (duration > 0) {
+                camera.localPosition += Random.insideUnitSphere * power;
+                duration -= Time.deltaTime * slowDownAmount;
+            }
+            else
+            {
+                isShaking = false;
+                duration = initialDuration;
+            }
+        }
+    }
 
 
 }

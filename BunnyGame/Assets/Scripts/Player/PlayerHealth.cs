@@ -422,7 +422,7 @@ public class PlayerHealth : NetworkBehaviour {
 
         this._currentHealth -= damageAmount;
         this._isDead         = (this._currentHealth < 1.0f);
-//        GameObject.Find("Main Camera").GetComponent<CameraShake>().isShaking = true;
+       GameObject.Find("Main Camera").GetComponent<CameraShake>().isShaking = true;
 
 
         float alpha             = (1.0f - this._currentHealth / MAX_HEALTH);

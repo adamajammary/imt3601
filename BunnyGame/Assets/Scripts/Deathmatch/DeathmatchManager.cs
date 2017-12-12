@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 
 public class DeathmatchManager : NetworkBehaviour {
     private RectTransform _wallTransitionUI;  //The Timer for the firewall, repurposed. 
-    private const float _DeathmatchLen = 60 * 5; //5 mins
+    private const float _DeathmatchLen = 60 * 4; //5 mins
     [SyncVar]
     private float _deathmatchTimer = 0;
 

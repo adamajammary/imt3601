@@ -111,8 +111,8 @@ public class PlayerController : NetworkBehaviour {
         spline[0] += spline[0].normalized * 100;
         
         spline[1] = Vector3.Lerp(spline[0], spline[2], 0.5f);
-        if (Random.Range(0.0f, 1.0f) >= 0.5f)
-            spline[1] += Vector3.up *  100;
+        spline[1] += Vector3.up *  100;
+
         this._playerHealth.maxHeal();
         while (t < 1) {
             GetComponent<PlayerController>().velocityY = 0;

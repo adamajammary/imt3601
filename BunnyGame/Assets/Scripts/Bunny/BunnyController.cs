@@ -18,6 +18,7 @@ public class BunnyController : NetworkBehaviour {
     private bool[] _enemyInRange;
     private const float _alertDistance = 30.0f;
     private PlayerController _playerController;
+    private bool _alertReady;
 
     public override void PreStartClient() {
         base.PreStartClient();
@@ -67,6 +68,8 @@ public class BunnyController : NetworkBehaviour {
         CmdGetEnemies();
 
         this._playerController = GetComponent<PlayerController>();
+        this._alertReady = false;
+        StartCoroutine(alertCooldown(2.0f));
     }
 
     void Update() {
@@ -80,7 +83,7 @@ public class BunnyController : NetworkBehaviour {
             this.shoot();
 
         //Bunny passive "sixth sense"
-        if (this._enemies != null) {
+        if (this._enemies != null && this._alertReady) {
             for (int i = 0; i < this._enemies.Length; i++) {
                 if (this._enemies[i] != null && !this._enemies[i].GetComponent<PlayerHealth>().IsDead()) {
                     if (Vector3.Distance(this._enemies[i].transform.position, transform.position) < _alertDistance) {
@@ -96,6 +99,7 @@ public class BunnyController : NetworkBehaviour {
     }
 
     private void alert() {
+        StartCoroutine(alertCooldown(10.0f));
         GetComponent<AudioSource>().volume = AudioManager.getMasterVolume() * AudioManager.getEffectVolume();
         GetComponent<AudioSource>().PlayOneShot(this._alertSound);
         StartCoroutine(alertOverlay());
@@ -118,6 +122,12 @@ public class BunnyController : NetworkBehaviour {
         this._enemyInRange = new bool[this._enemies.Length];
         for (int i = 0; i < this._enemyInRange.Length; i++)
             this._enemyInRange[i] = false;
+    }
+
+    private IEnumerator alertCooldown(float seconds) {
+        this._alertReady = false;
+        yield return new WaitForSeconds(seconds);
+        this._alertReady = true;
     }
 
     [Command]

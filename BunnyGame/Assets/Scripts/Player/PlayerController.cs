@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.SceneManagement;
 
 public class PlayerController : NetworkBehaviour {
 
@@ -42,10 +40,8 @@ public class PlayerController : NetworkBehaviour {
 	private float _targetRotation = 0;
 	private bool _noInputMovement = false;
 
-
 	void Start() {
 		CorrectRenderingMode(); // Calling this here to fix the rendering order of the model, because materials have rendering mode fade
-
 
 		if (!this.isLocalPlayer)
 			return;
@@ -57,6 +53,7 @@ public class PlayerController : NetworkBehaviour {
 		this._playerHealth    = this.GetComponent<PlayerHealth>();
 
 		this.airControlPercent = 1;
+        spawn();
 	}
 
 
@@ -96,6 +93,40 @@ public class PlayerController : NetworkBehaviour {
 
     public bool getCC() {
         return this._CC;
+    }
+
+    public void spawn() {
+        StartCoroutine(spawnEffect());
+    }
+
+    private IEnumerator spawnEffect() {
+        while (!WorldData.ready) yield return 0;
+        GetComponent<PlayerEffects>().CmdAddTrail(2.0f);
+        const float speed = 0.5f;
+        float t = 0;
+
+        Vector3[] spline = new Vector3[3];
+        spline[2] = WorldData.worldGrid.getRandomCell(false, 1).pos;
+        spline[0] = spline[2];
+        spline[0] += spline[0].normalized * 100;
+        
+        spline[1] = Vector3.Lerp(spline[0], spline[2], 0.5f);
+        if (Random.Range(0.0f, 1.0f) >= 0.5f)
+            spline[1] += Vector3.up *  100;
+        this._playerHealth.maxHeal();
+        while (t < 1) {
+            GetComponent<PlayerController>().velocityY = 0;
+            transform.position = getSplinePos(spline, t);
+            t += Time.deltaTime * speed;            
+            yield return 0;
+        }
+        this._playerHealth.maxHeal();
+    }
+
+    private Vector3 getSplinePos(Vector3[] spline, float t) {
+        Vector3 t1 = Vector3.Lerp(spline[0], spline[1], t);
+        Vector3 t2 = Vector3.Lerp(spline[1], spline[2], t);
+        return Vector3.Lerp(t1, t2, t);
     }
 
     // Turn off and on MeshRenderer so FPS camera works

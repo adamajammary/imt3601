@@ -84,6 +84,10 @@ public class PlayerHealth : NetworkBehaviour {
         }
     }
 
+    public void maxHeal() {
+        Heal(MAX_HEALTH - this._currentHealth);
+    }
+
     public void Heal(float amount) {
         if (this.isServer)
             this.RpcHeal(amount);
@@ -161,7 +165,7 @@ public class PlayerHealth : NetworkBehaviour {
     private void RpcApplyDamage(AttackMessage message) {
         PlayerEffects playerEffects = this.gameObject.GetComponent<PlayerEffects>();
 
-        if ((playerEffects != null) && !this._isDead) {
+        if ((playerEffects != null) && !this._isDead && !this._damageImmune) {
             this.updateDamageScreen(message.damageAmount);
             playerEffects.CmdBloodParticle(message.impactPosition);
 
@@ -203,9 +207,8 @@ public class PlayerHealth : NetworkBehaviour {
             this._isDead = true;
         }
         else if (GameInfo.gamemode == "Deathmatch") {
-            transform.position = WorldData.worldGrid.getRandomCell(false, 1).pos;
-            Heal(MAX_HEALTH - this._currentHealth);
-            damageImmune(1.0f);
+            GetComponent<PlayerController>().spawn();
+            Debug.Log("DIE");
         }
     }
 

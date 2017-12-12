@@ -92,11 +92,6 @@ public class NPCBrain {
         }
     }
 
-    class start2end {
-        public WorldGrid.Cell start = new WorldGrid.Cell();
-        public WorldGrid.Cell end = new WorldGrid.Cell();
-    }
-
     //==============State classes==================================================
 
     //==============Roam state==================================================
@@ -137,10 +132,8 @@ public class NPCBrain {
     private class AvoidObstacle : State {
         protected Stack<WorldGrid.Cell> _path;
         protected Vector3 _goal;
-        protected start2end _oldPath;
         public AvoidObstacle(NPCBrain x) : base(x) {
             this._goal = Vector3.down;
-            this._oldPath = new start2end();
             this._path = new Stack<WorldGrid.Cell>();
             AStar(this._npc.getCellNoWater(), findTargetCell(x.npc.getDir()));
         }
@@ -213,8 +206,6 @@ public class NPCBrain {
 
         protected void AStar(WorldGrid.Cell startCell, WorldGrid.Cell goal) {
             if (goal == null || startCell == null) return;
-            if (_oldPath.start == startCell && _oldPath.end == goal) return;
-            this._oldPath.start = startCell; this._oldPath.end = goal;
 
             Dictionary<Vector3, WorldGrid.Cell> closed =
                 new Dictionary<Vector3, WorldGrid.Cell>();                                             //For quickly looking up closed nodes

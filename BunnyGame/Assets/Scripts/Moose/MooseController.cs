@@ -104,7 +104,7 @@ public class MooseController : NetworkBehaviour{
         Vector3 offset = new Vector3(0f, 0.5f, 0f);
         if (Physics.Raycast(transform.position - offset, Vector3.down, out hit, 1.2f))
         {
-            isGrounded = true; Debug.Log(transform.position);
+            isGrounded = true;
         }
         return isGrounded;
     }

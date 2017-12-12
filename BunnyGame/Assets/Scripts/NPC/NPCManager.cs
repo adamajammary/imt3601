@@ -100,12 +100,15 @@ public class NPCManager : NetworkBehaviour {
         foreach (var npc in this._npcs) {
             if (npc.Value != null && npc.Value.activeSelf) {
                 Vector3 goal = npc.Value.GetComponent<NPC>().getGoal();
-                npcs[npc.Key].update(npc.Value.transform.position, npc.Value.transform.forward, goal);
+                if (npcs.ContainsKey(npc.Key))
+                    npcs[npc.Key].update(npc.Value.transform.position, npc.Value.transform.forward, goal);
                 //syncRate += npc.Value.GetComponent<NPC>().getSyncRate();
             } else {
-                if (GameInfo.gamemode == "Battleroyale")
-                    npcs[npc.Key].alive = false;
-                this._deadNpcs.Add(npc.Key);
+                if (GameInfo.gamemode == "Battleroyale") {
+                    if (npcs.ContainsKey(npc.Key))
+                        npcs[npc.Key].alive = false;
+                    this._deadNpcs.Add(npc.Key);
+                }
             }
         }
         //Debug.Log(syncRate); //This should equal NPC count;

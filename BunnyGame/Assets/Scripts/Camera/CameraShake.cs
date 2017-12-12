@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CameraShake : MonoBehaviour {
 
-	public float power = 0.7f;
+	public float power = 0.3f;
 	public float duration = 1.0f;
 	public Transform camera;
 	public float slowDownAmount = 1.0f;
@@ -18,13 +18,6 @@ public class CameraShake : MonoBehaviour {
 		startPosition = camera.localPosition;
 		initialDuration = duration;	
 	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-		
-	}
-
 
 	void LateUpdate () {
         if (isShaking) {

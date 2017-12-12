@@ -425,13 +425,8 @@ public class PlayerHealth : NetworkBehaviour {
 
         if (damageAmount > 0)
              GameObject.Find("Main Camera").GetComponent<CameraShake>().isShaking = true;
-        
-        
-
 
         float alpha             = (1.0f - this._currentHealth / MAX_HEALTH);
         this._damageImage.color = new Color(this._damageImage.color.r, this._damageImage.color.g, this._damageImage.color.b, alpha);
-
-
     }
 }

@@ -41,6 +41,13 @@ public class PlayerHealth : NetworkBehaviour {
         StartCoroutine(this.damageImmune(5.0f));
     }
 
+
+   
+
+
+
+
+
     // Make the player immune from damage for <seconds>
     private IEnumerator damageImmune(float seconds) {
         this._damageImmune = true;
@@ -110,6 +117,9 @@ public class PlayerHealth : NetworkBehaviour {
             this.RpcTakeDamage(amount, attackerID);
         else if (this.isClient)
             this.CmdTakeDamage(amount, attackerID);
+                
+        GameObject.Find("MainCamera").GetComponent<CameraShake>().isShaking = true;
+
     }
 
     [ClientRpc]
@@ -121,12 +131,16 @@ public class PlayerHealth : NetworkBehaviour {
 
         if (this._isDead)
             this.die(attackerID);
+
+        
     }
 
     [Command]
     private void CmdTakeDamage(float amount, int attackerID) {
         this.RpcTakeDamage(amount, attackerID);
     }
+
+
 
     //
     // Network message handling, sends/receieves messages between clients and server.
@@ -412,5 +426,7 @@ public class PlayerHealth : NetworkBehaviour {
 
         float alpha             = (1.0f - this._currentHealth / MAX_HEALTH);
         this._damageImage.color = new Color(this._damageImage.color.r, this._damageImage.color.g, this._damageImage.color.b, alpha);
+
+
     }
 }

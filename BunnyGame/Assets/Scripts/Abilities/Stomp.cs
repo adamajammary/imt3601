@@ -10,7 +10,7 @@ public class Stomp : SpecialAbility
 
     public void init()
     {
-        base.init("Textures/AbilityIcons/test");
+        base.init("Textures/AbilityIcons/Stomp");
         base.abilityName = "Stomp";
         this._owner = this.transform.gameObject;
         this._networkAbility = GetComponent<AbilityNetwork>();     

@@ -15,7 +15,7 @@ public class NPC : NetworkBehaviour {
     private Vector3 _masterGoal;
 
     private const float         _gravity = -12;
-    private const float         _syncPerNPC = 0.8f;
+    private const float         _syncPerNPC = 0.5f;
 
     //The NPCs will sync at different rates, but the total syncs per second for all NPCs is 
     // 1 sync per second per npc.

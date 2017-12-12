@@ -166,4 +166,10 @@ public class AudioManager : MonoBehaviour {
         return Mathf.Max(Vector3.Distance(cameraTransform.position, closest_vec3), tileCenterToCorner) * (1/ tileCenterToCorner);
     }
 
+    public static float getEffectVolume() {
+        return PlayerPrefs.GetFloat("Effect Volume", 100) / 100f;
+    }
+    public static float getMasterVolume() {
+        return PlayerPrefs.GetFloat("Master Volume", 100) / 100f;
+    }
 }

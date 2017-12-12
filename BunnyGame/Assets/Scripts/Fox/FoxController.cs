@@ -131,7 +131,7 @@ public class FoxController : NetworkBehaviour {
         if (animator != null)
         {
             animator.SetFloat("movespeed", GetComponent<PlayerController>().currentSpeed);
-            animator.SetBool("isJumping", !GetComponent<CharacterController>().isGrounded && !GetComponent<PlayerController>().inWater);
+            animator.SetBool("isJumping", !isGrounded() && !GetComponent<PlayerController>().inWater);
             animator.SetBool("isAttacking", _isAttackingAnim);
             animator.SetFloat("height", GetComponent<PlayerController>().velocityY);
         }
@@ -139,5 +139,17 @@ public class FoxController : NetworkBehaviour {
 
     public Vector3 biteImpact() {
         return this.biteArea.transform.position;
+    }
+
+    private bool isGrounded()
+    {
+        bool isGrounded = false;
+        RaycastHit hit;
+        Vector3 offset = new Vector3(0f, 0.658f, 0f);
+        if (Physics.Raycast(transform.position - offset, Vector3.down, out hit, 1.2f))
+        {
+            isGrounded = true; Debug.Log(transform.position);
+        }
+        return isGrounded;
     }
 }

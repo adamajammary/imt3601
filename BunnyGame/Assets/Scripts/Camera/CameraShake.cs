@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CameraShake : MonoBehaviour {
 
-	public float power = 0.3f;
+	public float power = 6.0f;
 	public float duration = 1.0f;
 	public Transform camera;
 	public float slowDownAmount = 1.0f;
@@ -22,7 +22,7 @@ public class CameraShake : MonoBehaviour {
 	void LateUpdate () {
         if (isShaking) {
             if (duration > 0) {
-                camera.localPosition += Random.insideUnitSphere * power;
+                camera.localPosition += Random.insideUnitSphere * power * Time.deltaTime;
                 duration -= Time.deltaTime * slowDownAmount;
             }
             else

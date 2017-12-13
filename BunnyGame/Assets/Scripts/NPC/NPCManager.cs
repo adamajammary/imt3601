@@ -79,7 +79,7 @@ public class NPCManager : NetworkBehaviour {
         this._npcThreads = new NPCThreadManager(_npcThreadCount);        
         this._ready = true;
 
-        StartCoroutine(debug());
+        //StartCoroutine(debug());
     }
 
     // Update is called once per frame
@@ -91,28 +91,22 @@ public class NPCManager : NetworkBehaviour {
             else if (GameInfo.gamemode == "Deathmatch")
                 this.respawn();
             this.handleInstructions();
-            if (this.isServer)
-                handleSyncScaling();
         }
     }
 
     private IEnumerator debug() {
         while (true) {
+            Debug.Log(NPC.syncCount);
+            NPC.syncCount = 0;
+
             float syncRate = 0;
             foreach (var npc in this._npcs) {
                 syncRate += npc.Value.GetComponent<NPC>().getSyncRate();
             }
             Debug.Log(syncRate); //This should equal NPC count;
-            yield return new WaitForSeconds(1.0f);
-        }
-    }
 
-    private IEnumerator debug2() {
-        float timer = 0;
-        while (true) {
-            yield return 0;
-            Debug.Log(NPC.syncCount);
-            NPC.syncCount = 0;
+            Debug.Log(NPC._totalSyncFactor);
+            yield return new WaitForSeconds(1.0f);
         }
     }
 
@@ -121,7 +115,7 @@ public class NPCManager : NetworkBehaviour {
         //Update NPCS
         var npcs = NPCWorldView.npcs;
         foreach (var npc in this._npcs) {
-            if (npc.Value != null && npc.Value.activeSelf) {
+            if (npc.Value != null && !npc.Value.GetComponent<NPC>().IsDead) {
                 Vector3 goal = npc.Value.GetComponent<NPC>().getGoal();
                 if (npcs.ContainsKey(npc.Key))
                     npcs[npc.Key].update(npc.Value.transform.position, npc.Value.transform.forward, goal);                
@@ -129,8 +123,8 @@ public class NPCManager : NetworkBehaviour {
                 if (GameInfo.gamemode == "Battleroyale") {
                     if (npcs.ContainsKey(npc.Key))
                         npcs[npc.Key].alive = false;
-                    this._deadNpcs.Add(npc.Key);
                 }
+                this._deadNpcs.Add(npc.Key);                
             }
         }
        
@@ -181,7 +175,6 @@ public class NPCManager : NetworkBehaviour {
 
         if (this._deadNpcs.Count > 0) {
             foreach (var npc in this._deadNpcs) {
-                this._npcs[npc].SetActive(true);
                 if (this.isServer)
                     RpcRespawnNPC(this._npcs[npc]);
                 else {
@@ -202,12 +195,6 @@ public class NPCManager : NetworkBehaviour {
                     this._npcs[instruction.id].GetComponent<NPC>().update(instruction.moveDir, instruction.goal);
             }
         }        
-    }
-
-    void handleSyncScaling() {
-        NPC._totalSyncFactor = 0;
-        foreach (var npc in this._npcs.Values)
-            NPC._totalSyncFactor += npc.GetComponent<NPC>().getSyncFactor();
     }
 
     public void respawnNPC(GameObject npc) {

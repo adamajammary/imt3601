@@ -15,7 +15,7 @@ public class NPC : NetworkBehaviour {
     private Vector3 _masterGoal;
 
     private const float         _gravity = -12;
-    private const float         _syncPerNPC = 0.7f;
+    private const float         _syncPerNPC = 0.8f;
 
     //The NPCs will sync at different rates, but the total syncs per second for all NPCs is 
     // 1 sync per second per npc.
@@ -24,7 +24,7 @@ public class NPC : NetworkBehaviour {
     //NPCs that are closer to players get a higher sync factor.
 
     public static int           syncCount = 0;
-    public static float         _totalSyncFactor = 10000; 
+    public static float         _totalSyncFactor = 0; 
     private static int          _npcCount = 0;
     private float               _oldSyncFactor = 0;
     private float               _syncFactor = 0;
@@ -80,9 +80,9 @@ public class NPC : NetworkBehaviour {
                 this.syncClients();
                 this._syncTimer = 0;
             }
-            //if ((this._syncCounter + this._syncFrame) % 5 == 0) {
-            //    calcSyncRate();               
-            //}
+            if ((this._syncCounter + this._syncFrame) % 5 == 0) {
+                calcSyncRate();
+            }
         }
     }
 
@@ -107,23 +107,22 @@ public class NPC : NetworkBehaviour {
         die();
     }
 
-    public void spawn(Vector3 pos, Vector3 dir, int frame = 0) {
-        this._syncFrame = frame;
+    public void spawn(Vector3 pos, Vector3 dir, int frame = -1) {
+        if (frame != -1)
+            this._syncFrame = frame;
         IsDead = false;
         pos.y += 20;
         this.transform.position = pos;
         this._moveDir = dir;
+        this._syncTimer = 0;
         this.syncClients();
     }
 
     private void calcSyncRate() {
         this._oldSyncFactor = this._syncFactor;
-        this._syncFactor = 400.0f / closestPlayer();        
-        this._syncRate = _syncFactor * ((_npcCount  * _syncPerNPC) / _totalSyncFactor);
-    }
-
-    private void updateTotalSyncFactor() {
+        this._syncFactor = 400.0f / closestPlayer();
         _totalSyncFactor += this._syncFactor - this._oldSyncFactor;
+        this._syncRate = _syncFactor * ((_npcCount  * _syncPerNPC) / _totalSyncFactor);
     }
 
     private float closestPlayer() {
@@ -131,8 +130,10 @@ public class NPC : NetworkBehaviour {
         float dist = 999999;
         var players = NPCWorldView.players;
         foreach (var player in players.Values) {
-            dist = Vector3.Distance(transform.position, player.getPos());
-            if (dist < bestDist) bestDist = dist; 
+            if (player != null) {
+                dist = Vector3.Distance(transform.position, player.getPos());
+                if (dist < bestDist) bestDist = dist;
+            }
         }
         return (bestDist > 1) ? bestDist : 1;
     }
@@ -165,7 +166,8 @@ public class NPC : NetworkBehaviour {
         if (GameInfo.gamemode == "Battleroyale")
             NetworkServer.Destroy(this.gameObject);
         if (GameInfo.gamemode == "Deathmatch") {
-            this.gameObject.SetActive(false);
+            transform.position = Vector3.right * 1000; //make NPC dissapear
+            this.IsDead = true;
         }
     }
 
@@ -178,6 +180,7 @@ public class NPC : NetworkBehaviour {
     }
 
     private void OnDestroy() {
+        _totalSyncFactor -= this._syncFactor;
         _npcCount--;
     }
 }
